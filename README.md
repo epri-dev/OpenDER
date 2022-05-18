@@ -1,5 +1,4 @@
-# IEEE 1547-2018 DER Model
-
+# Open-source Distributed Energy Resources (DER) Model that represents IEEE Standard 1547-2018 requirements for steady-state and dynamic analyses
 ## Requirements
 
 Python >= 3.7<br/>

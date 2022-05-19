@@ -1,0 +1,91 @@
+"""
+Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+· Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimer.
+· Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+· Neither the name of the EPRI nor the names of its contributors may be used
+  to endorse or promote products derived from this software without specific
+  prior written permission.
+"""
+
+# -*- coding: utf-8 -*-
+# @Time    : 5/6/2021 1:44 PM
+# @Author  : Paulo Radatz
+# @Email   : pradatz@epri.com
+# @File    : test_volt_watt_332.py
+# @Software: PyCharm
+
+import pytest
+
+# volt-watt with unbalanced voltage (RMS)
+input_list = [  # v_pu, p_dc, p_expected, q_expected, calculated_v
+    ((1.09, 1.09, 1.06, 0, -2.0944, 2.0944),    100, 50, 0, 1.08),
+    ((1.06, 1.09, 1.09, 0, -2.0944, 2.0944),    100, 50, 0, 1.08),
+    ((1.09, 1.06, 1.09, 0, -2.0944, 2.0944),    100, 50, 0, 1.08),
+    ((1.09, 1.03, 1.03, 0, -2.0944, 2.0944),    100, 100, 0, 1.05),
+    ((1.03, 1.09, 1.03, 0, -2.0944, 2.0944),    100, 100, 0, 1.05),
+    ((1.03, 1.03, 1.09, 0, -2.0944, 2.0944),    100, 100, 0, 1.05),
+    ((1.06, 1.09, 1.09, 0, -1.9, 1.9),          100, 50, 0, 1.08),
+    ((1.06, 1.09, 1.09, 0, -2.2, 2.2),          100, 50, 0, 1.08),
+    ((1.09, 1.09, 1.09, 0, -1.9, 1.9),          100, 25, 0, 1.09),
+    ((1.09, 1.09, 1.09, 0, -2.2, 2.2),          100, 25, 0, 1.09)
+
+]
+
+
+class TestVoltWatt332:
+
+    @pytest.fixture(autouse=True)
+    def _request(self, si_obj_creation):
+        self.si_obj = si_obj_creation
+
+    @pytest.mark.parametrize("v_pu, p_dc, p_expected, q_expected, calculated_v", input_list,
+                             ids=[f"VoltWatt - Qpriority v_pu={i[0]}, p_dc={i[1]}, p_expected={i[2]}, q_expected={i[3]}, calculated_v={i[4]}"
+                                  for i in input_list])
+
+    def test_volt_watt(self, v_pu, p_dc, p_expected, q_expected, calculated_v):
+        p_limit = 0.5
+
+        self.si_obj.der_file.NP_P_MAX = 100
+        self.si_obj.der_file.PV_MODE_ENABLE = "ENABLED"
+        self.si_obj.der_file.PV_CURVE_V1 = 1.06
+        self.si_obj.der_file.PV_CURVE_V2 = 1.1
+        self.si_obj.der_file.PV_CURVE_P1 = 1
+        self.si_obj.der_file.PV_CURVE_P2 = 0
+        self.si_obj.der_file.AP_LIMIT = p_limit
+        self.si_obj.der_file.AP_LIMIT_ENABLE = "DISABLED"
+        self.si_obj.der_file.OV1_TRIP_V = 1.2
+        self.si_obj.der_file.OV2_TRIP_V = 1.2
+
+ #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
+        self.si_obj.der_input.p_dc_kw = p_dc
+        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu[0], 277.128129 * v_pu[1], 277.128129 * v_pu[2]
+        self.si_obj.der_input.theta_a, self.si_obj.der_input.theta_b, self.si_obj.der_input.theta_c = 1 * v_pu[3], 1 * v_pu[4], 1 * v_pu[5]
+        self.si_obj.run()
+
+        # Check inputs
+        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert self.si_obj.der_file.PV_MODE_ENABLE
+        assert 1.06 == self.si_obj.der_file.PV_CURVE_V1
+        assert 1.1 == self.si_obj.der_file.PV_CURVE_V2
+        assert 1 == self.si_obj.der_file.PV_CURVE_P1
+        assert 0 == self.si_obj.der_file.PV_CURVE_P2
+        assert p_limit == self.si_obj.der_file.AP_LIMIT
+        assert not self.si_obj.der_file.AP_LIMIT_ENABLE
+
+        # Check Results
+        v_actual = round(self.si_obj.der_input.v_meas_pu, 3)
+        p_actual = round(self.si_obj.p_out_kw, 1)
+        q_actual = round(self.si_obj.q_out_kvar, 1)
+
+        v_message = (f"V should be {calculated_v} instead it is {v_actual}")
+        assert round(calculated_v, 3) == v_actual, v_message
+        p_message = (f"It should be {p_expected} instead it is {p_actual}")
+        assert p_expected == p_actual, p_message
+        q_message = (f"It should be {q_expected} instead it is {q_actual}")
+        assert q_expected == q_actual, q_message

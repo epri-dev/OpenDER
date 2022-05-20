@@ -1,17 +1,15 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 
@@ -52,32 +50,35 @@ class DERInputs:
     # @lru_cache(maxsize=32)
     def operating_condition_input_processing(self, der_file):
         """
-        Calculates the applicable voltage to be used by other modules of the DER model, as well as per-unit value of the
+        |  Calculates the applicable voltage to be used by other modules of the DER model, as well as per-unit value of the
         available DC power
-        EPRI Report Reference: Section 3.3 in Report #3002021694: IEEE 1547-2018 DER Model
+        |  EPRI Report Reference: Section 3.3 in Report #3002021694: IEEE 1547-2018 DER Model
 
         Used variables as inputs:
-        :v_a, v_b, v_c:	Three-phase line-to-ground RMS voltage at RPA
-        :theta_a, theta_b, theta_c:	Three-phase line-to-ground voltage phase angles at RPA
-        :v:	Single-phase RMS voltage at RPA of DER
-        :NP_PHASE:	Single or Three-phase DER
-        :NP_AC_V_NOM: AC voltage base-nominal voltage rating
-        :p_dc_kw: Available DC power
-        :NP_P_MAX:	Active power rating at unity power factor
+        
+        :param v_a, v_b, v_c:	Three-phase line-to-ground RMS voltage at RPA
+        :param theta_a, theta_b, theta_c:	Three-phase line-to-ground voltage phase angles at RPA
+        :param v:	Single-phase RMS voltage at RPA of DER
+        :param NP_PHASE:	Single or Three-phase DER
+        :param NP_AC_V_NOM: AC voltage base-nominal voltage rating
+        :param p_dc_kw: Available DC power
+        :param NP_P_MAX:	Active power rating at unity power factor
 
         Internal variable:
-        :v_a_pu: Phase a to ground voltage magnitude in per unit
-        :v_b_pu: Phase b to ground voltage magnitude in per unit
-        :v_c_pu: Phase c to ground voltage magnitude in per unit
-        :v_ab_pu: Phase a to phase b voltage magnitude in per unit
-        :v_bc_pu: Phase b to phase c voltage magnitude in per unit
-        :v_ca_pu: Phase c to phase a voltage magnitude in per unit
+        
+        :param v_a_pu: Phase a to ground voltage magnitude in per unit
+        :param v_b_pu: Phase b to ground voltage magnitude in per unit
+        :param v_c_pu: Phase c to ground voltage magnitude in per unit
+        :param v_ab_pu: Phase a to phase b voltage magnitude in per unit
+        :param v_bc_pu: Phase b to phase c voltage magnitude in per unit
+        :param v_ca_pu: Phase c to phase a voltage magnitude in per unit
 
         Output
-        :v_meas_pu:	Applicable voltage for volt-var and volt-watt calculation in per unit
-        :v_high_pu:	Maximum applicable voltage as enter service, over voltage trip criterion in per unit
-        :v_low_pu:	Minimum applicable voltage as enter service, over voltage trip criterion in per uni
-        :v_meas_pu:	DER available DC power in per uni
+        
+        :param v_meas_pu:	Applicable voltage for volt-var and volt-watt calculation in per unit
+        :param v_high_pu:	Maximum applicable voltage as enter service, over voltage trip criterion in per unit
+        :param v_low_pu:	Minimum applicable voltage as enter service, over voltage trip criterion in per uni
+        :param v_meas_pu:	DER available DC power in per uni
         """
 
         # perform input validity check

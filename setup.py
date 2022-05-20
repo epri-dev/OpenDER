@@ -1,17 +1,15 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
@@ -42,15 +40,15 @@ setup(
     name='opender',
     version='1.0.0',
     license='BSD',
-    description='Open-source DER Model that represents IEEE Standard 1547-2018 requirements for steady-state, QSTS, '
-                'and dynamic analyses', #TODO change
+    description='Open-source Distributed Energy Resources (DER) Model that represents IEEE Standard 1547-2018 '
+                'requirements for steady-state and dynamic analyses',
     long_description='%s\n%s' % (
         re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.rst')),
         re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))
     ),
     author='Jithendar Anandan, Yiwei Ma, Wei Ren, and Paulo Radatz',
     author_email='janandan@epri.com, yma@epri.com, wren@epri.com, pradatz@epri.com',
-    url='https://github.com/epri-dev/opender', #TODO change
+    url='https://github.com/epri-dev/opender',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     package_data={},

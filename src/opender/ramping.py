@@ -1,17 +1,15 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 # -*- coding: utf-8 -*-
@@ -23,8 +21,8 @@ are permitted provided that the following conditions are met:
 from . import der
 class Ramping:
     """
-    Ramp rate limit function
-    EPRI Report Reference: Section 3.11.2 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  Ramp rate limit function
+    |  EPRI Report Reference: Section 3.11.2 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     
     def __init__(self):
@@ -33,13 +31,15 @@ class Ramping:
     def ramp(self, ramp_in, ramp_up_time, ramp_down_time):
         """
         Calculate ramp rate limit with ramp-up and ramp-down time settings
-        :ramp_in: Ramp rate limit input
-        :ramp_up_time: Ramp up time from 0 to 1
-        :ramp_down_time: Ramp down time from 0 to 1
-        :t_s:   Simulation timestep
+        
+        :param ramp_in: Ramp rate limit input
+        :param ramp_up_time: Ramp up time from 0 to 1
+        :param ramp_down_time: Ramp down time from 0 to 1
+        :param t_s:   Simulation timestep
 
         Output:
-        :ramp_out: Ramp rate limited result
+        
+        :param ramp_out: Ramp rate limited result
         """
 
         if(self.ramp_out_prev is None):

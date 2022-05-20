@@ -1,24 +1,15 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
-
-
-"""
-Created on Thu Feb  3 13:31:38 2022
-
-@author: pwre002
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 import numpy as np
 
@@ -29,15 +20,17 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3):
     Find out the interception point of piece-wise function defined by xp and yp at given magnitude
 
     Input argument:
-    :xp: list or array on x axis (increasing from left to right)
-    :yp: list or array on y axis
-    :mag: magnitude of (x, y) that will intercept on the right side of xp and yp
-    :k: convergence factor (<1 slows convergence with increased robustness)
-    :err: error threshold
+    
+    :param xp: list or array on x axis (increasing from left to right)
+    :param yp: list or array on y axis
+    :param mag: magnitude of (x, y) that will intercept on the right side of xp and yp
+    :param k: convergence factor (<1 slows convergence with increased robustness)
+    :param err: error threshold
 
     Output:
-    :x: interception point on x axis
-    :y: interception point on y axis
+    
+    :param x: interception point on x axis
+    :param y: interception point on y axis
     """
     # step 1: extend the list/array to the right to at least cover the requested mag
     xn = max(mag, xp[-1]+mag)
@@ -98,30 +91,33 @@ class Capability_and_Priority:
         Calculate limited DER output P and Q based on DER ratings and priority of responses.
 
         Variables used in this function:
-        :p_desired_kw:	Desired output active power considering DER enter service performance
-        :q_desired_kvar:	Desired output reactive power from reactive power support functions
-        :const_pf_mode_enable_exec:	Constant Power Factor Mode Enable (CONST_PF_MODE_ENABLE) after execution delay
-        :qv_mode_enable_exec:	Voltage-Reactive Power Mode Enable (QV_MODE_ENABLE) after execution delay
-        :qp_mode_enable_exec:	Active Power Reactive Power Mode Enable (QP_MODE_ENABLE) after execution delay
-        :const_q_mode_enable_exec:	Constant Reactive Power Mode Enable (CONST_Q_MODE_ENABLE) after execution delay
-        :WattVar_Curve: Watt-var settings
-            ('P_PU' = [qp_curve_p1_gen_exec, qp_curve_p2_gen_exec, qp_curve_p3_gen_exec]
-             'Q_PU' = [qp_curve_q1_gen_exec, qp_curve_q2_gen_exec, qp_curve_q3_gen_exec])
+        
+        :param p_desired_kw:	Desired output active power considering DER enter service performance
+        :param q_desired_kvar:	Desired output reactive power from reactive power support functions
+        :param const_pf_mode_enable_exec:	Constant Power Factor Mode Enable (CONST_PF_MODE_ENABLE) after execution delay
+        :param qv_mode_enable_exec:	Voltage-Reactive Power Mode Enable (QV_MODE_ENABLE) after execution delay
+        :param qp_mode_enable_exec:	Active Power Reactive Power Mode Enable (QP_MODE_ENABLE) after execution delay
+        :param const_q_mode_enable_exec:	Constant Reactive Power Mode Enable (CONST_Q_MODE_ENABLE) after execution delay
+        :param WattVar_Curve: Watt-var settings
+              ('P_PU' = [qp_curve_p1_gen_exec, qp_curve_p2_gen_exec, qp_curve_p3_gen_exec]
+              'Q_PU' = [qp_curve_q1_gen_exec, qp_curve_q2_gen_exec, qp_curve_q3_gen_exec])
 
         Internal variables:
-        :q_requirement_inj:	Reactive power injection capability required by IEEE 1547-2018 (constant, 0.44 of DER VA rating)
-        :q_requirement_abs:	Reactive power absorption capability required by IEEE 1547-2018 (constant, 0.25 of DER VA rating if CAT_A, 0.44 of DER VA rating if CAT_B)
-        :q_max_inj:	Maximum reactive power injection at the desired active power output, defined by the capability curve NP_Q_CAPABILITY_BY_P_CURVE
-        :q_max_abs:	Maximum reactive power absorption at the desired active power output, defined by the capability curve NP_Q_CAPABILITY_BY_P_CURVE
-        :p_itcp_kw:  Intercept point active power of DER apparent power capability circle and a piecewise curve
-        :q_itcp_kvar:    Intercept point active power of DER apparent power capability circle and a piecewise curve
-        :q_limited_by_p_kvar:	Desired output reactive power after considering DER reactive power capability curve in volt-var or constant reactive power mode.
-        :q_limited_pf_kvar:	Desired output reactive power after considering DER apparent power capability circle in constant power factor mode
-        :q_limited_qp_kvar:	Desired output reactive power after considering DER apparent power capability circle in watt-var mode
+        
+        :param q_requirement_inj:	Reactive power injection capability required by IEEE 1547-2018 (constant, 0.44 of DER VA rating)
+        :param q_requirement_abs:	Reactive power absorption capability required by IEEE 1547-2018 (constant, 0.25 of DER VA rating if CAT_A, 0.44 of DER VA rating if CAT_B)
+        :param q_max_inj:	Maximum reactive power injection at the desired active power output, defined by the capability curve NP_Q_CAPABILITY_BY_P_CURVE
+        :param q_max_abs:	Maximum reactive power absorption at the desired active power output, defined by the capability curve NP_Q_CAPABILITY_BY_P_CURVE
+        :param p_itcp_kw:  Intercept point active power of DER apparent power capability circle and a piecewise curve
+        :param q_itcp_kvar:    Intercept point active power of DER apparent power capability circle and a piecewise curve
+        :param q_limited_by_p_kvar:	Desired output reactive power after considering DER reactive power capability curve in volt-var or constant reactive power mode.
+        :param q_limited_pf_kvar:	Desired output reactive power after considering DER apparent power capability circle in constant power factor mode
+        :param q_limited_qp_kvar:	Desired output reactive power after considering DER apparent power capability circle in watt-var mode
 
         Outputs:
-        :p_limited_kw:	DER output active power after considering DER apparent power limits
-        :q_limited_kvar:	DER output reactive power after considering DER apparent power limits
+        
+        :param p_limited_kw:	DER output active power after considering DER apparent power limits
+        :param q_limited_kvar:	DER output reactive power after considering DER apparent power limits
         """
 
         self.q_requirement_abs = (0.25 if der_file.NP_NORMAL_OP_CAT == 'CAT_A' else 0.44) * der_file.NP_VA_MAX

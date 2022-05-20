@@ -1,31 +1,25 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 
 # -*- coding: utf-8 -*-
-"""
 
-@author: Jithendar Anandan
-@email: janandan@epri.com
-"""
 from . import der
 class LowPassFilter:
     """
-    Low pass filter for modeling DER open loop response behavior and other related responses
-    EPRI Report Reference: Section 3.11.1 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  Low pass filter for modeling DER open loop response behavior and other related responses
+    |  EPRI Report Reference: Section 3.11.1 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     
     def __init__(self):
@@ -35,13 +29,16 @@ class LowPassFilter:
     def low_pass_filter(self, lpf_in, t_olrt):
         """
         Calculate low pass filtered result of lpt_in with Open Loop Response Time of t_olrt
+        
         Input:
-        :lpf_in:    Input of Low pass filter
-        :t_olrt:    Open loop response time
-        :t_s:       Simulation time step
+        
+        :param lpf_in:    Input of Low pass filter
+        :param t_olrt:    Open loop response time
+        :param t_s:       Simulation time step
 
         Output:
-        :lpf_out:   Low pass filtered result
+        
+        :param lpf_out:   Low pass filtered result
         """
         if self.lpf_in_prev == None:
             self.lpf_in_prev = lpf_in

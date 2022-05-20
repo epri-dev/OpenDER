@@ -1,17 +1,15 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 # -*- coding: utf-8 -*-
@@ -21,8 +19,8 @@ from .low_pass_filter import LowPassFilter
 
 class WattVAR:
     """
-    Active Power – Reactive Power (Watt-var) Function
-    EPRI Report Reference: Section 3.8.3 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  Active Power – Reactive Power (Watt-var) Function
+    |  EPRI Report Reference: Section 3.8.3 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
     def __init__(self):
@@ -33,22 +31,25 @@ class WattVAR:
         Calculates and returns output reactive power from Watt-VAR function
 
         Variable used in this function:
-        :qp_curve_p1_gen_exec:	P-Q Curve Point P1 Setting (QP_CURVE_P1_GEN) after execution delay
-        :qp_curve_q1_gen_exec:	P-Q Curve Point Q1 Setting (QP_CURVE_Q1_GEN) after execution delay
-        :qp_curve_p2_gen_exec:	P-Q Curve Point P2 Setting (QP_CURVE_P2_GEN) after execution delay
-        :qp_curve_q2_gen_exec:	P-Q Curve Point Q2 Setting (QP_CURVE_Q2_GEN) after execution delay
-        :qp_curve_p3_gen_exec:	P-Q Curve Point P3 Setting (QP_CURVE_P3_GEN) after execution delay
-        :qp_curve_q3_gen_exec:	P-Q Curve Point Q3 Setting (QP_CURVE_Q3_GEN) after execution delay
-        :QP_RT:	Active Power Reactive Power Mode Response Time
-        :p_desired_kw:	Desired output active power considering DER enter service performance
-        :NP_P_MAX:	Active power rating at unity power factor
+        
+        :param qp_curve_p1_gen_exec:	P-Q Curve Point P1 Setting (QP_CURVE_P1_GEN) after execution delay
+        :param qp_curve_q1_gen_exec:	P-Q Curve Point Q1 Setting (QP_CURVE_Q1_GEN) after execution delay
+        :param qp_curve_p2_gen_exec:	P-Q Curve Point P2 Setting (QP_CURVE_P2_GEN) after execution delay
+        :param qp_curve_q2_gen_exec:	P-Q Curve Point Q2 Setting (QP_CURVE_Q2_GEN) after execution delay
+        :param qp_curve_p3_gen_exec:	P-Q Curve Point P3 Setting (QP_CURVE_P3_GEN) after execution delay
+        :param qp_curve_q3_gen_exec:	P-Q Curve Point Q3 Setting (QP_CURVE_Q3_GEN) after execution delay
+        :param QP_RT:	Active Power Reactive Power Mode Response Time
+        :param p_desired_kw:	Desired output active power considering DER enter service performance
+        :param NP_P_MAX:	Active power rating at unity power factor
 
         Internal variables:
-        :q_qp_desired_ref_pu:	Watt-var function reactive power reference value in per unit.
-        :q_qp_desired_ref_kvar:	Watt-var function reactive power reference before response time
+        
+        :param q_qp_desired_ref_pu:	Watt-var function reactive power reference value in per unit.
+        :param q_qp_desired_ref_kvar:	Watt-var function reactive power reference before response time
 
         Output:
-        :q_qp_desired_kvar:	Output reactive power from watt-var function
+        
+        :param q_qp_desired_kvar:	Output reactive power from watt-var function
 
         """
 

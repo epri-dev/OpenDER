@@ -12,8 +12,8 @@
 #
 import os
 import sys
-#sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('./../src/opender'))
+sys.path.insert(0, os.path.abspath('..'))
+
 
 # -- Project information -----------------------------------------------------
 
@@ -22,7 +22,7 @@ copyright = '2022, Jithendar Anandan, Yiwei Ma, Wei Ren and Paulo Radatz'
 author = 'Jithendar Anandan, Yiwei Ma, Wei Ren and Paulo Radatz'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.9'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------

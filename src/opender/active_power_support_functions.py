@@ -1,27 +1,18 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
-
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Oct 21 15:59:29 2021
-
-@author: pjan004
-"""
-
 
 from . import active_power_limit
 from . import frequency_droop
@@ -51,21 +42,23 @@ class ActivePowerSupportFunctions:
 
     def calculate_p_act_supp_kw(self, der_file, exec_delay, der_input, p_out_kw):
         """
-        :ap_limit_pu:	Active power limit
-        :p_pv_limit_pu:	Volt-watt power limit
-        :p_pf_pu:	Frequency-droop power command
-        :ap_limit_enable_exec:	Active power limit enable (AP_LIMIT_ENABLE) signal after execution delay
-        :pv_mode_enable_exec:	Volt-watt enable (PV_MODE_ENABLE) signal after execution delay
-        :pf_of_active:	Frequency-droop over-frequency active
-        :pf_uf_active:	Frequency-droop under-frequency active
-        :p_dc_pu:	DER available DC power in pu
-        :NP_EFFICIENCY:	DER system efficiency for DC/AC power conversion
+        :param ap_limit_pu:	Active power limit
+        :param p_pv_limit_pu:	Volt-watt power limit
+        :param p_pf_pu:	Frequency-droop power command
+        :param ap_limit_enable_exec:	Active power limit enable (AP_LIMIT_ENABLE) signal after execution delay
+        :param pv_mode_enable_exec:	Volt-watt enable (PV_MODE_ENABLE) signal after execution delay
+        :param pf_of_active:	Frequency-droop over-frequency active
+        :param pf_uf_active:	Frequency-droop under-frequency active
+        :param p_dc_pu:	DER available DC power in pu
+        :param NP_EFFICIENCY:	DER system efficiency for DC/AC power conversion
 
         Internal variable:
-        :p_act_supp_pu:	Desired output active power from active power support functions in per unit
+        
+        :param p_act_supp_pu:	Desired output active power from active power support functions in per unit
 
         Output
-        :p_act_supp_kw:	Desired output active power from active power support functions in kW
+        
+        :param p_act_supp_kw:	Desired output active power from active power support functions in kW
         """
 
         # Active power limit function

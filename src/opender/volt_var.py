@@ -1,34 +1,26 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Oct 28 13:36:26 2021
-
-@author: Jithendar Anandan
-"""
-
 from .low_pass_filter import LowPassFilter
 
 
 class VoltVAR:
     """
-    Voltage–Reactive Power (Volt-var) Function
-    EPRI Report Reference: Section 3.8.2 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  Voltage–Reactive Power (Volt-var) Function
+    |  EPRI Report Reference: Section 3.8.2 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     def __init__(self): 
         self.qv_olrt = LowPassFilter()
@@ -50,33 +42,36 @@ class VoltVAR:
         """
         Calculates and returns output reactive power from Volt-VAR function
 
-        Variable used in this function: 
-        :qv_vref_auto_mode_exec: Autonomous Vref Adjustment Enable(QV_VREF_AUTO_MODE_ENABLE) after execution delay
-        :qv_vref_exec: V/Q Curve VRefSetting(QV_VREF) after execution delay
-        :v_meas_pu Applicable voltage for volt-var and volt-watt calculation
-        :qv_vref_time_exec: Vref adjustment time Constant (QV_VREF_TIME) after execution delay
-        :qv_curve_v1_exec: V/Q Curve Point V1 Setting (QV_CURVE_V1)after execution delay
-        :qv_curve_v2_exec: V/Q Curve Point V1 Setting (QV_CURVE_V1)after execution delay
-        :qv_curve_v3_exec: V/Q Curve Point V1 Setting (QV_CURVE_V1)after execution delay
-        :qv_curve_v4_exec: V/Q Curve Point V1 Setting (QV_CURVE_V1)after execution delay
-        :qv_curve_q1_exec: V/Q Curve Point Q1 Setting (QV_CURVE_Q1) after execution delay
-        :qv_curve_q2_exec: V/Q Curve Point Q1 Setting (QV_CURVE_Q1) after execution delay
-        :qv_curve_q3_exec: V/Q Curve Point Q1 Setting (QV_CURVE_Q1) after execution delay
-        :qv_curve_q4_exec: V/Q Curve Point Q1 Setting (QV_CURVE_Q1) after execution delay
-        :NP_VA_MAX: Apparent power maximum rating
-        :qv_olrt_exec: Volt-var open loop response time after execution delay
+        Variable used in this function:
+ 
+        :param qv_vref_auto_mode_exec: Autonomous Vref Adjustment Enable(QV_VREF_AUTO_MODE_ENABLE) after execution delay
+        :param qv_vref_exec: V/Q Curve VRefSetting(QV_VREF) after execution delay
+        :param v_meas_pu: Applicable voltage for volt-var and volt-watt calculation
+        :param qv_vref_time_exec: Vref adjustment time Constant (QV_VREF_TIME) after execution delay
+        :param qv_curve_v1_exec: V/Q Curve Point V1 Setting (QV_CURVE_V1)after execution delay
+        :param qv_curve_v2_exec: V/Q Curve Point V1 Setting (QV_CURVE_V1)after execution delay
+        :param qv_curve_v3_exec: V/Q Curve Point V1 Setting (QV_CURVE_V1)after execution delay
+        :param qv_curve_v4_exec: V/Q Curve Point V1 Setting (QV_CURVE_V1)after execution delay
+        :param qv_curve_q1_exec: V/Q Curve Point Q1 Setting (QV_CURVE_Q1) after execution delay
+        :param qv_curve_q2_exec: V/Q Curve Point Q1 Setting (QV_CURVE_Q1) after execution delay
+        :param qv_curve_q3_exec: V/Q Curve Point Q1 Setting (QV_CURVE_Q1) after execution delay
+        :param qv_curve_q4_exec: V/Q Curve Point Q1 Setting (QV_CURVE_Q1) after execution delay
+        :param NP_VA_MAX: Apparent power maximum rating
+        :param qv_olrt_exec: Volt-var open loop response time after execution delay
         
         Internal variables:
-        :q_qv_desired_ref_pu: Volt-var function reactive power reference value in per unit
-        :q_qv_desired_ref_kvar: Volt-var function reactive power reference before response time
-        :qv_vref_appl: Applied VRefsetting to determine the applied voltage settings
-        :qv_curve_v1_appl: Applied V1 setting with volt-var curve shifting when VRefchanges
-        :qv_curve_v2_appl: Applied V2 setting with volt-var curve shifting when VRefchanges
-        :qv_curve_v3_appl: Applied V3 setting with volt-var curve shifting when VRefchanges
-        :qv_curve_v4_appl: Applied V4 setting with volt-var curve shifting when VRefchanges
+
+        :param q_qv_desired_ref_pu: Volt-var function reactive power reference value in per unit
+        :param q_qv_desired_ref_kvar: Volt-var function reactive power reference before response time
+        :param qv_vref_appl: Applied VRefsetting to determine the applied voltage settings
+        :param qv_curve_v1_appl: Applied V1 setting with volt-var curve shifting when VRefchanges
+        :param qv_curve_v2_appl: Applied V2 setting with volt-var curve shifting when VRefchanges
+        :param qv_curve_v3_appl: Applied V3 setting with volt-var curve shifting when VRefchanges
+        :param qv_curve_v4_appl: Applied V4 setting with volt-var curve shifting when VRefchanges
 
         Output variables:
-        :q_qv_desired_kvar: Output reactive power from volt-var function
+
+        :param q_qv_desired_kvar: Output reactive power from volt-var function
         """
         
         '''

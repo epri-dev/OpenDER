@@ -1,26 +1,19 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Dec 16 14:07:56 2021
-
-@author: pjan004
-"""
 
 from .low_pass_filter import LowPassFilter
 
@@ -39,15 +32,18 @@ class ConstantVARs:
         Calculates and returns output reactive power from Constant Power Factor function
 
         Variable used in this function:
-        :const_q_exec:	Constant Reactive Power Setting (CONST_Q) after execution delay
-        :CONST_Q_RT:	Constant Reactive Power Mode Response Time
-        :NP_VA_MAX:	Apparent power maximum rating
+        
+        :param const_q_exec:	Constant Reactive Power Setting (CONST_Q) after execution delay
+        :param CONST_Q_RT:	Constant Reactive Power Mode Response Time
+        :param NP_VA_MAX:	Apparent power maximum rating
 
         Internal variable:
-        :q_const_q_desired_ref_kvar:	Constant reactive power reactive power reference before response time
+        
+        :param q_const_q_desired_ref_kvar:	Constant reactive power reactive power reference before response time
 
         Output:
-        :q_const_q_desired_kvar"	Output reactive power from constant reactive power function
+        
+        :param q_const_q_desired_kvar"	Output reactive power from constant reactive power function
         """
 
         #Eq. 49, calculate desired reactive power in unit of kvar

@@ -1,17 +1,15 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 from . import der
 class ConditionalDelay:
@@ -30,14 +28,17 @@ class ConditionalDelay:
         Generate output when con_del_enable_in stays True for a period of con_del_enable_time
 
         Input argument:
-        :con_del_enable_in: Input Conditional Enable Boolean
-        :con_del_enable_time: Conditional delay time
+        
+        :param con_del_enable_in: Input Conditional Enable Boolean
+        :param con_del_enable_time: Conditional delay time
 
         Internal state variable:
-        :con_del_enable_int: Elapsed time when Input Boolean con_del_enable_in stays True
+        
+        :param con_del_enable_int: Elapsed time when Input Boolean con_del_enable_in stays True
 
         Output:
-        "con_del_enable_out: Conditional Delayed Enable Output
+        
+        :param con_del_enable_out: Conditional Delayed Enable Output
         """
 
         self.con_del_enable_int = min(con_del_enable_time, self.con_del_enable_int + der.DER.t_s)

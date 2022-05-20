@@ -1,5 +1,5 @@
 .. OpenDER documentation master file, created by
-   sphinx-quickstart on Wed May 18 09:51:04 2022.
+   sphinx-quickstart on Thu May 19 11:10:16 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -10,8 +10,8 @@ Welcome to OpenDER's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-    modules
-    ./src/opender/*
+   readme
+   opender
 
 Indices and tables
 ==================

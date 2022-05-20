@@ -1,17 +1,16 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
+
 from .time_delay import TimeDelay
 from .ramping import Ramping
 from . import der
@@ -40,9 +39,12 @@ class EdgeDetector:
         Return 1 if an up edge or down edge is detected.
 
         Input Argument:
-        :x: Input signal for edge detection
+        
+        :param x: Input signal for edge detection
+        
         Output:
-        :y: If up edge or down edge detected, return 1
+        
+        :param y: If up edge or down edge detected, return 1
         """
         if self.x is None:
             self.x = x
@@ -70,20 +72,23 @@ class EnterServicePerformance:
     def es_performance(self, der_file, exec_delay, p_act_supp_kw, der_status):
         """
         Variable used in this function:
-        :der_status:	Status of DER (on or off)
-        :es_ramp_rate_exec:	Enter service soft-start duration (ES_RAMP_RATE) signal after execution delay
-        :p_act_supp_kw:	Desired output active power from active power support functions in kW
-        :NP_P_MAX:	Active power rating at unity power factor
+        
+        :param der_status:	Status of DER (on or off)
+        :param es_ramp_rate_exec:	Enter service soft-start duration (ES_RAMP_RATE) signal after execution delay
+        :param p_act_supp_kw:	Desired output active power from active power support functions in kW
+        :param NP_P_MAX:	Active power rating at unity power factor
 
         Internal Variable:
-        :es_flag:	Flag to indicate whether DER is in start-up process
-        :p_es_kw:	Desired output active power considering DER status
-        :p_es_ramp_kw:	Desired output active power during enter service ramp
-        :es_flag_set:	Set value for es_flag flipflop logic
-        :es_flag_reset:	Reset value for es_flag flipflop logic
+        
+        :param es_flag:	Flag to indicate whether DER is in start-up process
+        :param p_es_kw:	Desired output active power considering DER status
+        :param p_es_ramp_kw:	Desired output active power during enter service ramp
+        :param es_flag_set:	Set value for es_flag flipflop logic
+        :param es_flag_reset:	Reset value for es_flag flipflop logic
 
         Output:
-        :p_desired_kw:	Desired output active power considering DER enter service performance
+        
+        :param p_desired_kw:	Desired output active power considering DER enter service performance
         """
         # Eq 29, input available power
         if der_status:

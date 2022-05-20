@@ -1,17 +1,15 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 # -*- coding: utf-8 -*-
@@ -24,8 +22,8 @@ from .low_pass_filter import LowPassFilter
 
 class VoltWatt:
     """
-    Voltage – Active Power (Volt-watt) Function
-    EPRI Report Reference: Section 3.6.1 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  Voltage – Active Power (Volt-watt) Function
+    |  EPRI Report Reference: Section 3.6.1 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
     def __init__(self):
@@ -36,18 +34,21 @@ class VoltWatt:
         Calculate active power limits by volt-watt function in per unit
 
         Variable used in this function:
-        :v_meas_pu:	Applicable voltage for volt-var and volt-watt calculation
-        :pv_curve_p1_exec:	Volt-watt Curve Point P1 Setting (PV_CURVE_P1) signal after execution delay
-        :pv_curve_v1_exec:	Volt-watt Curve Point V1 Setting (PV_CURVE_V1) signal after execution delay
-        :pv_curve_p2_exec:	Volt-watt Curve Point P2 Setting (PV_CURVE_P2) signal after execution delay
-        :pv_curve_v2_exec:	Volt-watt Curve Point V2 Setting (PV_CURVE_V2) signal after execution delay
-        :pv_olrt_exec:	Volt-watt open loop response time setting (PV_OLRT) signal after execution delay
+        
+        :param v_meas_pu:	Applicable voltage for volt-var and volt-watt calculation
+        :param pv_curve_p1_exec:	Volt-watt Curve Point P1 Setting (PV_CURVE_P1) signal after execution delay
+        :param pv_curve_v1_exec:	Volt-watt Curve Point V1 Setting (PV_CURVE_V1) signal after execution delay
+        :param pv_curve_p2_exec:	Volt-watt Curve Point P2 Setting (PV_CURVE_P2) signal after execution delay
+        :param pv_curve_v2_exec:	Volt-watt Curve Point V2 Setting (PV_CURVE_V2) signal after execution delay
+        :param pv_olrt_exec:	Volt-watt open loop response time setting (PV_OLRT) signal after execution delay
 
         Internal variable:
-        :p_pv_limit_ref_pu:	Volt-watt power limit reference before open loop response time
+        
+        :param p_pv_limit_ref_pu:	Volt-watt power limit reference before open loop response time
 
         Output:
-        :p_pv_limit_pu:	Volt-watt power limit
+        
+        :param p_pv_limit_pu:	Volt-watt power limit
         """
         
         #Eq 19, calculate active power limit according to volt-watt curve

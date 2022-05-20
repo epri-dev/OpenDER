@@ -1,17 +1,15 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 
 # -*- coding: utf-8 -*-
@@ -26,8 +24,8 @@ from . import constant_power_factor
 
 class DesiredReactivePower:
     """
-    Desired Reactive Power Calculation
-    EPRI Report Reference: Section 3.8 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  Desired Reactive Power Calculation
+    |  EPRI Report Reference: Section 3.8 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     
     def __init__(self):
@@ -82,23 +80,26 @@ class DesiredReactivePower:
         Calculate Desired reactive power considering the transition requirements defined by IEEE 1547-2018
 
         Other variables used in this function:
-        :const_pf_mode_enable_exec:	Constant Power Factor Mode Enable (CONST_PF_MODE_ENABLE) after execution delay
-        :qv_mode_enable_exec:	Voltage-Reactive Power Mode Enable (QV_MODE_ENABLE) after execution delay
-        :qp_mode_enable_exec:	Active Power Reactive Power Mode Enable (QP_MODE_ENABLE) after execution delay
-        :const_q_mode_enable_exec:	Constant Reactive Power Mode Enable (CONST_Q_MODE_ENABLE) after execution delay
-        :der_status:	Status of DER (ON or OFF)
-        :NP_VA_MAX:	Apparent power maximum rating
-        :P_MODE_TRANSITION_TIME:	Time for DER to smoothly transition between reactive power support modes
+        
+        :param const_pf_mode_enable_exec:	Constant Power Factor Mode Enable (CONST_PF_MODE_ENABLE) after execution delay
+        :param qv_mode_enable_exec:	Voltage-Reactive Power Mode Enable (QV_MODE_ENABLE) after execution delay
+        :param qp_mode_enable_exec:	Active Power Reactive Power Mode Enable (QP_MODE_ENABLE) after execution delay
+        :param const_q_mode_enable_exec:	Constant Reactive Power Mode Enable (CONST_Q_MODE_ENABLE) after execution delay
+        :param der_status:	Status of DER (ON or OFF)
+        :param NP_VA_MAX:	Apparent power maximum rating
+        :param P_MODE_TRANSITION_TIME:	Time for DER to smoothly transition between reactive power support modes
 
         Internal variables:
-        :q_desired_ref_kvar:	Desired output reactive power reference from reactive power support functions before ramp rate limit for mode transitions
-        :q_desired_ramp_kvar:	Desired output reactive power reference from reactive power support functions after ramp rate limit for mode transitions
-        :q_mode_ramp_flag:	Flag to determine pass through ramp rate limited reactive power during mode transition or not ramp rate limited value
-        :q_mode_ramp_flag_set:	Set value to create flipflop logic of variable q_mode_ramp_flag
-        :q_mode_ramp_flag_reset:	Reset value to create flipflop logic of variable q_mode_ramp_flag
+        
+        :param q_desired_ref_kvar:	Desired output reactive power reference from reactive power support functions before ramp rate limit for mode transitions
+        :param q_desired_ramp_kvar:	Desired output reactive power reference from reactive power support functions after ramp rate limit for mode transitions
+        :param q_mode_ramp_flag:	Flag to determine pass through ramp rate limited reactive power during mode transition or not ramp rate limited value
+        :param q_mode_ramp_flag_set:	Set value to create flipflop logic of variable q_mode_ramp_flag
+        :param q_mode_ramp_flag_reset:	Reset value to create flipflop logic of variable q_mode_ramp_flag
 
         Output:
-        :q_desired_kvar:	Desired output reactive power from reactive power support functions
+        
+        :param q_desired_kvar:	Desired output reactive power from reactive power support functions
         """
 
         #Eq. 51, calculate desired reactive power reference, without smooth mode transition

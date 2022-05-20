@@ -1,23 +1,22 @@
-"""
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met: 
-· Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-· Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-· Neither the name of the EPRI nor the names of its contributors may be used 
-  to endorse or promote products derived from this software without specific
-  prior written permission.
-"""
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met: 
+# · Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# · Redistributions in binary form must reproduce the above copyright notice, 
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# · Neither the name of the EPRI nor the names of its contributors may be used 
+#   to endorse or promote products derived from this software without specific
+#   prior written permission.
 
 from .ramping import Ramping
 
 class ActivePowerLimit:
     """
     Active Power Limit Function
+
     EPRI Report Reference: Section 3.6.2 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     def __init__(self):
@@ -28,14 +27,13 @@ class ActivePowerLimit:
         Calculates and returns output active power limit in per unit
 
         Variable used in this function:
-        :ap_limit_exec: Active power limit (AP_LIMIT) signal after execution delay
-        :AP_RT:	Active power limit response time
 
-        Output:
-        :ap_limit_pu:	Active power limit
+        :param  ap_limit_exec:  Active power limit (AP_LIMIT) signal after execution delay
+        :param AP_RT:	Active power limit response time
+
+        |  Output:
+        :param ap_limit_pu:	Active power limit
         """
-
-
 
         '''
         Eq:21, The final power limitation is subjected to the response time. In this model a ramp rate limit

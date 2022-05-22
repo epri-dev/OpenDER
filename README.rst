@@ -7,6 +7,12 @@ required by the IEEE standard 1547-2018TM. This model can be used to run snapsho
 and a variety of dynamic analyses to study the impacts of DERs on distribution operation and planning.
 
 
+|GitHub license|
+
+.. |GitHub license| image:: https://img.shields.io/badge/License-BSD_3--Clause-blue.svg
+   :target: https://github.com/epri-dev/opender/blob/master/LICENSE.txt
+
+
 Resources
 ---------
 OpenDER is under active development. Use the following resources to get involved.

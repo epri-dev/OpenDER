@@ -98,9 +98,9 @@ class DER:
                 v_base = self.der_file.NP_AC_V_NOM / np.sqrt(3)
                 if type(v_pu) is float or type(v_pu) is int:
                     v_pu = [v_pu * v_base, v_pu * v_base, v_pu * v_base]
-                self.der_input.v_a = v_pu[0]
-                self.der_input.v_b = v_pu[1]
-                self.der_input.v_c = v_pu[2]
+                self.der_input.v_a = v_pu[0] * self.der_file.NP_AC_V_NOM * 0.5773502691896257
+                self.der_input.v_b = v_pu[1] * self.der_file.NP_AC_V_NOM * 0.5773502691896257
+                self.der_input.v_c = v_pu[2] * self.der_file.NP_AC_V_NOM * 0.5773502691896257
 
             if self.der_file.NP_PHASE == "SINGLE":
                 self.der_input.v = v_pu * self.der_file.NP_AC_V_NOM

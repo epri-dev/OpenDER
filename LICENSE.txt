@@ -1,22 +1,16 @@
 Copyright © 2022 Electric Power Research Institute, Inc. All Rights Reserved.
 
- Redistribution and use in source and binary forms, with or without modification,
- are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
-     * Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-     * Redistributions in binary form must reproduce the above copyright notice,
-       this list of conditions and the following disclaimer in the documentation
-       and/or other materials provided with the distribution.
-     * Neither the name of StorageVET nor the names of its contributors
-       may be used to endorse or promote products derived from this software
-       without specific prior written permission.
-
-Developed by:
-Jithendar Anandan, Yiwei Ma, Wei Ren and Paulo Radatz
-Electric Power Research Institute (EPRI)                                             
-3420 Hillview Ave.                                           
-Palo Alto, CA 94304  
+ * Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+ * Neither the name of OpenDER nor the names of its contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
 
 Permission to use, copy, modify, and distribute this software for any purpose with or without fee is hereby granted,
 provided that the above copyright notice and this permission notice appear in all copies.

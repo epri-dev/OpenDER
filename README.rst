@@ -3,9 +3,10 @@ Open-source Distributed Energy Resources (OpenDER) Model
 EPRI's OpenDER model aims to properly represent steady-state and dynamic behavior of DERs The model follows
 interconnection standards or grid-codes and are informed by the observed behavior of commercial products.
 The first version models photovoltaic (PV) DER behavior according to the capabilities and functionalities
-required by the IEEE standard 1547-2018TM. This model can be used to run snapshot, Quasi-Static Time Series (QSTS),
+required by the IEEE standard 1547-2018 :superscript:`TM` . This model can be used to run snapshot, Quasi-Static Time Series (QSTS),
 and a variety of dynamic analyses to study the impacts of DERs on distribution operation and planning.
 
+This project is licensed under the terms of the BSD-3 clause license.
 
 |GitHub license|
 
@@ -22,8 +23,7 @@ OpenDER is under active development. Use the following resources to get involved
 
 * EPRI OpenDER page (`link <https://www.epri.com/pages/sa/opender>`_ to be available)
 
-* Readthedocs documentations (`link <https://opender.readthedocs.io/>`_ to be available)
-.. TODO update website address!!
+* Readthedocs documentations (`link <https://opender.readthedocs.io/>`_)
 
 Development Objective
 ---------------------
@@ -38,7 +38,7 @@ Development Objective
 
 Overall Block Diagram
 ---------------------
-.. figure:: docs/blockdiagram.png
+.. figure:: https://github.com/epri-dev/OpenDER/blob/main/docs/blockdiagram.png
     :width: 900
 
 Dependencies

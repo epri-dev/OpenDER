@@ -98,6 +98,9 @@ class DER:
                 v_base = self.der_file.NP_AC_V_NOM / np.sqrt(3)
                 if type(v_pu) is float or type(v_pu) is int:
                     v_pu = [v_pu * v_base, v_pu * v_base, v_pu * v_base]
+                else:
+                    v_pu = [v_pu[0] * v_base, v_pu[1] * v_base, v_pu[2] * v_base]
+
                 self.der_input.v_a = v_pu[0]
                 self.der_input.v_b = v_pu[1]
                 self.der_input.v_c = v_pu[2]

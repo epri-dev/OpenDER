@@ -43,6 +43,7 @@ class DesiredReactivePower:
         self.q_const_q_desired_kvar = None      # Output reactive power from constant reactive power function
         self.q_const_pf_desired_kvar = None     # Output reactive power from constant power factor function
 
+        self.q_mode_ramp_flag = 0
 
         self.constpf = constant_power_factor.ConstantPowerFactor()
         self.constq = constant_vars.ConstantVARs()
@@ -114,16 +115,19 @@ class DesiredReactivePower:
         else:
             q_desired_ref_kvar = 0
 
-            
-        #Eq 52, apply the ramp rate limit
-        q_desired_ramp_kvar = der_file.NP_VA_MAX * self.desired_kvar_ramp.ramp(q_desired_ref_kvar/der_file.NP_VA_MAX, der_file.NP_MODE_TRANSITION_TIME, der_file.NP_MODE_TRANSITION_TIME)
-
         #Eq 53, the ramp rate limit only applies when there is a mode change.
         if(exec_delay.const_pf_mode_enable_exec != self.const_pf_mode_enable_exec_prev or exec_delay.qv_mode_enable_exec != self.qv_mode_enable_exec_prev or
                                            exec_delay.qp_mode_enable_exec != self.qp_mode_enable_exec_prev or exec_delay.const_q_mode_enable_exec != self.const_q_mode_enable_exec_prev):
             q_mode_ramp_flag_set = 1
         else:
             q_mode_ramp_flag_set = 0
+
+        #Eq 52, apply the ramp rate limit
+        #TODO reflect code change to the model specification
+        if q_mode_ramp_flag_set or self.q_mode_ramp_flag == 1:
+            q_desired_ramp_kvar = der_file.NP_VA_MAX * self.desired_kvar_ramp.ramp(q_desired_ref_kvar/der_file.NP_VA_MAX, der_file.NP_MODE_TRANSITION_TIME, der_file.NP_MODE_TRANSITION_TIME)
+        else:
+            q_desired_ramp_kvar = der_file.NP_VA_MAX * self.desired_kvar_ramp.ramp(q_desired_ref_kvar/der_file.NP_VA_MAX, 0, 0)
 
         #Eq 54, the ramp rate limit stops to apply when the mode transition is completed (value before and after ramp rate limit is the same
         if(q_desired_ref_kvar == q_desired_ramp_kvar) or (der_status == 0):
@@ -132,10 +136,10 @@ class DesiredReactivePower:
             q_mode_ramp_flag_reset = 0
 
         #Eq 55, apply the flipflop logic to decide if in mode transition
-        q_mode_ramp_flag = self.desired_kvar_ff.flipflop(q_mode_ramp_flag_set, q_mode_ramp_flag_reset)
+        self.q_mode_ramp_flag = self.desired_kvar_ff.flipflop(q_mode_ramp_flag_set, q_mode_ramp_flag_reset)
 
         #Eq 56, if in mode transition, pass ramp rate limited value as output. If not, pass original value.
-        if(q_mode_ramp_flag == 1):
+        if(self.q_mode_ramp_flag == 1):
             q_desired_kvar = q_desired_ramp_kvar
         else:
             q_desired_kvar = q_desired_ref_kvar

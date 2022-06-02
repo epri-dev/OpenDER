@@ -455,6 +455,7 @@ class DERCommonFileFormat:
         # Validity Check for Nameplate Parameters
         # Reference: Section 3.1 in Report #3002021694: IEEE 1547-2018 DER Model
 
+        # TODO move some of the checks to setters and getters
         try:
             # Reference: Table 3-1 in Report #3002021694: IEEE 1547-2018 DER Model
             if(self.NP_P_MAX <= 0 or self.NP_P_MAX > self.NP_VA_MAX):

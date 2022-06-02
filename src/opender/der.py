@@ -167,7 +167,7 @@ class DER:
     def __str__(self):
         # for debug, generate a string
         # E.g. can be used when print(DER_obj)
-        return f"{self.time:.1f}: {self.name} - v_meas_pu={self.der_input.v_meas_pu:.2f}, " \
+        return f"{self.time:.1f}: {self.name} - v_meas_pu={self.der_input.v_meas_pu:.5f}, " \
                f"p_act_supp_kw={self.p_act_supp_kw:.2f}, q_desired_kvar={self.q_desired_kvar:.2f}, " \
                f"p_out_kw={self.p_out_kw:.2f}, q_out_kvar={self.q_out_kvar:.2f}"
 

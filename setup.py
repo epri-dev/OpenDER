@@ -66,10 +66,12 @@ setup(
         'Topic :: Utilities',
     ],
     project_urls={
-        # 'Documentation': 'https://py_dss_interface.readthedocs.io/', #TODO change
+
         # 'Changelog': 'https://py_dss_interface.readthedocs.io/en/latest/changelog.html', #TODO change
         # 'Issue Tracker': 'https://github.com/PauloRadatz/py_dss_interface/issues', #TODO change
+        'Homepage': 'https://www.epri.com/OpenDER',
         'Model Specification': 'https://www.epri.com/research/products/000000003002021694'
+        # 'Documentation': 'https://py_dss_interface.readthedocs.io/', #TODO change
     },
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',

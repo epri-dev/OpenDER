@@ -1,13 +1,12 @@
 .. figure:: https://raw.githubusercontent.com/epri-dev/OpenDER/develop/docs/logo.png
-    :width: 900
     :alt: Open-source Distributed Energy Resources (OpenDER) Model
 
-EPRI’s OpenDER model aims to properly represent steady-state and dynamic behavior of distributed energy resources
-(DERs). The model follows interconnection standards or grid-codes and is informed by the observed behavior of
-commercial products. Version 1.0 of the model assesses photovoltaic (PV) DER behavior according to the capabilities
-and functionalities required by the IEEE standard 1547-2018. This first-of-its-kind model can be used to run snapshot,
-Quasi-Static Time Series (QSTS), and a variety of dynamic analyses to study the impacts of DERs on distribution
-operations and planning.
+EPRI’s OpenDER model aims to accurately represent steady-state and dynamic behaviors of inverter-based distributed
+energy resources (DERs). The model follows interconnection standards or grid-codes and is informed by the observed
+behaviors of commercial products. First version of the model includes photovoltaic (PV) DER behaviors according to
+the capabilities and functionalities required by the IEEE standard 1547-2018. This first-of-its-kind model can be
+used to run snapshot, Quasi-Static Time Series (QSTS), and a variety of dynamic analyses to study the impacts of DERs
+on distribution operations and planning.
 
 This project is licensed under the terms of the BSD-3 clause license.
 
@@ -19,23 +18,23 @@ Resources
 ---------
 OpenDER is under active development. Use the following resources to get involved.
 
+* EPRI OpenDER homepage (`link <https://www.epri.com/OpenDER>`__)
+
 * Model specification: IEEE 1547-2018 DER Model: Version 1.0, EPRI, Palo Alto, CA: 2021. 3002021694
   (`link <https://www.epri.com/research/products/000000003002021694>`__)
-
-* EPRI OpenDER page (`link <https://www.epri.com/pages/sa/opender>`__ to be available)
 
 * Readthedocs documentations (`link <https://opender.readthedocs.io/>`__)
 
 Development Objective
 ---------------------
-* Harmonize accurate interpretations of the IEEE Std 1547-2018 DER interconnection standard among stakeholders,
+* Harmonize accurate interpretations of the IEEE Std 1547-2018 DER interconnection standard among all the stakeholders,
   including utilities, distribution analysis tool developers, and original equipment manufacturers (OEMs).
 
-* Build consensus through an open-to-all DER Model User’s Group (DERMUG), which will utilize developed model
+* Build consensus through an open-to-all DER Model User’s Group (DERMUG), which will utilize EPRI developed model
   specifications and codes and provide feedback for continuous improvement of the OpenDER model.
 
-* Help the industry properly model the DERs that are (or to be) grid interconnected and evaluate the associated
-  impacts on distribution circuits.
+* Help the industry properly model the DERs that are (or to be) grid interconnected and evaluate the associated impacts
+  on distribution circuits accurately.
 
 Overall Block Diagram
 ---------------------

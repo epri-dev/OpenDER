@@ -1,5 +1,7 @@
-Open-source Distributed Energy Resources (OpenDER) Model
-========================================================
+.. figure:: https://raw.githubusercontent.com/epri-dev/OpenDER/develop/docs/logo.png
+    :width: 900
+    :alt: Open-source Distributed Energy Resources (OpenDER) Model
+
 EPRI’s OpenDER model aims to properly represent steady-state and dynamic behavior of distributed energy resources
 (DERs). The model follows interconnection standards or grid-codes and is informed by the observed behavior of
 commercial products. Version 1.0 of the model assesses photovoltaic (PV) DER behavior according to the capabilities
@@ -9,11 +11,9 @@ operations and planning.
 
 This project is licensed under the terms of the BSD-3 clause license.
 
-|GitHub license|
 
 .. |GitHub license| image:: https://img.shields.io/badge/License-BSD_3--Clause-blue.svg
    :target: https://github.com/epri-dev/opender/blob/master/LICENSE.txt
-
 
 Resources
 ---------

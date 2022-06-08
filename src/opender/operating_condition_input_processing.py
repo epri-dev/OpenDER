@@ -138,8 +138,9 @@ class DERInputs:
                 raise ValueError("ValueError: check failed for v")
 
             if(der_file.NP_PHASE == "THREE"):
-                if(self.v_a < 0 or self.v_b < 0 or self.v_c < 0):
-                    raise ValueError("ValueError: check failed for v_a, v_b_, v_c")
+                if(self.v_a < 0 or self.v_b < 0 or self.v_c < 0
+                        or self.v_a != self.v_a or self.v_b != self.v_b or self.v_c != self.v_c):
+                    raise ValueError("ValueError: check failed for v_a, v_b, v_c")
 
         except ValueError as err:
             print("Operating conditions validity check failed", err)

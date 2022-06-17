@@ -11,8 +11,6 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-
-
 # -*- coding: utf-8 -*-
 
 # Created on Mon Sep 20 15:22:44 2021
@@ -28,8 +26,10 @@ from . import enter_service_and_trip
 from . import enter_service_perf
 from . import capability_and_priority
 from . import operating_condition_input_processing as ocip
-import numpy as np
 from . import setting_execution_delay
+from typing import Union, List, Tuple
+import numpy as np
+
 
 
 class DER:
@@ -69,10 +69,18 @@ class DER:
         self.activepowerfunc = active_power_support_functions.ActivePowerSupportFunctions()
         self.der_input = ocip.DERInputs()
 
-    def update_der_input(self, p_dc_kw=None, v=None, theta=None, f=None, v_pu=None, p_dc_pu=None):
+    def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
+                         f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None) -> None:
         """
         Update DER inputs
+        :param p_dc_kw:	Available DC power in kW
+        :param p_dc_pu:	Available DC power in per unit
+        :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
+        :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
+        :param theta: DER RPA voltage angles
+        :param f: DER RPA frequency
         """
+
         if p_dc_kw is not None:
             self.der_input.p_dc_kw = p_dc_kw
 
@@ -113,8 +121,7 @@ class DER:
             self.der_input.theta_b = theta[1]
             self.der_input.theta_c = theta[2]
 
-
-    def run(self):
+    def run(self) -> Tuple[float, float]:
         """
         Main calculation loop.
         Call this function once for power flow analysis, or call this function in each simulation time step in dynamic

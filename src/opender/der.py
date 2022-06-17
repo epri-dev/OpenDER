@@ -78,7 +78,7 @@ class DER:
         :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
         :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
         :param theta: DER RPA voltage angles
-        :param f: DER RPA frequency
+        :param f: DER RPA frequency in Hertz
         """
 
         if p_dc_kw is not None:

@@ -1,6 +1,9 @@
 
 Changelog
 =========
+1.0.1 (2022-06-17)
+-----------------
+* Include parameter csv files into the PyPI release
 
 1.0.0 (2022-05-17)
 ------------------

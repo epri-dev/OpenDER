@@ -24,6 +24,7 @@ import pandas as pd
 import numpy as np
 import pathlib
 import os
+import logging
 
 class DERCommonFileFormat:
 
@@ -49,6 +50,11 @@ class DERCommonFileFormat:
  
     def __init__(self, as_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("Parameters", "AS-with std-values.csv"),
                     model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("Parameters", "Model-parameters.csv")):
+        """
+        Creating a DER common file format object
+        :param as_file_path: File directory address for Common file format Applied Setting file.
+        :param model_file_path: File directory address for Model custom parameter file.
+        """
 
         #Read -AS DER file
         df1 = pd.read_csv(as_file_path, index_col=0)
@@ -455,7 +461,7 @@ class DERCommonFileFormat:
         # Validity Check for Nameplate Parameters
         # Reference: Section 3.1 in Report #3002021694: IEEE 1547-2018 DER Model
 
-        # TODO move some of the checks to setters and getters
+        # TODO move some of the checks to setters
         try:
             # Reference: Table 3-1 in Report #3002021694: IEEE 1547-2018 DER Model
             if(self.NP_P_MAX <= 0 or self.NP_P_MAX > self.NP_VA_MAX):

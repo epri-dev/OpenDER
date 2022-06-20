@@ -36,12 +36,16 @@ class DER:
     # Global Variables
     t_s = 100000        # Simulation time step, default for snapshot analysis
 
-    def __init__(self, file_ss_obj=None):
+    def __init__(self, der_file_obj=None):
+        """
+        Creating a DER Object
+        :param der_file_obj: DER common file format object created from common_file_format.py
+        """
 
-        if file_ss_obj is None:
-            file_ss_obj = common_file_format.DERCommonFileFormat()
+        if der_file_obj is None:
+            der_file_obj = common_file_format.DERCommonFileFormat()
 
-        self.der_file = file_ss_obj
+        self.der_file = der_file_obj
         self.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
         self.der_file.model_inputs_validity_check()
         self.time = 0       # Elapsed time from start of simulation

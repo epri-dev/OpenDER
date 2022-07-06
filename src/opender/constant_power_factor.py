@@ -33,7 +33,7 @@ class ConstantPowerFactor:
         Calculates and returns output reactive power from Constant Power Factor function
 
         Variable used in this function:
-        
+
         :param p_desired_kw:  Desired output active power considering DER enter service performance
         :param const_pf_exec:  Constant Power Factor Setting (CONST_PF) after execution delay
         :param const_pf_excitation_exec:  Constant Power Factor Excitation (CONST_PF_EXCITATION) after execution delay
@@ -48,13 +48,16 @@ class ConstantPowerFactor:
         :param q_const_pf_desired_kvar:	Output reactive power from constant power factor function
         """
 
-        #Eq. 35, calculate reactive power reference according to desired active power and constant power factor setting
-        if(exec_delay.const_pf_excitation_exec == "INJ"):
-            q_const_pf_desired_ref_kvar = p_desired_kw * (math.sqrt(1 - (exec_delay.const_pf_exec * exec_delay.const_pf_exec))/exec_delay.const_pf_exec)
-
-        if(exec_delay.const_pf_excitation_exec == "ABS"):
-            q_const_pf_desired_ref_kvar = p_desired_kw * (math.sqrt(1 - (exec_delay.const_pf_exec * exec_delay.const_pf_exec))/exec_delay.const_pf_exec)
-            q_const_pf_desired_ref_kvar = -q_const_pf_desired_ref_kvar
+        # Eq. 35, calculate reactive power reference according to desired active power and constant power factor setting
+        if exec_delay.const_pf_excitation_exec == "INJ":
+            q_const_pf_desired_ref_kvar = p_desired_kw * \
+                                          (math.sqrt(1 - (exec_delay.const_pf_exec ** 2))/exec_delay.const_pf_exec)
+        elif exec_delay.const_pf_excitation_exec == "ABS":
+            q_const_pf_desired_ref_kvar = -p_desired_kw * \
+                                          (math.sqrt(1 - (exec_delay.const_pf_exec ** 2))/exec_delay.const_pf_exec)
+        else:
+            print(f'CONST_PF_EXCITATION value unexpected:{exec_delay.const_pf_excitation_exec}')
+            q_const_pf_desired_ref_kvar = 0
 
         '''
         Eq. 36, apply the low pass filter to the reference reactive power. Note that there can be multiple different 

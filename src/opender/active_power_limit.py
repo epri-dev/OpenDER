@@ -13,6 +13,7 @@
 
 from .ramping import Ramping
 
+
 class ActivePowerLimit:
     """
     Active Power Limit Function
@@ -22,13 +23,13 @@ class ActivePowerLimit:
     def __init__(self):
         self.ap_limit_ramp = Ramping()
 
-    def calculate_ap_limit_pu(self, der_file, exec_delay, p_out_kw):
+    def calculate_ap_limit_pu(self, der_file, exec_delay):
         """
         Calculates and returns output active power limit in per unit
 
         Variable used in this function:
 
-        :param  ap_limit_exec:  Active power limit (AP_LIMIT) signal after execution delay
+        :param ap_limit_exec:  Active power limit (AP_LIMIT) signal after execution delay
         :param AP_RT:	Active power limit response time
 
         |  Output:

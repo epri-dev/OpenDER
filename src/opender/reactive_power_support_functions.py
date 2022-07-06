@@ -53,7 +53,7 @@ class DesiredReactivePower:
         self.desired_kvar_ff = FlipFlop(0)
 
 
-    def calculate_desired_reactive_power(self, der_file, exec_delay, der_input, p_desired_kw, der_status):
+    def calculate_reactive_funcs(self, der_file, exec_delay, der_input, p_desired_kw, der_status):
         """
         Calculate desired reactive power for all 4 reactive power control modes defined in IEEE 1547-2018
         """

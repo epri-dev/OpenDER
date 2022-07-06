@@ -68,9 +68,9 @@ class DER:
         self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
         self.enterserviceperf = enter_service_perf.EnterServicePerformance()
         self.reactivepowerfunc = reactive_power_support_functions.DesiredReactivePower()
-        self.limited_p_q = capability_and_priority.Capability_and_Priority()
+        self.limited_p_q = capability_and_priority.CapabilityPriority()
         self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = active_power_support_functions.ActivePowerSupportFunctions()
+        self.activepowerfunc = active_power_support_functions.DesiredActivePower()
         self.der_input = ocip.DERInputs()
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
@@ -151,7 +151,7 @@ class DER:
         self.p_desired_kw = self.enterserviceperf.es_performance(self.der_file, self.executiondelay, self.p_act_supp_kw, self.der_status)
 
         # Calculate desired reactive power
-        self.q_desired_kvar = self.reactivepowerfunc.calculate_desired_reactive_power(self.der_file, self.executiondelay, self.der_input, self.p_desired_kw, self.der_status)
+        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.der_file, self.executiondelay, self.der_input, self.p_desired_kw, self.der_status)
 
         # Limit DER output based on kVA rating and DER capability curve
         self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.der_file, self.executiondelay, p_desired_kw=self.p_desired_kw,q_desired_kvar=self.q_desired_kvar)
@@ -168,9 +168,9 @@ class DER:
         self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
         self.enterserviceperf = enter_service_perf.EnterServicePerformance()
         self.reactivepowerfunc = reactive_power_support_functions.DesiredReactivePower()
-        self.limited_p_q = capability_and_priority.Capability_and_Priority()
+        self.limited_p_q = capability_and_priority.CapabilityPriority()
         self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = active_power_support_functions.ActivePowerSupportFunctions()
+        self.activepowerfunc = active_power_support_functions.DesiredActivePower()
 
         self.p_out_kw = None
         self.q_out_kvar = None

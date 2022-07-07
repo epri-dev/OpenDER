@@ -59,11 +59,9 @@ class ConstantPowerFactor:
             print(f'CONST_PF_EXCITATION value unexpected:{exec_delay.const_pf_excitation_exec}')
             q_const_pf_desired_ref_kvar = 0
 
-        '''
-        Eq. 36, apply the low pass filter to the reference reactive power. Note that there can be multiple different 
-        ways to implement this behavior in an actual DER. The model may be updated in a future version, according to the
-        lab test results.
-        '''
+        # Eq. 36, apply the low pass filter to the reference reactive power. Note that there can be multiple different
+        # ways to implement this behavior in an actual DER. The model may be updated in a future version, according to
+        # the lab test results.
         q_const_pf_desired_kvar = self.pf_lpf.low_pass_filter(q_const_pf_desired_ref_kvar, der_file.CONST_PF_RT)
 
         return q_const_pf_desired_kvar

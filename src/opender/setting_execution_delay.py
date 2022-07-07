@@ -63,7 +63,6 @@ class SettingExecutionDelay:
         self.pf_kof_exec = None
         self.pf_olrt_exec = None
 
-
         self.const_pf_exec = None
         self.const_pf_excitation_exec = None
         self.const_pf_mode_enable_exec = None
@@ -76,7 +75,6 @@ class SettingExecutionDelay:
         self.qv_vref_exec = None
         self.qv_vref_time_exec = None
         self.qv_mode_enable_exec = None
-
 
         self.qv_curve_v1_exec = None
         self.qv_curve_v2_exec = None
@@ -95,7 +93,6 @@ class SettingExecutionDelay:
         self.qp_curve_q2_gen_exec = None
         self.qp_curve_q3_gen_exec = None
         self.qp_mode_enable_exec = None
-
 
         self.es_v_low_exec = None
         self.es_v_high_exec = None
@@ -120,7 +117,6 @@ class SettingExecutionDelay:
         self.of2_trip_t_exec = None
         self.es_randomized_delay_exec = None
         self.es_ramp_rate_exec = None
-
 
     def mode_and_execution_delay(self,der_file):
         

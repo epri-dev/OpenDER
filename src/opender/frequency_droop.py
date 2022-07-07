@@ -12,9 +12,6 @@
 #   prior written permission.
 
 
-
-# -*- coding: utf-8 -*-
-
 from .low_pass_filter import LowPassFilter
 from .flipflop import FlipFlop
 
@@ -77,7 +74,7 @@ class FreqDroop:
         :param p_pf_pu	Output active power from frequency-droop function
         """
 
-        #Eq. 22, detect if in under-frequency or over-frequency condition
+        # Eq. 22, detect if in under-frequency or over-frequency condition
         if(der_input.freq_hz < (60 - exec_delay.pf_dbuf_exec)) and der_file.PF_MODE_ENABLE:
             self.pf_uf = 1
         else:
@@ -88,13 +85,13 @@ class FreqDroop:
         else:
             self.pf_of = 0
 
-        #Initialize internal state variables for under- and over-frequency condition detection
+        # Initialize internal state variables for under- and over-frequency condition detection
         if(self.pf_uf_prev is None):
             self.pf_uf_prev = self.pf_uf
         if(self.pf_of_prev is None):
             self.pf_of_prev = self.pf_of
 
-        #Initialize internal state variables of DER output in previous time step
+        # Initialize internal state variables of DER output in previous time step
         if(self.p_out_kw_prev is None):
             self.p_out_kw_prev = min((der_input.p_dc_pu * der_file.NP_P_MAX * der_file.NP_EFFICIENCY),
                                      (ap_limit_pu*der_file.NP_P_MAX),
@@ -102,11 +99,11 @@ class FreqDroop:
         else:
             self.p_out_kw_prev = p_out_kw
 
-        #Initalize internal state variables of pre-disturbance active power output
+        # Initialize internal state variables of pre-disturbance active power output
         if(self.p_pf_pre_pu_prev is None):
             self.p_pf_pre_pu_prev = min((der_input.p_dc_pu * der_file.NP_EFFICIENCY),ap_limit_pu,p_pv_limit_pu)
 
-        #Eq 23, calculate pre-disturbance active power output
+        # Eq. 23, calculate pre-disturbance active power output
         p_pf_pre_pu_temp = self.p_out_kw_prev / der_file.NP_P_MAX
         if(self.pf_uf == 1 and self.pf_uf_prev ==1):
             p_pf_pre_pu = self.p_pf_pre_pu_prev
@@ -115,8 +112,7 @@ class FreqDroop:
         else:
             p_pf_pre_pu = p_pf_pre_pu_temp
 
-
-        #Eq 24, calculate active power reference according to frequency-droop
+        # Eq. 24, calculate active power reference according to frequency-droop
         p_pf_of_pu = p_pf_pre_pu - ((der_input.freq_hz - (60 + exec_delay.pf_dbof_exec)) / (60 * exec_delay.pf_kof_exec))
         p_pf_of_pu = max(p_pf_of_pu, der_file.NP_P_MIN_PU)
         
@@ -130,16 +126,15 @@ class FreqDroop:
         else:
             p_pf_ref_pu = min((der_input.p_dc_pu * der_file.NP_EFFICIENCY),ap_limit_pu, p_pv_limit_pu)
 
-
-        #Eq 25, apply the low pass filter
+        # Eq. 25, apply the low pass filter
         pf_olrt_appl = exec_delay.pf_olrt_exec if self.pf_uf or self.pf_of or self.pf_uf_active or self.pf_of_active else 0
         self.p_pf_pu = self.pf_lpf.low_pass_filter(p_pf_ref_pu, pf_olrt_appl)
 
-        #initialize internal state variable for the first time step of simulation
+        # Initialize internal state variable for the first time step of simulation
         if self.p_pf_pu_prev is None:
             self.p_pf_pu_prev = self.p_pf_pu
 
-        #Eq 26, decide if frequency droop function is active
+        # Eq. 26, decide if frequency droop function is active
         pf_uf_active_set = self.pf_uf and der_file.PF_MODE_ENABLE
         pf_uf_active_reset = (not pf_uf_active_set) and abs(self.p_pf_pu-p_pf_ref_pu)<1.e-2
         self.pf_uf_active = self.pf_uf_active_ff.flipflop(pf_uf_active_set, pf_uf_active_reset)
@@ -148,8 +143,7 @@ class FreqDroop:
         pf_of_active_reset = (not pf_of_active_set) and abs(self.p_pf_pu-p_pf_ref_pu)<1.e-2
         self.pf_of_active = self.pf_of_active_ff.flipflop(pf_of_active_set, pf_of_active_reset)
 
-
-        #Save the values for calculations in next time step
+        # Save the values for calculations in next time step
         self.pf_uf_prev = self.pf_uf
         self.pf_of_prev = self.pf_of
         self.p_pf_pre_pu_prev = p_pf_pre_pu

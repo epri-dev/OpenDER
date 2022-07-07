@@ -11,9 +11,6 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-
-# -*- coding: utf-8 -*-
-
 from .low_pass_filter import LowPassFilter
 
 
@@ -53,9 +50,10 @@ class WattVAR:
 
         """
 
-        #calculate desired actve power in per unit
+        # Calculate desired actve power in per unit
         p_desired_pu = p_desired_kw/der_file.NP_P_MAX
-        #Eq. 46, calculate reactive power reference in per unit according to watt-var curve
+
+        # Eq. 46, calculate reactive power reference in per unit according to watt-var curve
         if( p_desired_pu <= exec_delay.qp_curve_p1_gen_exec):
             q_qp_desired_ref_pu = exec_delay.qp_curve_q1_gen_exec
             
@@ -68,14 +66,12 @@ class WattVAR:
         if( p_desired_pu > exec_delay.qp_curve_p3_gen_exec):
             q_qp_desired_ref_pu = exec_delay.qp_curve_q3_gen_exec
 
-        #Eq. 47, calculate actual value of reactive power reference
+        # Eq. 47, calculate actual value of reactive power reference
         q_qp_desired_ref_kvar = q_qp_desired_ref_pu * der_file.NP_VA_MAX
 
+        # Eq. 48, apply the low pass filter. Note that there can be multiple different ways to implement this behavior
+        # in actual DER. The model may be updated in a future version, according to the lab test results.
 
-        '''
-        Eq. 48, apply the low pass filter. Note that there can be multiple different ways to implement this behavior 
-        in actual DER. The model may be updated in a future version, according to the lab test results.
-        '''
         q_qp_desired_kvar = self.qp_lpf.low_pass_filter(q_qp_desired_ref_kvar, der_file.QP_RT)
         
         return q_qp_desired_kvar

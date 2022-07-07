@@ -13,10 +13,10 @@
 
 # -*- coding: utf-8 -*-
 """
-
 @author: Jithendar Anandan
 @email: janandan@epri.com
 """
+
 
 class FlipFlop:
     """

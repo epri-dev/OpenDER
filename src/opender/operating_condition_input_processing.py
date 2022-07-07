@@ -12,17 +12,14 @@
 #   prior written permission.
 
 
-
-# -*- coding: utf-8 -*-
 """
 Created on Thu March 24 00:45:28 2022
-
 @author: pjan004
 """
 
 import math
 import cmath #For complex number operations
-# from functools import lru_cache
+
 
 class DERInputs:
     def __init__(self):
@@ -45,9 +42,6 @@ class DERInputs:
 
         self.p_dc_pu = None
 
-
-
-    # @lru_cache(maxsize=32)
     def operating_condition_input_processing(self, der_file):
         """
         |  Calculates the applicable voltage to be used by other modules of the DER model, as well as per-unit value of the

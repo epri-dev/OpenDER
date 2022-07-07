@@ -26,7 +26,7 @@ class FreqDroop:
     """
     
     def __init__(self):
-        self.pf_olrt = LowPassFilter()
+        self.pf_lpf = LowPassFilter()
         self.p_pf_pre_pu_prev = None
         self.p_out_kw_prev = None
         self.pf_uf_prev = None
@@ -133,7 +133,7 @@ class FreqDroop:
 
         #Eq 25, apply the low pass filter
         pf_olrt_appl = exec_delay.pf_olrt_exec if self.pf_uf or self.pf_of or self.pf_uf_active or self.pf_of_active else 0
-        self.p_pf_pu = self.pf_olrt.low_pass_filter(p_pf_ref_pu,pf_olrt_appl)
+        self.p_pf_pu = self.pf_lpf.low_pass_filter(p_pf_ref_pu, pf_olrt_appl)
 
         #initialize internal state variable for the first time step of simulation
         if self.p_pf_pu_prev is None:

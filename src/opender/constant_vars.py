@@ -25,7 +25,7 @@ class ConstantVARs:
     """
 
     def __init__(self):
-        self.const_q_olrt = LowPassFilter()
+        self.const_q_lpf = LowPassFilter()
 
     def calculate_const_q_desired_kvar(self, der_file, exec_delay):
         """
@@ -55,6 +55,6 @@ class ConstantVARs:
         ways to implement this behavior in an actual DER. The model may be updated in a future version, according 
         to the lab test results.
         '''
-        const_q_desired_kvar = self.const_q_olrt.low_pass_filter(const_q_desired_ref_kvar, der_file.CONST_Q_RT)
+        const_q_desired_kvar = self.const_q_lpf.low_pass_filter(const_q_desired_ref_kvar, der_file.CONST_Q_RT)
 
         return const_q_desired_kvar

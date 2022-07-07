@@ -27,7 +27,7 @@ class VoltWatt:
     """
 
     def __init__(self):
-        self.pv_olrt = LowPassFilter()
+        self.pv_lpf = LowPassFilter()
         
     def calculate_p_pv_limit_pu(self, der_file, exec_delay, der_input, p_out_kw):
         """
@@ -63,8 +63,8 @@ class VoltWatt:
 
         #Eq 20, apply the low pass filter
         if exec_delay.pv_mode_enable_exec:
-            p_pv_limit_pu = self.pv_olrt.low_pass_filter(p_pv_limit_ref_pu, exec_delay.pv_olrt_exec)
+            p_pv_limit_pu = self.pv_lpf.low_pass_filter(p_pv_limit_ref_pu, exec_delay.pv_olrt_exec)
         else:
-            p_pv_limit_pu = self.pv_olrt.low_pass_filter(1, 0)
+            p_pv_limit_pu = self.pv_lpf.low_pass_filter(1, 0)
 
         return p_pv_limit_pu

@@ -23,7 +23,7 @@ class VoltVAR:
     |  EPRI Report Reference: Section 3.8.2 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     def __init__(self): 
-        self.qv_olrt = LowPassFilter()
+        self.qv_lpf = LowPassFilter()
         self.qv_curve_v1_exec_prev = None   # Value of variable qv_curve_v1_exec in the previous time step (initialized by the first value of QV_CURVE_V1)
         self.qv_curve_v2_exec_prev = None   # Value of variable qv_curve_v2_exec in the previous time step (initialized by the first value of QV_CURVE_V2)
         self.qv_curve_v3_exec_prev = None   # Value of variable qv_curve_v3_exec in the previous time step (initialized by the first value of QV_CURVE_V3)
@@ -182,7 +182,7 @@ class VoltVAR:
 
 
         #Eq 45, OLRT using LPF
-        q_qv_desired_kvar = self.qv_olrt.low_pass_filter(q_qv_desired_ref_kvar, exec_delay.qv_olrt_exec)
+        q_qv_desired_kvar = self.qv_lpf.low_pass_filter(q_qv_desired_ref_kvar, exec_delay.qv_olrt_exec)
         
         #Resetting internal state variables
         self.qv_curve_v1_exec_prev = exec_delay.qv_curve_v1_exec

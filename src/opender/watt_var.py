@@ -24,7 +24,7 @@ class WattVAR:
     """
 
     def __init__(self):
-        self.qp_olrt = LowPassFilter()
+        self.qp_lpf = LowPassFilter()
         
     def calculate_q_qp_desired_kvar(self, der_file, exec_delay, p_desired_kw):
         """
@@ -76,6 +76,6 @@ class WattVAR:
         Eq. 48, apply the low pass filter. Note that there can be multiple different ways to implement this behavior 
         in actual DER. The model may be updated in a future version, according to the lab test results.
         '''
-        q_qp_desired_kvar = self.qp_olrt.low_pass_filter(q_qp_desired_ref_kvar, der_file.QP_RT)
+        q_qp_desired_kvar = self.qp_lpf.low_pass_filter(q_qp_desired_ref_kvar, der_file.QP_RT)
         
         return q_qp_desired_kvar

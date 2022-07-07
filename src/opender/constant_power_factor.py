@@ -26,7 +26,7 @@ class ConstantPowerFactor:
     """
 
     def __init__(self):
-        self.pf_olrt = LowPassFilter()
+        self.pf_lpf = LowPassFilter()
 
     def calculate_q_const_pf_desired_kvar(self,der_file, exec_delay, p_desired_kw):
         """
@@ -64,6 +64,6 @@ class ConstantPowerFactor:
         ways to implement this behavior in an actual DER. The model may be updated in a future version, according to the
         lab test results.
         '''
-        q_const_pf_desired_kvar = self.pf_olrt.low_pass_filter(q_const_pf_desired_ref_kvar, der_file.CONST_PF_RT)
+        q_const_pf_desired_kvar = self.pf_lpf.low_pass_filter(q_const_pf_desired_ref_kvar, der_file.CONST_PF_RT)
 
         return q_const_pf_desired_kvar

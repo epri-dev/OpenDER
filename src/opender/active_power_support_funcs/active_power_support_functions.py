@@ -12,9 +12,7 @@
 #   prior written permission.
 
 
-from . import active_power_limit
-from . import frequency_droop
-from . import volt_watt as vw
+from opender.active_power_support_funcs import active_power_limit, frequency_droop, volt_watt as vw
 
 
 class DesiredActivePower:

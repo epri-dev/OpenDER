@@ -11,7 +11,7 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-from .ramping import Ramping
+from opender.auxiliary_funcs.ramping import Ramping
 
 
 class ActivePowerLimit:

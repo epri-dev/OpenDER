@@ -16,7 +16,7 @@
 # -*- coding: utf-8 -*-
 
 import math
-from .low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
 
 
 class ConstantPowerFactor:

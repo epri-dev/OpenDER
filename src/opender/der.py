@@ -19,8 +19,8 @@
 # @email: janandan@epri.com
 
 from . import common_file_format
-from . import active_power_support_functions
-from . import reactive_power_support_functions
+from .active_power_support_funcs import active_power_support_functions
+from .reactive_power_support_funcs import reactive_power_support_functions
 from . import rem_ctrl
 from . import enter_service_and_trip
 from . import enter_service_perf
@@ -162,7 +162,7 @@ class DER:
 
     def reinitialize(self):
         # only used when need to reset DER model
-        self.der_status=self.der_file.STATUS_INIT
+        self.der_status = self.der_file.STATUS_INIT
         self.time = 0
         self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
         self.enterserviceperf = enter_service_perf.EnterServicePerformance()

@@ -12,7 +12,7 @@
 #   prior written permission.
 
 
-from . import der
+from opender import der
 
 
 class LowPassFilter:

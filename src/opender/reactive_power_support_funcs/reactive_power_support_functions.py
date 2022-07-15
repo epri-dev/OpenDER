@@ -14,12 +14,9 @@
 
 # -*- coding: utf-8 -*-
 
-from .ramping import Ramping
-from .flipflop import FlipFlop
-from . import volt_var
-from . import watt_var
-from . import constant_vars
-from . import constant_power_factor
+from opender.auxiliary_funcs.ramping import Ramping
+from opender.auxiliary_funcs.flipflop import FlipFlop
+from opender.reactive_power_support_funcs import volt_var, watt_var, constant_vars, constant_power_factor
 
 
 class DesiredReactivePower:

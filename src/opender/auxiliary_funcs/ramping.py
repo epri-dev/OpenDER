@@ -16,7 +16,7 @@
 @author: Jithendar Anandan
 @email: janandan@epri.com
 """
-from . import der
+from opender import der
 class Ramping:
     """
     |  Ramp rate limit function

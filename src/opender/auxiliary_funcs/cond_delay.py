@@ -11,7 +11,7 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-from . import der
+from opender import der
 
 
 class ConditionalDelay:

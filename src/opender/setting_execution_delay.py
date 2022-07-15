@@ -12,8 +12,8 @@
 #   prior written permission.
 
 
-from . import der
-from . import time_delay as td
+from .auxiliary_funcs import time_delay as td
+
 
 class SettingExecutionDelay:
     """

@@ -16,7 +16,7 @@
 @author: Jithendar Anandan
 @email: janandan@epri.com
 """
-from .low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
 
 
 class VoltWatt:

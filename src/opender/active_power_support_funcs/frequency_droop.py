@@ -12,8 +12,8 @@
 #   prior written permission.
 
 
-from .low_pass_filter import LowPassFilter
-from .flipflop import FlipFlop
+from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs.flipflop import FlipFlop
 
 
 class FreqDroop:

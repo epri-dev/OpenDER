@@ -210,6 +210,8 @@ class DERCommonFileFormat:
         if self.isNotNaN(param.NP_AC_V_NOM):
             self.NP_AC_V_NOM = param.NP_AC_V_NOM
 
+        self.nameplate_value_validity_check()
+
         if self.isNotNaN(param.P_Q_ABS_PU):
             self.P_Q_ABS_PU = param.P_Q_ABS_PU
         if self.isNotNaN(param.P_Q_INJ_PU):
@@ -458,6 +460,52 @@ class DERCommonFileFormat:
     def _get_parameter_list(self, file_info_type):
         return [f"{item}-{file_info_type}" for item in self.__class__.parameters_list]
 
+    def nameplate_value_validity_check(self):
+        """
+        Validity Check for Nameplate Parameters
+        Reference: Section 3.1, part of Table 3-1 in Report #3002021694: IEEE 1547-2018 DER Model
+        Other validity checks are performed in variable setters
+        """
+
+
+        if self._NP_VA_MAX is None:
+            raise ValueError("DER nameplate apparent power rating NP_VA_MAX needs to be defined!")
+
+        if self._NP_AC_V_NOM is None:
+            raise ValueError("DER nameplate voltage rating NP_AC_V_NOM needs to be defined!")
+
+        if self._NP_P_MAX is None:
+            logging.error("DER nameplate power rating NP_P_MAX needs to be defined! Using apparent power instead")
+            self._NP_P_MAX = self._NP_VA_MAX
+
+        if self._NP_Q_MAX_INJ is None:
+            logging.error("DER nameplate reactive power injection rating NP_Q_MAX_INJ needs to be defined! "
+                          "Using apparent power instead")
+            self._NP_Q_MAX_INJ = self._NP_VA_MAX
+
+        if self._NP_Q_MAX_ABS is None:
+            logging.error("DER nameplate reactive power absorption rating NP_Q_MAX_ABS needs to be defined!"
+                          " Using apparent power instead")
+            self._NP_Q_MAX_ABS = self._NP_VA_MAX
+
+        if self._NP_P_MAX > self._NP_VA_MAX:
+            logging.warning("Warning: Please make sure to have DER nameplate active power rating "
+                            "less than or equal to DER nameplate apparent power rating.")
+
+        if self._NP_Q_MAX_INJ < (self._NP_VA_MAX * 0.44) or self._NP_Q_MAX_INJ > self._NP_VA_MAX:
+            logging.warning("Warning: Regardless DER’s category, its nameplate reactive power injection rating"
+                            " should be greater than 44%, and less than 100% of nameplate apparent power rating.")
+
+        if self._NP_NORMAL_OP_CAT == "CAT_A":
+            if self._NP_Q_MAX_ABS < (self._NP_VA_MAX * 0.25) or self._NP_Q_MAX_ABS > self._NP_VA_MAX:
+                logging.warning("Warning: For category A DER, its nameplate reactive power absorption rating "
+                                "should be greater than 25%, and less than 100% of nameplate apparent power rating.")
+        elif self.NP_NORMAL_OP_CAT == "CAT_B":
+            if self._NP_Q_MAX_ABS < (self._NP_VA_MAX * 0.44) or self._NP_Q_MAX_ABS > self._NP_VA_MAX:
+                logging.warning("Warning: For category B DER, its nameplate reactive power absorption rating "
+                                "should be greater than 44%, and less than 100% of nameplate apparent power rating.")
+
+
     def check_enabled(self, value):
         """
         Change ENABLED and DISABLED to bool True and False.
@@ -611,10 +659,6 @@ class DERCommonFileFormat:
         if self._NP_P_MAX <= 0:
             raise ValueError("DER nameplate power NP_P_MAX should be greater than 0")
 
-        if self._NP_P_MAX > self._NP_VA_MAX:
-            logging.warning("Warning: Please make sure to have DER nameplate active power rating "
-                            "less than or equal to DER nameplate apparent power rating.")
-
     @property
     def NP_P_MAX_OVER_PF(self):
         return self._NP_P_MAX_OVER_PF
@@ -669,9 +713,8 @@ class DERCommonFileFormat:
     @NP_Q_MAX_INJ.setter
     def NP_Q_MAX_INJ(self, NP_Q_MAX_INJ):
         self._NP_Q_MAX_INJ = NP_Q_MAX_INJ
-        if self._NP_Q_MAX_INJ < (self._NP_VA_MAX * 0.44) or self._NP_Q_MAX_INJ > self._NP_VA_MAX:
-            logging.warning("Warning: Regardless DER’s category, its nameplate reactive power injection rating"
-                            " should be greater than 44%, and less than 100% of nameplate apparent power rating.")
+        if self._NP_Q_MAX_INJ <= 0:
+            raise ValueError("DER nameplate reactive power injection rating NP_Q_MAX_INJ should be greater than 0")
 
     @property
     def NP_Q_MAX_ABS(self):
@@ -680,14 +723,8 @@ class DERCommonFileFormat:
     @NP_Q_MAX_ABS.setter
     def NP_Q_MAX_ABS(self, NP_Q_MAX_ABS):
         self._NP_Q_MAX_ABS = NP_Q_MAX_ABS
-        if self._NP_NORMAL_OP_CAT == "CAT_A":
-            if self._NP_Q_MAX_ABS < (self._NP_VA_MAX * 0.25) or self._NP_Q_MAX_ABS > self._NP_VA_MAX:
-                logging.warning("Warning: For category A DER, its nameplate reactive power absorption rating "
-                                "should be greater than 25%, and less than 100% of nameplate apparent power rating.")
-        elif self.NP_NORMAL_OP_CAT == "CAT_B":
-            if self._NP_Q_MAX_ABS < (self._NP_VA_MAX * 0.44) or self._NP_Q_MAX_ABS > self._NP_VA_MAX:
-                logging.warning("Warning: For category B DER, its nameplate reactive power absorption rating "
-                                "should be greater than 44%, and less than 100% of nameplate apparent power rating.")
+        if self._NP_Q_MAX_INJ <= 0:
+            raise ValueError("DER nameplate reactive power absorption rating NP_Q_MAX_ABS should be greater than 0")
 
     @property
     def NP_P_MAX_CHARGE(self):
@@ -732,7 +769,7 @@ class DERCommonFileFormat:
         self._NP_P_MIN_PU = NP_P_MIN_PU
         if self._NP_P_MIN_PU > 1:
             logging.error("Error: DER minimum active power in per unit should be less than 1")
-        #TODO removed <0 check, need further discussion. Update in model spec document
+        #TODO removed <0 check, need further discussion. To be updated in model spec document
 
     @property
     def NP_PHASE(self):

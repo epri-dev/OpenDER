@@ -46,7 +46,7 @@ class DER:
             der_file_obj = common_file_format.DERCommonFileFormat()
 
         self.der_file = der_file_obj
-
+        self.der_file.nameplate_value_validity_check()
         self.time = 0       # Elapsed time from start of simulation
         self.name = 'DER1'  # Identification if multiple DERs are defined
         self.bus = None     # Bus which DER is connected to

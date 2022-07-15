@@ -140,7 +140,8 @@ class DERInputs:
                 raise ValueError("ValueError: check failed for v_a, v_b, v_c")
 
         if self.freq_hz is None:
-            raise ValueError("ValueError: F is not defined!")
+            logging.error("Error: F is not defined! Assuming 60Hz")
+            self.freq_hz = 60
 
         if self.p_dc_kw is None:
             raise ValueError("ValueError: p_dc_kw is not defined!")

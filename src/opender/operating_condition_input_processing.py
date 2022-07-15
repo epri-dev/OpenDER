@@ -19,7 +19,7 @@ Created on Thu March 24 00:45:28 2022
 
 import math
 import cmath #For complex number operations
-
+import logging
 
 class DERInputs:
     def __init__(self):
@@ -124,23 +124,27 @@ class DERInputs:
         # Reference: Table 3-4 in Report #3002021694: IEEE 1547-2018 DER Model
         # Should be executed every timestep
 
-        try:
-            if(self.p_dc_kw < 0):
-                raise ValueError("ValueError: check failed for p_dc_kw")
+        if der_file.NP_PHASE == "SINGLE":
+            if self.v is None:
+                raise ValueError("ValueError: V is not defined!")
+            if self.v < 0:
+                logging.error("Error: V should be greater than 0, converting it to postive")
+                self.v = -self.v
 
-            if(der_file.NP_PHASE == "SINGLE" and self.v < 0):
-                raise ValueError("ValueError: check failed for v")
+        if der_file.NP_PHASE == "THREE":
+            if self.v_a is None or self.v_b is None or self.v_c is None:
+                raise ValueError("ValueError: V is not defined!")
 
-            if(der_file.NP_PHASE == "THREE"):
-                if(self.v_a < 0 or self.v_b < 0 or self.v_c < 0
-                        or self.v_a != self.v_a or self.v_b != self.v_b or self.v_c != self.v_c):
-                    raise ValueError("ValueError: check failed for v_a, v_b, v_c")
+            if(self.v_a < 0 or self.v_b < 0 or self.v_c < 0
+                    or self.v_a != self.v_a or self.v_b != self.v_b or self.v_c != self.v_c):
+                raise ValueError("ValueError: check failed for v_a, v_b, v_c")
 
-        except ValueError as err:
-            print("Operating conditions validity check failed", err)
-            return False
+        if self.freq_hz is None:
+            raise ValueError("ValueError: F is not defined!")
 
-        return True
+        if self.p_dc_kw is None:
+            raise ValueError("ValueError: p_dc_kw is not defined!")
+
 
     def __str__(self):
         return f"v_meas_pu = {self.v_meas_pu}, v_high_pu = {self.v_high_pu}, v_low_pu = {self.v_low_pu}, freq_hz = {self.freq_hz}, p_dc_pu = {self.p_dc_pu}"

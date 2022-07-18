@@ -12,10 +12,7 @@
 #   prior written permission.
 
 
-
-# -*- coding: utf-8 -*-
-
-from .low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
 
 
 class ConstantVARs:
@@ -25,7 +22,7 @@ class ConstantVARs:
     """
 
     def __init__(self):
-        self.const_q_olrt = LowPassFilter()
+        self.const_q_lpf = LowPassFilter()
 
     def calculate_const_q_desired_kvar(self, der_file, exec_delay):
         """
@@ -46,15 +43,12 @@ class ConstantVARs:
         :param q_const_q_desired_kvar"	Output reactive power from constant reactive power function
         """
 
-        #Eq. 49, calculate desired reactive power in unit of kvar
+        # Eq. 49, calculate desired reactive power in unit of kvar
         const_q_desired_ref_kvar = exec_delay.const_q_exec * der_file.NP_VA_MAX
 
-
-        '''
-        Eq. 50, apply the low pass filter to the reference reactive power. Note that there can be multiple different 
-        ways to implement this behavior in an actual DER. The model may be updated in a future version, according 
-        to the lab test results.
-        '''
-        const_q_desired_kvar = self.const_q_olrt.low_pass_filter(const_q_desired_ref_kvar, der_file.CONST_Q_RT)
+        # Eq. 50, apply the low pass filter to the reference reactive power. Note that there can be multiple different
+        # ways to implement this behavior in an actual DER. The model may be updated in a future version, according
+        # to the lab test results.
+        const_q_desired_kvar = self.const_q_lpf.low_pass_filter(const_q_desired_ref_kvar, der_file.CONST_Q_RT)
 
         return const_q_desired_kvar

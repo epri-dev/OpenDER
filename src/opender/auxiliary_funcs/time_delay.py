@@ -12,10 +12,9 @@
 #   prior written permission.
 
 
+from opender import der
 
-# -*- coding: utf-8 -*-
 
-from . import der
 class TimeDelay:
     """
     |  Time delay function

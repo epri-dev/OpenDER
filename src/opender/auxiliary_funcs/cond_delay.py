@@ -11,7 +11,9 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-from . import der
+from opender import der
+
+
 class ConditionalDelay:
     """
     Conditional Delayed Enable can also be referred as On Delay.

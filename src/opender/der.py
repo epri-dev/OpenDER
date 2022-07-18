@@ -11,8 +11,6 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-
-
 # -*- coding: utf-8 -*-
 
 # Created on Mon Sep 20 15:22:44 2021
@@ -21,29 +19,34 @@
 # @email: janandan@epri.com
 
 from . import common_file_format
-from . import active_power_support_functions
-from . import reactive_power_support_functions
+from .active_power_support_funcs import active_power_support_functions
+from .reactive_power_support_funcs import reactive_power_support_functions
 from . import rem_ctrl
 from . import enter_service_and_trip
 from . import enter_service_perf
 from . import capability_and_priority
 from . import operating_condition_input_processing as ocip
-import numpy as np
 from . import setting_execution_delay
+from typing import Union, List, Tuple
+import numpy as np
+
 
 
 class DER:
     # Global Variables
     t_s = 100000        # Simulation time step, default for snapshot analysis
 
-    def __init__(self, file_ss_obj=None):
+    def __init__(self, der_file_obj=None):
+        """
+        Creating a DER Object
+        :param der_file_obj: DER common file format object created from common_file_format.py
+        """
 
-        if file_ss_obj is None:
-            file_ss_obj = common_file_format.DERCommonFileFormat()
+        if der_file_obj is None:
+            der_file_obj = common_file_format.DERCommonFileFormat()
 
-        self.der_file = file_ss_obj
-        self.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
-        self.der_file.model_inputs_validity_check()
+        self.der_file = der_file_obj
+        self.der_file.nameplate_value_validity_check()
         self.time = 0       # Elapsed time from start of simulation
         self.name = 'DER1'  # Identification if multiple DERs are defined
         self.bus = None     # Bus which DER is connected to
@@ -64,15 +67,23 @@ class DER:
         self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
         self.enterserviceperf = enter_service_perf.EnterServicePerformance()
         self.reactivepowerfunc = reactive_power_support_functions.DesiredReactivePower()
-        self.limited_p_q = capability_and_priority.Capability_and_Priority()
+        self.limited_p_q = capability_and_priority.CapabilityPriority()
         self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = active_power_support_functions.ActivePowerSupportFunctions()
+        self.activepowerfunc = active_power_support_functions.DesiredActivePower()
         self.der_input = ocip.DERInputs()
 
-    def update_der_input(self, p_dc_kw=None, v=None, theta=None, f=None, v_pu=None, p_dc_pu=None):
+    def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
+                         f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None) -> None:
         """
         Update DER inputs
+        :param p_dc_kw:	Available DC power in kW
+        :param p_dc_pu:	Available DC power in per unit
+        :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
+        :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
+        :param theta: DER RPA voltage angles
+        :param f: DER RPA frequency in Hertz
         """
+
         if p_dc_kw is not None:
             self.der_input.p_dc_kw = p_dc_kw
 
@@ -113,8 +124,7 @@ class DER:
             self.der_input.theta_b = theta[1]
             self.der_input.theta_c = theta[2]
 
-
-    def run(self):
+    def run(self) -> Tuple[float, float]:
         """
         Main calculation loop.
         Call this function once for power flow analysis, or call this function in each simulation time step in dynamic
@@ -140,7 +150,7 @@ class DER:
         self.p_desired_kw = self.enterserviceperf.es_performance(self.der_file, self.executiondelay, self.p_act_supp_kw, self.der_status)
 
         # Calculate desired reactive power
-        self.q_desired_kvar = self.reactivepowerfunc.calculate_desired_reactive_power(self.der_file, self.executiondelay, self.der_input, self.p_desired_kw, self.der_status)
+        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.der_file, self.executiondelay, self.der_input, self.p_desired_kw, self.der_status)
 
         # Limit DER output based on kVA rating and DER capability curve
         self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.der_file, self.executiondelay, p_desired_kw=self.p_desired_kw,q_desired_kvar=self.q_desired_kvar)
@@ -152,14 +162,14 @@ class DER:
 
     def reinitialize(self):
         # only used when need to reset DER model
-        self.der_status=self.der_file.STATUS_INIT
+        self.der_status = self.der_file.STATUS_INIT
         self.time = 0
         self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
         self.enterserviceperf = enter_service_perf.EnterServicePerformance()
         self.reactivepowerfunc = reactive_power_support_functions.DesiredReactivePower()
-        self.limited_p_q = capability_and_priority.Capability_and_Priority()
+        self.limited_p_q = capability_and_priority.CapabilityPriority()
         self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = active_power_support_functions.ActivePowerSupportFunctions()
+        self.activepowerfunc = active_power_support_functions.DesiredActivePower()
 
         self.p_out_kw = None
         self.q_out_kvar = None

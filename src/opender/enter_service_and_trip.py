@@ -14,14 +14,11 @@
 
 # -*- coding: utf-8 -*-
 
-from .time_delay import TimeDelay
-from .ramping import Ramping
-from . import der
-from .flipflop import FlipFlop
-from .cond_delay import ConditionalDelay
+from opender.auxiliary_funcs.time_delay import TimeDelay
+from .auxiliary_funcs.flipflop import FlipFlop
+from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 from . import operating_condition_input_processing
 import numpy as np
-
 
 
 #%%

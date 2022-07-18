@@ -79,8 +79,7 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3):
 #     return x_intercept, np.interp(x_intercept,xp2, yp2)
 
 
-
-class Capability_and_Priority:
+class CapabilityPriority:
     """
     Calculate active and reactive power power output limited by DER ratings, according to the priority of responses.
     EPRI Report Reference: Section 3.9 in Report #3002021694: IEEE 1547-2018 DER Model

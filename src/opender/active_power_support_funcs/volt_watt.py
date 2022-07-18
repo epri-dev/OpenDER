@@ -12,13 +12,12 @@
 #   prior written permission.
 
 
-# -*- coding: utf-8 -*-
 """
-
 @author: Jithendar Anandan
 @email: janandan@epri.com
 """
-from .low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
+
 
 class VoltWatt:
     """
@@ -27,7 +26,7 @@ class VoltWatt:
     """
 
     def __init__(self):
-        self.pv_olrt = LowPassFilter()
+        self.pv_lpf = LowPassFilter()
         
     def calculate_p_pv_limit_pu(self, der_file, exec_delay, der_input, p_out_kw):
         """
@@ -51,7 +50,7 @@ class VoltWatt:
         :param p_pv_limit_pu:	Volt-watt power limit
         """
         
-        #Eq 19, calculate active power limit according to volt-watt curve
+        # Eq. 19, calculate active power limit according to volt-watt curve
         if(der_input.v_meas_pu <= exec_delay.pv_curve_v1_exec):
             p_pv_limit_ref_pu = exec_delay.pv_curve_p1_exec
         if(der_input.v_meas_pu >= exec_delay.pv_curve_v2_exec):
@@ -59,12 +58,10 @@ class VoltWatt:
         if(der_input.v_meas_pu > exec_delay.pv_curve_v1_exec and der_input.v_meas_pu < exec_delay.pv_curve_v2_exec):
             p_pv_limit_ref_pu = exec_delay.pv_curve_p1_exec - (der_input.v_meas_pu - exec_delay.pv_curve_v1_exec)/(exec_delay.pv_curve_v2_exec-exec_delay.pv_curve_v1_exec) * (exec_delay.pv_curve_p1_exec - exec_delay.pv_curve_p2_exec)
 
-
-
-        #Eq 20, apply the low pass filter
+        # Eq. 20, apply the low pass filter
         if exec_delay.pv_mode_enable_exec:
-            p_pv_limit_pu = self.pv_olrt.low_pass_filter(p_pv_limit_ref_pu, exec_delay.pv_olrt_exec)
+            p_pv_limit_pu = self.pv_lpf.low_pass_filter(p_pv_limit_ref_pu, exec_delay.pv_olrt_exec)
         else:
-            p_pv_limit_pu = self.pv_olrt.low_pass_filter(1, 0)
+            p_pv_limit_pu = self.pv_lpf.low_pass_filter(1, 0)
 
         return p_pv_limit_pu

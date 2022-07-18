@@ -12,14 +12,10 @@
 #   prior written permission.
 
 
-# -*- coding: utf-8 -*-
-
-from . import active_power_limit
-from . import frequency_droop
-from . import volt_watt as vw
+from opender.active_power_support_funcs import active_power_limit, frequency_droop, volt_watt as vw
 
 
-class ActivePowerSupportFunctions:
+class DesiredActivePower:
     """
     Calculate desired active power according to volt-watt, frequency-droop, and active power limit functions
     EPRI Report Reference: Section 3.6 in Report #3002021694: IEEE 1547-2018 DER Model
@@ -62,7 +58,7 @@ class ActivePowerSupportFunctions:
         """
 
         # Active power limit function
-        self.ap_limit_pu = self.aplimit.calculate_ap_limit_pu(der_file, exec_delay, p_out_kw)
+        self.ap_limit_pu = self.aplimit.calculate_ap_limit_pu(der_file, exec_delay)
 
         # Volt-watt function
         self.p_pv_limit_pu = self.voltwatt.calculate_p_pv_limit_pu(der_file, exec_delay, der_input, p_out_kw)
@@ -75,9 +71,9 @@ class ActivePowerSupportFunctions:
         EPRI Report Reference: Section 3.6.4 in Report #3002021694: IEEE 1547-2018 DER Model
         """
         # Calculate active power based on grid-support functions
-
         p_act_supp_pu = 1
-        #Eq. 27 calculate desired active power in per unit
+
+        # Eq. 27 calculate desired active power in per unit
         if(exec_delay.ap_limit_enable_exec == False and exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
             p_act_supp_pu = min(der_input.p_dc_pu * der_file.NP_EFFICIENCY, 1)
 
@@ -102,7 +98,7 @@ class ActivePowerSupportFunctions:
         if(exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True):
             p_act_supp_pu = min(self.p_pv_limit_pu, self.p_pf_pu, 1)
 
-        #Eq. 28 calculate desired active power in kW
+        # Eq. 28 calculate desired active power in kW
         self.p_act_supp_kw = p_act_supp_pu * der_file.NP_P_MAX
         return self.p_act_supp_kw
 

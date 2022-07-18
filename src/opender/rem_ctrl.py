@@ -12,10 +12,10 @@
 #   prior written permission.
 
 
-def RemainingControl(p_limited_kw,q_limited_kvar):
+def RemainingControl(p_limited_kw, q_limited_kvar):
     """
     |  Remaining DER Control and Circuit Equivalents
     |  EPRI Report Reference: Section 3.10 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     # DER faster dynamics, such as momentary cessation, dynamic voltage support, will be released in V2.0
-    return p_limited_kw,q_limited_kvar
+    return p_limited_kw, q_limited_kvar

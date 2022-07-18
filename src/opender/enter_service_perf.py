@@ -11,13 +11,7 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-from .time_delay import TimeDelay
-from .ramping import Ramping
-from . import der
-from .flipflop import FlipFlop
-from .cond_delay import ConditionalDelay
-from . import operating_condition_input_processing
-import numpy as np
+from opender.auxiliary_funcs.ramping import Ramping
 
 
 # %%
@@ -57,6 +51,7 @@ class EdgeDetector:
         self.x = x
         return y
 
+
 class EnterServicePerformance:
     """
     Calculate desired active power output in Enter service ramp condition
@@ -66,8 +61,10 @@ class EnterServicePerformance:
     def __init__(self):
         self.rrl = Ramping()
         self.edge = EdgeDetector(
-            up_edge = True,
+            up_edge=True,
             )
+        self.es_flag = None
+        self.p_desired_kw = None
 
     def es_performance(self, der_file, exec_delay, p_act_supp_kw, der_status):
         """
@@ -90,28 +87,35 @@ class EnterServicePerformance:
         
         :param p_desired_kw:	Desired output active power considering DER enter service performance
         """
-        # Eq 29, input available power
+
+        # Eq. 29, input available power
         if der_status:
             p_es_kw = p_act_supp_kw
         else:
             p_es_kw = 0
+
         # Eq. 30, ramp rate limiter
         if exec_delay.es_ramp_rate_exec>0:
             p_es_ramp_kw = der_file.NP_P_MAX * self.rrl.ramp(p_es_kw/der_file.NP_P_MAX, exec_delay.es_ramp_rate_exec, exec_delay.es_ramp_rate_exec)
         else:
             p_es_ramp_kw = p_es_kw
+
         # Eq. 31 Edge detector to identify Enter Service decision
         es_flag_set = self.edge.run(der_status)
+
         # Eq. 32 Enter service ramp complete
         es_flag_reset = (p_es_ramp_kw == p_es_kw) or not der_status
-        # Eq. 33, flipflop logic to detemine if in enter service ramp
+
+        # Eq. 33, flip-flop logic to determine if in enter service ramp
         if es_flag_reset:
             self.es_flag = 0
         elif es_flag_set:
             self.es_flag = 1
+
         # Eq. 34, output selector
         if self.es_flag:
             self.p_desired_kw = p_es_ramp_kw
         else:
             self.p_desired_kw = p_es_kw
+
         return self.p_desired_kw

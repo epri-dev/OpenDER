@@ -1,4 +1,4 @@
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 from .der import DER
 from .common_file_format import DERCommonFileFormat

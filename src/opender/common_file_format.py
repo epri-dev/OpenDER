@@ -37,8 +37,9 @@ class DERCommonFileFormat:
                        'QV_VREF_TIME', 'QV_CURVE_V2', 'QV_CURVE_Q2', 'QV_CURVE_V3', 'QV_CURVE_Q3', 'QV_CURVE_V1',
                        'QV_CURVE_Q1', 'QV_CURVE_V4', 'QV_CURVE_Q4', 'QV_OLRT', 'QP_MODE_ENABLE', 'QP_CURVE_P3_GEN',
                        'QP_CURVE_P2_GEN', 'QP_CURVE_P1_GEN', 'QP_CURVE_Q3_GEN', 'QP_CURVE_Q2_GEN', 'QP_CURVE_Q1_GEN',
-                       'PV_MODE_ENABLE', 'PV_CURVE_V1', 'PV_CURVE_P1', 'PV_CURVE_V2',
-                       'PV_CURVE_P2', 'PV_OLRT',
+                       'QP_CURVE_P3_LOAD', 'QP_CURVE_P2_LOAD', 'QP_CURVE_P1_LOAD', 'QP_CURVE_Q3_LOAD',
+                       'QP_CURVE_Q2_LOAD', 'QP_CURVE_Q1_LOAD', 'PV_MODE_ENABLE', 'PV_CURVE_V1', 'PV_CURVE_P1',
+                       'PV_CURVE_V2', 'PV_CURVE_P2', 'PV_OLRT',
                        'OV2_TRIP_V', 'OV2_TRIP_T', 'OV1_TRIP_V', 'OV1_TRIP_T', 'UV1_TRIP_V', 'UV1_TRIP_T', 'UV2_TRIP_V',
                        'UV2_TRIP_T', 'OF2_TRIP_F', 'OF2_TRIP_T', 'OF1_TRIP_F', 'OF1_TRIP_T', 'UF1_TRIP_F', 'UF1_TRIP_T',
                        'UF2_TRIP_F', 'UF2_TRIP_T', 'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF',
@@ -94,6 +95,8 @@ class DERCommonFileFormat:
         self._Q_MAX_ABS_PU = None
         self._NP_Q_CAPABILITY_BY_P_CURVE = None
         self._NP_Q_CAPABILITY_LOW_P = 'SAME'
+        self._NP_P_MAX_CHARGE = 0
+        self._NP_APPARENT_POWER_CHARGE_MAX = None
 
         # DER Model Variables with default values
         self._ES_RANDOMIZED_DELAY_ACTUAL = 0
@@ -148,6 +151,13 @@ class DERCommonFileFormat:
         self._QP_CURVE_Q2_GEN = 0
         self._QP_CURVE_P3_GEN = 1
         self._QP_CURVE_Q3_GEN = None
+        self._QP_CURVE_P1_LOAD = 0
+        self._QP_CURVE_P2_LOAD = 0.5
+        self._QP_CURVE_Q1_LOAD = 0
+        self._QP_CURVE_Q2_LOAD = 0
+        self._QP_CURVE_P3_LOAD = 1
+        self._QP_CURVE_Q3_LOAD = 0.44
+
         self._QP_MODE_ENABLE = False
 
         self._PV_MODE_ENABLE = False
@@ -361,19 +371,29 @@ class DERCommonFileFormat:
                 self.QP_CURVE_P1_GEN = self.NP_P_MIN_PU
             else:
                 self.QP_CURVE_P1_GEN = 0.2
-
         if self.isNotNaN(param.QP_CURVE_P2_GEN):
             self.QP_CURVE_P2_GEN = param.QP_CURVE_P2_GEN
         if self.isNotNaN(param.QP_CURVE_P3_GEN):
             self.QP_CURVE_P3_GEN = param.QP_CURVE_P3_GEN
-
         if self.isNotNaN(param.QP_CURVE_Q3_GEN):
             self.QP_CURVE_Q3_GEN = param.QP_CURVE_Q3_GEN
-
         if self.isNotNaN(param.QP_CURVE_Q2_GEN):
             self.QP_CURVE_Q2_GEN = param.QP_CURVE_Q2_GEN
         if self.isNotNaN(param.QP_CURVE_Q1_GEN):
             self.QP_CURVE_Q1_GEN = param.QP_CURVE_Q1_GEN
+
+        if self.isNotNaN(param.QP_CURVE_P1_LOAD):
+            self.QP_CURVE_P1_LOAD = param.QP_CURVE_P1_LOAD
+        if self.isNotNaN(param.QP_CURVE_P2_LOAD):
+            self.QP_CURVE_P2_LOAD = param.QP_CURVE_P2_LOAD
+        if self.isNotNaN(param.QP_CURVE_P3_LOAD):
+            self.QP_CURVE_P3_LOAD = param.QP_CURVE_P3_LOAD
+        if self.isNotNaN(param.QP_CURVE_Q3_LOAD):
+            self.QP_CURVE_Q3_LOAD = param.QP_CURVE_Q3_LOAD
+        if self.isNotNaN(param.QP_CURVE_Q2_LOAD):
+            self.QP_CURVE_Q2_LOAD = param.QP_CURVE_Q2_LOAD
+        if self.isNotNaN(param.QP_CURVE_Q1_LOAD):
+            self.QP_CURVE_Q1_LOAD = param.QP_CURVE_Q1_LOAD
 
         if self.isNotNaN(param.PV_MODE_ENABLE):
             self.PV_MODE_ENABLE = param.PV_MODE_ENABLE
@@ -496,6 +516,10 @@ class DERCommonFileFormat:
             logging.warning("Warning: Regardless DER’s category, its nameplate reactive power injection rating"
                             " should be greater than 44%, and less than 100% of nameplate apparent power rating.")
 
+        if self._NP_P_MAX_CHARGE < self._NP_APPARENT_POWER_CHARGE_MAX:
+            logging.warning("Warning: Please make sure to have DER nameplate active power charge rating "
+                            "less than or equal to DER nameplate apparent power charge rating.")
+
         if self._NP_NORMAL_OP_CAT == "CAT_A":
             if self._NP_Q_MAX_ABS < (self._NP_VA_MAX * 0.25) or self._NP_Q_MAX_ABS > self._NP_VA_MAX:
                 logging.warning("Warning: For category A DER, its nameplate reactive power absorption rating "
@@ -566,12 +590,20 @@ class DERCommonFileFormat:
             q_max_inj_pu = self.NP_Q_MAX_INJ / self.NP_VA_MAX
             q_max_abs_pu = self.NP_Q_MAX_ABS / self.NP_VA_MAX
 
-            self.NP_Q_CAPABILITY_BY_P_CURVE = {
-                'P_Q_INJ_PU': [0, 0.04999, 0.05, 0.2, 1],
-                'P_Q_ABS_PU': [0, 0.04999, 0.05, 0.2, 1],
-                'Q_MAX_INJ_PU': [0, 0, q_max_inj_pu / 4, q_max_inj_pu, q_max_inj_pu],
-                'Q_MAX_ABS_PU': [0, 0, q_max_abs_pu / 4, q_max_abs_pu, q_max_abs_pu]
-            }
+            if self.NP_Q_CAPABILITY_LOW_P == 'REDUCED':
+                self.NP_Q_CAPABILITY_BY_P_CURVE = {
+                    'P_Q_INJ_PU': [-1, 0.04999, 0.05, 0.2, 1],
+                    'P_Q_ABS_PU': [-1, 0.04999, 0.05, 0.2, 1],
+                    'Q_MAX_INJ_PU': [0, 0, q_max_inj_pu / 4, q_max_inj_pu, q_max_inj_pu],
+                    'Q_MAX_ABS_PU': [0, 0, q_max_abs_pu / 4, q_max_abs_pu, q_max_abs_pu]
+                }
+            else:
+                self.NP_Q_CAPABILITY_BY_P_CURVE = {
+                    'P_Q_INJ_PU': [-1, 1],
+                    'P_Q_ABS_PU': [-1, 1],
+                    'Q_MAX_INJ_PU': [q_max_inj_pu, q_max_inj_pu],
+                    'Q_MAX_ABS_PU': [q_max_abs_pu, q_max_abs_pu]
+                }
 
         if (len(self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU']) !=
            len(self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])) or \
@@ -784,6 +816,20 @@ class DERCommonFileFormat:
                 raise ValueError("NP_PHASE should be either 'SINGLE' or 'THREE'")
         else:
             raise ValueError("NP_PHASE should be either 'SINGLE' or 'THREE'")
+
+    @property
+    def NP_TYPE(self):
+        return self._NP_TYPE
+
+    @NP_TYPE.setter
+    def NP_TYPE(self, NP_TYPE):
+        if isinstance(NP_TYPE, str):
+            if NP_TYPE.upper() == 'PV' or NP_TYPE.upper() == 'BESS':
+                self._NP_PHASE = NP_TYPE.upper()
+            else:
+                raise ValueError("NP_TYPE should be either 'PV' or 'BESS'")
+        else:
+            raise ValueError("NP_TYPE should be either 'BESS' or 'BESS'")
 
     @property
     def NP_SET_EXE_TIME(self):
@@ -1278,6 +1324,11 @@ class DERCommonFileFormat:
     @QP_CURVE_P1_LOAD.setter
     def QP_CURVE_P1_LOAD(self, QP_CURVE_P1_LOAD):
         self._QP_CURVE_P1_LOAD = QP_CURVE_P1_LOAD
+        if self._QP_CURVE_P1_LOAD < (self.QP_CURVE_P2_LOAD + 0.1) or self._QP_CURVE_P1_LOAD > 0:
+            logging.warning("Warning: check failed for QP_CURVE_P1_LOAD. For the piecewise linear curve setting of "
+                            "watt-var control, the corner points should have their voltage settings monotonically "
+                            "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
+
 
     @property
     def QP_CURVE_P2_LOAD(self):
@@ -1286,6 +1337,10 @@ class DERCommonFileFormat:
     @QP_CURVE_P2_LOAD.setter
     def QP_CURVE_P2_LOAD(self, QP_CURVE_P2_LOAD):
         self._QP_CURVE_P2_LOAD = QP_CURVE_P2_LOAD
+        if self._QP_CURVE_P2_LOAD < -0.8 or self._QP_CURVE_P2_LOAD > -0.4:
+            logging.warning("Warning: check failed for QP_CURVE_P2_LOAD. For the piecewise linear curve setting of "
+                            "watt-var control, the corner points should have their voltage settings monotonically "
+                            "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
 
     @property
     def QP_CURVE_P3_LOAD(self):
@@ -1294,6 +1349,11 @@ class DERCommonFileFormat:
     @QP_CURVE_P3_LOAD.setter
     def QP_CURVE_P3_LOAD(self, QP_CURVE_P3_LOAD):
         self._QP_CURVE_P3_LOAD = QP_CURVE_P3_LOAD
+        if self._QP_CURVE_P3_LOAD < -1 or self._QP_CURVE_P3_LOAD > (self.QP_CURVE_P2_LOAD + 0.1):
+            logging.warning("Warning: check failed for QP_CURVE_P3_LOAD. For the piecewise linear curve setting of "
+                            "watt-var control, the corner points should have their voltage settings monotonically "
+                            "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
+
 
     @property
     def QP_CURVE_Q3_GEN(self):
@@ -1304,10 +1364,9 @@ class DERCommonFileFormat:
         self._QP_CURVE_Q3_GEN = QP_CURVE_Q3_GEN
         if (self.QP_CURVE_Q3_GEN < (-self.NP_Q_MAX_ABS / self.NP_VA_MAX) or self.QP_CURVE_Q3_GEN > (
                 self.NP_Q_MAX_INJ / self.NP_VA_MAX)):
-            logging.warning("Warning: check failed for QP_CURVE_Q3_GEN. Watt-var function voltage setpoints use DER "
-                            "nameplate apparent power rating as base. The setpoints should be within its nameplate "
-                            "reactive power injection and absorption ratings.")
-
+            logging.warning("Warning: check failed for QP_CURVE_Q3_GEN. Watt-var function reactive power setpoints "
+                            "use DER nameplate apparent power rating as base. The setpoints should be within its  "
+                            "nameplate reactive power injection and absorption ratings.")
     @property
     def QP_CURVE_Q2_GEN(self):
         return self._QP_CURVE_Q2_GEN
@@ -1317,9 +1376,9 @@ class DERCommonFileFormat:
         self._QP_CURVE_Q2_GEN = QP_CURVE_Q2_GEN
         if (self.QP_CURVE_Q2_GEN < (-self.NP_Q_MAX_ABS / self.NP_VA_MAX) or self.QP_CURVE_Q2_GEN > (
                 self.NP_Q_MAX_INJ / self.NP_VA_MAX)):
-            logging.warning("Warning: check failed for QP_CURVE_Q2_GEN. Watt-var function voltage setpoints use DER "
-                            "nameplate apparent power rating as base. The setpoints should be within its nameplate "
-                            "reactive power injection and absorption ratings.")
+            logging.warning("Warning: check failed for QP_CURVE_Q2_GEN. Watt-var function reactive power setpoints "
+                            "use DER nameplate apparent power rating as base. The setpoints should be within its  "
+                            "nameplate reactive power injection and absorption ratings.")
 
     @property
     def QP_CURVE_Q1_GEN(self):
@@ -1330,9 +1389,9 @@ class DERCommonFileFormat:
         self._QP_CURVE_Q1_GEN = QP_CURVE_Q1_GEN
         if (self.QP_CURVE_Q1_GEN < (-self.NP_Q_MAX_ABS / self.NP_VA_MAX) or self.QP_CURVE_Q1_GEN > (
                 self.NP_Q_MAX_INJ / self.NP_VA_MAX)):
-            logging.warning("Warning: check failed for QP_CURVE_Q1_GEN. Watt-var function voltage setpoints use DER "
-                            "nameplate apparent power rating as base. The setpoints should be within its nameplate "
-                            "reactive power injection and absorption ratings.")
+            logging.warning("Warning: check failed for QP_CURVE_Q1_GEN. Watt-var function reactive power setpoints "
+                            "use DER nameplate apparent power rating as base. The setpoints should be within its  "
+                            "nameplate reactive power injection and absorption ratings.")
 
     @property
     def QP_CURVE_Q1_LOAD(self):
@@ -1340,8 +1399,12 @@ class DERCommonFileFormat:
 
     @QP_CURVE_Q1_LOAD.setter
     def QP_CURVE_Q1_LOAD(self, QP_CURVE_Q1_LOAD):
-
         self._QP_CURVE_Q1_LOAD = QP_CURVE_Q1_LOAD
+        if (self._QP_CURVE_Q1_LOAD < (-self.NP_Q_MAX_ABS / self.NP_VA_MAX) or self._QP_CURVE_Q1_LOAD > (
+                self.NP_Q_MAX_INJ / self.NP_VA_MAX)):
+            logging.warning("Warning: check failed for QP_CURVE_Q1_LOAD. Watt-var function reactive power setpoints "
+                            "use DER nameplate apparent power rating as base. The setpoints should be within its  "
+                            "nameplate reactive power injection and absorption ratings.")
 
     @property
     def QP_CURVE_Q2_LOAD(self):
@@ -1350,6 +1413,11 @@ class DERCommonFileFormat:
     @QP_CURVE_Q2_LOAD.setter
     def QP_CURVE_Q2_LOAD(self, QP_CURVE_Q2_LOAD):
         self._QP_CURVE_Q2_LOAD = QP_CURVE_Q2_LOAD
+        if (self._QP_CURVE_Q2_LOAD < (-self.NP_Q_MAX_ABS / self.NP_VA_MAX) or self._QP_CURVE_Q2_LOAD > (
+                self.NP_Q_MAX_INJ / self.NP_VA_MAX)):
+            logging.warning("Warning: check failed for QP_CURVE_Q2_LOAD. Watt-var function reactive power setpoints "
+                            "use DER nameplate apparent power rating as base. The setpoints should be within its  "
+                            "nameplate reactive power injection and absorption ratings.")
 
     @property
     def QP_CURVE_Q3_LOAD(self):
@@ -1358,6 +1426,11 @@ class DERCommonFileFormat:
     @QP_CURVE_Q3_LOAD.setter
     def QP_CURVE_Q3_LOAD(self, QP_CURVE_Q3_LOAD):
         self._QP_CURVE_Q3_LOAD = QP_CURVE_Q3_LOAD
+        if (self._QP_CURVE_Q3_LOAD < (-self.NP_Q_MAX_ABS / self.NP_VA_MAX) or self._QP_CURVE_Q3_LOAD > (
+                self.NP_Q_MAX_INJ / self.NP_VA_MAX)):
+            logging.warning("Warning: check failed for QP_CURVE_Q3_LOAD. Watt-var function reactive power setpoints "
+                            "use DER nameplate apparent power rating as base. The setpoints should be within its  "
+                            "nameplate reactive power injection and absorption ratings.")
 
     @property
     def QP_RT(self):

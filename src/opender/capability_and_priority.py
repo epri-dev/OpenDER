@@ -137,12 +137,12 @@ class CapabilityPriority:
             elif der_file.NP_PRIO_OUTSIDE_MIN_Q_REQ == 'ACTIVE':
                 # Eq. 61 reserve Q capability to the table 7 requirement and give the rest to P
                 q_limited_kvar = min(self.q_requirement_inj, max(-self.q_requirement_abs, q_limited_by_p_kvar))
-                p_limited_kw = np.sqrt(der_file.NP_VA_MAX**2-q_limited_kvar**2)
+                p_limited_kw = np.sqrt(der_file.NP_VA_MAX**2-q_limited_kvar**2) * np.sign(p_desired_kw) #TODO update in spec
 
             else:
                 # Eq. 62, Reactive power priority, reduce P to match apparent power limit
                 q_limited_kvar = q_limited_by_p_kvar
-                p_limited_kw = np.sqrt(der_file.NP_VA_MAX**2-q_limited_by_p_kvar**2)
+                p_limited_kw = np.sqrt(der_file.NP_VA_MAX**2-q_limited_by_p_kvar**2) * np.sign(p_desired_kw)  #TODO update in spec
 
         elif exec_delay.const_pf_mode_enable_exec:
             # Constant-PF

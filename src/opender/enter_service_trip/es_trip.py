@@ -15,9 +15,9 @@
 # -*- coding: utf-8 -*-
 
 from opender.auxiliary_funcs.time_delay import TimeDelay
-from .auxiliary_funcs.flipflop import FlipFlop
+from opender.auxiliary_funcs.flipflop import FlipFlop
 from opender.auxiliary_funcs.cond_delay import ConditionalDelay
-from . import operating_condition_input_processing
+from opender.input_processing import op_cond_proc
 import numpy as np
 
 
@@ -54,7 +54,7 @@ class EnterServiceTrip:
         self.debug = None
 
 
-    def es_decision(self, der_file, exec_delay,  der_input:operating_condition_input_processing.DERInputs):
+    def es_decision(self, der_file, exec_delay, der_input: op_cond_proc.DERInputs):
         """
         Generate DER status (ON/OFF) based on enter service and trip settings
         EPRI Report Reference: Section 3.5 in Report #3002021694: IEEE 1547-2018 DER Model
@@ -122,8 +122,8 @@ class EnterServiceTrip:
         # Eq 10, conditional delayed enable that voltage and frequency checks must be satisfied for a time delay period
         es_vft_crit = self.vft_delay.con_del_enable(es_vf_crit, exec_delay.es_delay_exec)
 
-        # Eq 11, available DC power must be greater than DER minimum output
-        es_p_crit = der_input.p_dc_pu >= der_file.NP_P_MIN_PU
+        # Calling Eq 11
+        es_p_crit = self.es_p_crit(der_input.p_dc_pu, der_file.NP_P_MIN_PU)
 
         # Eq 12, Enter service criterion met
         es_crit = es_vft_crit and es_p_crit
@@ -171,9 +171,6 @@ class EnterServiceTrip:
         # return der_status output
         return self.der_status
         
-
-
-        
-        
-        
-    
+    def es_p_crit(self, p_dc_pu, NP_P_MIN_PU):
+        # Eq 11, available DC power must be greater than DER minimum output
+        return p_dc_pu >= NP_P_MIN_PU

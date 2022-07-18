@@ -19,13 +19,13 @@
 # @email: janandan@epri.com
 
 from . import common_file_format
-from .active_power_support_funcs import active_power_support_functions
-from .reactive_power_support_funcs import reactive_power_support_functions
+from .active_power_support_funcs.p_funcs import DesiredActivePower
+from .reactive_power_support_funcs.q_funcs import DesiredReactivePower
 from . import rem_ctrl
-from . import enter_service_and_trip
-from . import enter_service_perf
+from .enter_service_trip.es_trip import EnterServiceTrip
+from .enter_service_trip.es_perf import EnterServicePerformance
 from . import capability_and_priority
-from . import operating_condition_input_processing as ocip
+from opender.input_processing.op_cond_proc import DERInputs
 from . import setting_execution_delay
 from typing import Union, List, Tuple
 import numpy as np
@@ -64,13 +64,13 @@ class DER:
         self.q_out_kvar = None
 
         # DER model modules
-        self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
-        self.enterserviceperf = enter_service_perf.EnterServicePerformance()
-        self.reactivepowerfunc = reactive_power_support_functions.DesiredReactivePower()
+        self.enterservicetrip = EnterServiceTrip(self.der_file.STATUS_INIT)
+        self.enterserviceperf = EnterServicePerformance()
+        self.reactivepowerfunc = DesiredReactivePower()
         self.limited_p_q = capability_and_priority.CapabilityPriority()
         self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = active_power_support_functions.DesiredActivePower()
-        self.der_input = ocip.DERInputs()
+        self.activepowerfunc = DesiredActivePower()
+        self.der_input = DERInputs()
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
                          f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None) -> None:
@@ -164,12 +164,12 @@ class DER:
         # only used when need to reset DER model
         self.der_status = self.der_file.STATUS_INIT
         self.time = 0
-        self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
-        self.enterserviceperf = enter_service_perf.EnterServicePerformance()
-        self.reactivepowerfunc = reactive_power_support_functions.DesiredReactivePower()
+        self.enterservicetrip = EnterServiceTrip(self.der_file.STATUS_INIT)
+        self.enterserviceperf = EnterServicePerformance()
+        self.reactivepowerfunc = DesiredReactivePower()
         self.limited_p_q = capability_and_priority.CapabilityPriority()
         self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = active_power_support_functions.DesiredActivePower()
+        self.activepowerfunc = DesiredActivePower()
 
         self.p_out_kw = None
         self.q_out_kvar = None

@@ -25,7 +25,6 @@ class DERInputs:
     def __init__(self):
 
         # Operating condition inputs to the DER model
-        self.p_dc_kw = None
         self.freq_hz = None
         self.v_a = None
         self.v_b = None
@@ -35,12 +34,19 @@ class DERInputs:
         self.theta_c = None
         self.v = None
 
+        # Available DC power for PV
+        self.p_dc_kw = None
+
+        # P demand for BESS
+        self.p_dem_kw = None
+
         # Processed variables
         self.v_meas_pu = None
         self.v_high_pu = None
         self.v_low_pu = None
 
         self.p_dc_pu = None
+        self.p_dem_pu = None
 
     def operating_condition_input_processing(self, der_file):
         """
@@ -115,9 +121,13 @@ class DERInputs:
             self.v_meas_pu = self.v_high_pu = self.v_low_pu = (self.v / der_file.NP_AC_V_NOM)
 
         # Eq. 7, DER power in per unit
-        self.p_dc_pu = self.p_dc_kw/der_file.NP_P_MAX
+        if self.p_dc_kw is not None:
+            self.p_dc_pu = self.p_dc_kw/der_file.NP_P_MAX
 
-        return self.v_meas_pu, self.v_low_pu, self.v_high_pu, self.p_dc_pu
+        if self.p_dem_kw is not None:
+            self.p_dem_pu = self.p_dem_kw / der_file.NP_P_MAX
+
+        # return self.v_meas_pu, self.v_low_pu, self.v_high_pu, self.p_dc_pu
 
     def operating_conditions_validity_check(self, der_file):
         # Validity Check for DER Model operating conditions
@@ -144,7 +154,8 @@ class DERInputs:
             self.freq_hz = 60
 
         if self.p_dc_kw is None:
-            raise ValueError("ValueError: p_dc_kw is not defined!")
+            logging.error("ValueError: p_dc_kw is not defined! Assuming 0")
+            self.p_dc_kw = 0
 
 
     def __str__(self):

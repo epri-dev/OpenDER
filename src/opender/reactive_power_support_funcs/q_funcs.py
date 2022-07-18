@@ -16,7 +16,7 @@
 
 from opender.auxiliary_funcs.ramping import Ramping
 from opender.auxiliary_funcs.flipflop import FlipFlop
-from opender.reactive_power_support_funcs import volt_var, watt_var, constant_vars, constant_power_factor
+from opender.reactive_power_support_funcs import volt_var, watt_var, constant_vars, constant_pf
 
 
 class DesiredReactivePower:
@@ -41,7 +41,7 @@ class DesiredReactivePower:
 
         self.q_mode_ramp_flag = 0
 
-        self.constpf = constant_power_factor.ConstantPowerFactor()
+        self.constpf = constant_pf.ConstantPowerFactor()
         self.constq = constant_vars.ConstantVARs()
         self.voltvar = volt_var.VoltVAR()
         self.wattvar = watt_var.WattVAR()

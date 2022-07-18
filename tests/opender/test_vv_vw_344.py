@@ -66,6 +66,12 @@ class TestVVVW344:
         self.si_obj.der_file.PV_CURVE_V2 = 1.1
         self.si_obj.der_file.PV_CURVE_P1 = 1
         self.si_obj.der_file.PV_CURVE_P2 = 0.0
+        self.si_obj.der_file.NP_Q_CAPABILITY_BY_P_CURVE = {
+            'P_Q_INJ_PU': [-1, 0.04999, 0.05, 0.2, 1],
+            'P_Q_ABS_PU': [-1, 0.04999, 0.05, 0.2, 1],
+            'Q_MAX_INJ_PU': [0, 0, 0.11, 0.44, 0.44],
+            'Q_MAX_ABS_PU': [0, 0, 0.11, 0.44, 0.44],
+        }
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
         self.si_obj.der_input.p_dc_kw = p_dc

@@ -24,8 +24,12 @@ class DesiredReactivePower:
     |  Desired Reactive Power Calculation
     |  EPRI Report Reference: Section 3.8 in Report #3002021694: IEEE 1547-2018 DER Model
     """
-    
-    def __init__(self):
+
+    def __init__(self, der_file, exec_delay, der_input):
+
+        self.der_file = der_file
+        self.exec_delay = exec_delay
+        self.der_input = der_input
 
         # Enable conditions in previous values to detect mode changes
         self.const_pf_mode_enable_exec_prev = None      # Value of variable const_pf_mode_enable_exec in the previous time step  (initialized by the first value of CONST_PF_MODE_ENABLE)
@@ -41,38 +45,38 @@ class DesiredReactivePower:
 
         self.q_mode_ramp_flag = 0
 
-        self.constpf = constant_pf.ConstantPowerFactor()
-        self.constq = constant_vars.ConstantVARs()
-        self.voltvar = volt_var.VoltVAR()
-        self.wattvar = watt_var.WattVAR()
+        self.constpf = constant_pf.ConstantPowerFactor(der_file, exec_delay)
+        self.constq = constant_vars.ConstantVARs(der_file, exec_delay)
+        self.voltvar = volt_var.VoltVAR(der_file, exec_delay, der_input)
+        self.wattvar = watt_var.WattVAR(der_file, exec_delay)
         self.desired_kvar_ramp = Ramping()
         self.desired_kvar_ff = FlipFlop(0)
 
 
-    def calculate_reactive_funcs(self, der_file, exec_delay, der_input, p_desired_kw, der_status):
+    def calculate_reactive_funcs(self, p_desired_kw, der_status):
         """
         Calculate desired reactive power for all 4 reactive power control modes defined in IEEE 1547-2018
         """
 
         # Constant power factor function
-        self.q_const_pf_desired_kvar = self.constpf.calculate_q_const_pf_desired_kvar(der_file,exec_delay, p_desired_kw)
+        self.q_const_pf_desired_kvar = self.constpf.calculate_q_const_pf_desired_kvar(p_desired_kw)
 
         # Constant reactive power function
-        self.q_const_q_desired_kvar = self.constq.calculate_const_q_desired_kvar(der_file,exec_delay)
+        self.q_const_q_desired_kvar = self.constq.calculate_const_q_desired_kvar()
 
         # Volt-var function
-        self.q_qv_desired_kvar = self.voltvar.calculate_q_qv_desired_kvar(der_file, exec_delay, der_input)
+        self.q_qv_desired_kvar = self.voltvar.calculate_q_qv_desired_kvar()
 
         # Watt-var function
-        self.q_qp_desired_kvar = self.wattvar.calculate_q_qp_desired_kvar(der_file, exec_delay, p_desired_kw)
+        self.q_qp_desired_kvar = self.wattvar.calculate_q_qp_desired_kvar(p_desired_kw)
 
         # Calculate reactive power based on grid-support functions
-        self.q_desired_kvar = self.calculate_desired_kvar(der_file, exec_delay, der_status)
+        self.q_desired_kvar = self.calculate_desired_kvar(der_status)
 
         return self.q_desired_kvar
 
 
-    def calculate_desired_kvar(self, der_file, exec_delay, der_status):
+    def calculate_desired_kvar(self, der_status):
         """
         Calculate Desired reactive power considering the transition requirements defined by IEEE 1547-2018
 
@@ -100,20 +104,20 @@ class DesiredReactivePower:
         """
 
         # Eq. 51, calculate desired reactive power reference, without smooth mode transition
-        if(der_status == 1 and exec_delay.const_pf_mode_enable_exec == 1):
+        if(der_status == 1 and self.exec_delay.const_pf_mode_enable_exec == 1):
             q_desired_ref_kvar = self.q_const_pf_desired_kvar
-        elif(der_status == 1 and exec_delay.qv_mode_enable_exec == 1):
+        elif(der_status == 1 and self.exec_delay.qv_mode_enable_exec == 1):
             q_desired_ref_kvar = self.q_qv_desired_kvar
-        elif(der_status == 1 and exec_delay.qp_mode_enable_exec == 1):
+        elif(der_status == 1 and self.exec_delay.qp_mode_enable_exec == 1):
             q_desired_ref_kvar = self.q_qp_desired_kvar
-        elif(der_status == 1 and exec_delay.const_q_mode_enable_exec == 1):
+        elif(der_status == 1 and self.exec_delay.const_q_mode_enable_exec == 1):
             q_desired_ref_kvar = self.q_const_q_desired_kvar
         else:
             q_desired_ref_kvar = 0
 
         # Eq. 53, the ramp rate limit only applies when there is a mode change.
-        if(exec_delay.const_pf_mode_enable_exec != self.const_pf_mode_enable_exec_prev or exec_delay.qv_mode_enable_exec != self.qv_mode_enable_exec_prev or
-                                           exec_delay.qp_mode_enable_exec != self.qp_mode_enable_exec_prev or exec_delay.const_q_mode_enable_exec != self.const_q_mode_enable_exec_prev):
+        if(self.exec_delay.const_pf_mode_enable_exec != self.const_pf_mode_enable_exec_prev or self.exec_delay.qv_mode_enable_exec != self.qv_mode_enable_exec_prev or
+                                           self.exec_delay.qp_mode_enable_exec != self.qp_mode_enable_exec_prev or self.exec_delay.const_q_mode_enable_exec != self.const_q_mode_enable_exec_prev):
             q_mode_ramp_flag_set = 1
         else:
             q_mode_ramp_flag_set = 0
@@ -121,9 +125,9 @@ class DesiredReactivePower:
         # Eq. 52, apply the ramp rate limit
         #TODO reflect code change to the model specification
         if q_mode_ramp_flag_set or self.q_mode_ramp_flag == 1:
-            q_desired_ramp_kvar = der_file.NP_VA_MAX * self.desired_kvar_ramp.ramp(q_desired_ref_kvar/der_file.NP_VA_MAX, der_file.NP_MODE_TRANSITION_TIME, der_file.NP_MODE_TRANSITION_TIME)
+            q_desired_ramp_kvar = self.der_file.NP_VA_MAX * self.desired_kvar_ramp.ramp(q_desired_ref_kvar/self.der_file.NP_VA_MAX, self.der_file.NP_MODE_TRANSITION_TIME, self.der_file.NP_MODE_TRANSITION_TIME)
         else:
-            q_desired_ramp_kvar = der_file.NP_VA_MAX * self.desired_kvar_ramp.ramp(q_desired_ref_kvar/der_file.NP_VA_MAX, 0, 0)
+            q_desired_ramp_kvar = self.der_file.NP_VA_MAX * self.desired_kvar_ramp.ramp(q_desired_ref_kvar/self.der_file.NP_VA_MAX, 0, 0)
 
         # Eq. 54, the ramp rate limit stops to apply when the mode transition is completed (value before and after ramp rate limit is the same
         if(q_desired_ref_kvar == q_desired_ramp_kvar) or (der_status == 0):
@@ -141,16 +145,16 @@ class DesiredReactivePower:
             q_desired_kvar = q_desired_ref_kvar
 
         # Save the values in for calculation in next time step
-        self.const_pf_mode_enable_exec_prev = exec_delay.const_pf_mode_enable_exec
-        self.qv_mode_enable_exec_prev = exec_delay.qv_mode_enable_exec
-        self.qp_mode_enable_exec_prev = exec_delay.qp_mode_enable_exec
-        self.const_q_mode_enable_exec_prev = exec_delay.const_q_mode_enable_exec
-        
+        self.const_pf_mode_enable_exec_prev = self.exec_delay.const_pf_mode_enable_exec
+        self.qv_mode_enable_exec_prev = self.exec_delay.qv_mode_enable_exec
+        self.qp_mode_enable_exec_prev = self.exec_delay.qp_mode_enable_exec
+        self.const_q_mode_enable_exec_prev = self.exec_delay.const_q_mode_enable_exec
+
         return q_desired_kvar
 
     def __str__(self):
         return f"q_qv = {self.q_qv_desired_kvar}, q_const_pf = {self.q_const_pf_desired_kvar}, q_qp = {self.q_qp_desired_kvar}, q_const_q = {self.q_const_q_desired_kvar}"
-        
-        
-    
-        
+
+
+
+

@@ -58,7 +58,10 @@ class EnterServicePerformance:
     EPRI Report Reference: Section 3.7 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
-    def __init__(self):
+    def __init__(self, der_file, exec_delay):
+        self.der_file = der_file
+        self.exec_delay = exec_delay
+
         self.rrl = Ramping()
         self.edge = EdgeDetector(
             up_edge=True,
@@ -66,7 +69,7 @@ class EnterServicePerformance:
         self.es_flag = None
         self.p_desired_kw = None
 
-    def es_performance(self, der_file, exec_delay, p_act_supp_kw, der_status):
+    def es_performance(self, p_act_supp_kw, der_status):
         """
         Variable used in this function:
         
@@ -95,8 +98,8 @@ class EnterServicePerformance:
             p_es_kw = 0
 
         # Eq. 30, ramp rate limiter
-        if exec_delay.es_ramp_rate_exec>0:
-            p_es_ramp_kw = der_file.NP_P_MAX * self.rrl.ramp(p_es_kw/der_file.NP_P_MAX, exec_delay.es_ramp_rate_exec, exec_delay.es_ramp_rate_exec)
+        if self.exec_delay.es_ramp_rate_exec>0:
+            p_es_ramp_kw = self.der_file.NP_P_MAX * self.rrl.ramp(p_es_kw/self.der_file.NP_P_MAX, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
         else:
             p_es_ramp_kw = p_es_kw
 

@@ -84,8 +84,12 @@ class CapabilityPriority:
     Calculate active and reactive power power output limited by DER ratings, according to the priority of responses.
     EPRI Report Reference: Section 3.9 in Report #3002021694: IEEE 1547-2018 DER Model
     """
+    def __init__(self, der_file, exec_delay):
+        self.der_file = der_file
+        self.exec_delay = exec_delay
 
-    def calculate_limited_pq(self, der_file, exec_delay, p_desired_kw, q_desired_kvar):
+
+    def calculate_limited_pq(self,  p_desired_kw, q_desired_kvar):
         """
         Calculate limited DER output P and Q based on DER ratings and priority of responses.
 
@@ -119,81 +123,81 @@ class CapabilityPriority:
         :param q_limited_kvar:	DER output reactive power after considering DER apparent power limits
         """
 
-        self.q_requirement_abs = (0.25 if der_file.NP_NORMAL_OP_CAT == 'CAT_A' else 0.44) * der_file.NP_VA_MAX
-        self.q_requirement_inj = 0.44 * der_file.NP_VA_MAX
+        self.q_requirement_abs = (0.25 if self.der_file.NP_NORMAL_OP_CAT == 'CAT_A' else 0.44) * self.der_file.NP_VA_MAX
+        self.q_requirement_inj = 0.44 * self.der_file.NP_VA_MAX
         
-        if exec_delay.const_q_mode_enable_exec or exec_delay.qv_mode_enable_exec:
+        if self.exec_delay.const_q_mode_enable_exec or self.exec_delay.qv_mode_enable_exec:
             # Constant-Q or Volt-Var
             # Eq. 58, find the range of DER output Q with given desired P
-            q_max_inj = der_file.NP_VA_MAX * np.interp(p_desired_kw/der_file.NP_P_MAX, der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'], der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
-            q_max_abs = der_file.NP_VA_MAX * np.interp(p_desired_kw/der_file.NP_P_MAX, der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'], der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
+            q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_desired_kw/self.der_file.NP_P_MAX, self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'], self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
+            q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_desired_kw/self.der_file.NP_P_MAX, self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'], self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
             # Eq. 59, limit q_desired_kvar according to limit (+injection / -absorption)
             q_limited_by_p_kvar = min(q_max_inj, max(-q_max_abs, q_desired_kvar))
 
-            if p_desired_kw**2+q_limited_by_p_kvar**2 < der_file.NP_VA_MAX**2:
+            if p_desired_kw**2+q_limited_by_p_kvar**2 < self.der_file.NP_VA_MAX**2:
                 # Eq. 60, if within DER max apparent power rating, no changes need to be made
                 p_limited_kw = p_desired_kw
                 q_limited_kvar = q_limited_by_p_kvar
-            elif der_file.NP_PRIO_OUTSIDE_MIN_Q_REQ == 'ACTIVE':
+            elif self.der_file.NP_PRIO_OUTSIDE_MIN_Q_REQ == 'ACTIVE':
                 # Eq. 61 reserve Q capability to the table 7 requirement and give the rest to P
                 q_limited_kvar = min(self.q_requirement_inj, max(-self.q_requirement_abs, q_limited_by_p_kvar))
-                p_limited_kw = np.sqrt(der_file.NP_VA_MAX**2-q_limited_kvar**2) * np.sign(p_desired_kw) #TODO update in spec
+                p_limited_kw = np.sqrt(self.der_file.NP_VA_MAX**2-q_limited_kvar**2) * np.sign(p_desired_kw) #TODO update in spec
 
             else:
                 # Eq. 62, Reactive power priority, reduce P to match apparent power limit
                 q_limited_kvar = q_limited_by_p_kvar
-                p_limited_kw = np.sqrt(der_file.NP_VA_MAX**2-q_limited_by_p_kvar**2) * np.sign(p_desired_kw)  #TODO update in spec
+                p_limited_kw = np.sqrt(self.der_file.NP_VA_MAX**2-q_limited_by_p_kvar**2) * np.sign(p_desired_kw)  #TODO update in spec
 
-        elif exec_delay.const_pf_mode_enable_exec:
+        elif self.exec_delay.const_pf_mode_enable_exec:
             # Constant-PF
-            if p_desired_kw ** 2 + q_desired_kvar ** 2 < der_file.NP_VA_MAX ** 2:
+            if p_desired_kw ** 2 + q_desired_kvar ** 2 < self.der_file.NP_VA_MAX ** 2:
                 # Eq. 63, no changes to be made
                 p_limited_pf_kw = p_desired_kw
                 q_limited_pf_kvar = q_desired_kvar
             else:
                 # Eq. 64, reduce P & Q proportionally to maintain constant power factor
-                k = min(1., der_file.NP_VA_MAX/max(1.e-9, np.sqrt(p_desired_kw**2+q_desired_kvar**2)))
+                k = min(1., self.der_file.NP_VA_MAX/max(1.e-9, np.sqrt(p_desired_kw**2+q_desired_kvar**2)))
                 p_limited_pf_kw = p_desired_kw*k
                 q_limited_pf_kvar = q_desired_kvar*k
 
             # Eq. 65, reduce Q if outside of DER Q capability range
             if q_limited_pf_kvar > 0:
-                xp = [x*der_file.NP_P_MAX for x in der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU']]
-                yp = [y*der_file.NP_VA_MAX for y in der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU']]
-                p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(der_file.NP_VA_MAX, xp, yp)
+                xp = [x*self.der_file.NP_P_MAX for x in self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU']]
+                yp = [y*self.der_file.NP_VA_MAX for y in self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU']]
+                p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(self.der_file.NP_VA_MAX, xp, yp)
             else:
-                xp = [x*der_file.NP_P_MAX for x in der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU']]
-                yp = [y*der_file.NP_VA_MAX for y in der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU']]
-                p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(der_file.NP_VA_MAX, xp, yp)
+                xp = [x*self.der_file.NP_P_MAX for x in self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU']]
+                yp = [y*self.der_file.NP_VA_MAX for y in self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU']]
+                p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(self.der_file.NP_VA_MAX, xp, yp)
 
             if abs(q_limited_pf_kvar) > q_itcp_kvar:
                 p_limited_kw = min(p_itcp_kw, p_desired_kw)
             else:
                 p_limited_kw = p_limited_pf_kw
 
-            q_max_inj = der_file.NP_VA_MAX * np.interp(p_limited_kw/der_file.NP_P_MAX, der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'], der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
-            q_max_abs = der_file.NP_VA_MAX * np.interp(p_limited_kw/der_file.NP_P_MAX, der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'], der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
+            q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_limited_kw/self.der_file.NP_P_MAX, self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'], self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
+            q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_limited_kw/self.der_file.NP_P_MAX, self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'], self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
             q_limited_kvar = min(q_max_inj, max(-q_max_abs, q_limited_pf_kvar))
 
-        elif exec_delay.qp_mode_enable_exec:
+        elif self.exec_delay.qp_mode_enable_exec:
             # Watt-Var
-            if p_desired_kw**2+q_desired_kvar**2 < der_file.NP_VA_MAX**2:
+            if p_desired_kw**2+q_desired_kvar**2 < self.der_file.NP_VA_MAX**2:
                 # Eq. 66, no changes to be made
                 p_limited_kw = p_desired_kw
                 q_limited_qp_kvar = q_desired_kvar
             else:
                 # Eq. 67, find intercept point of VA limit circle and watt-var curve
-                WattVar_Curve = {'P_PU': [exec_delay.qp_curve_p1_gen_exec, exec_delay.qp_curve_p2_gen_exec, exec_delay.qp_curve_p3_gen_exec],
-                                 'Q_PU': [exec_delay.qp_curve_q1_gen_exec, exec_delay.qp_curve_q2_gen_exec, exec_delay.qp_curve_q3_gen_exec]},
-                xp = [x*der_file.NP_P_MAX for x in WattVar_Curve['P_PU']]
-                yp = [y*der_file.NP_VA_MAX for y in WattVar_Curve['Q_PU']]
-                p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(der_file.NP_VA_MAX, xp, yp)
+                WattVar_Curve = {'P_PU': [self.exec_delay.qp_curve_p1_gen_exec, self.exec_delay.qp_curve_p2_gen_exec, self.exec_delay.qp_curve_p3_gen_exec],
+                                 'Q_PU': [self.exec_delay.qp_curve_q1_gen_exec, self.exec_delay.qp_curve_q2_gen_exec, self.exec_delay.qp_curve_q3_gen_exec]},
+                xp = [x*self.der_file.NP_P_MAX for x in WattVar_Curve['P_PU']]
+                yp = [y*self.der_file.NP_VA_MAX for y in WattVar_Curve['Q_PU']]
+                p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(self.der_file.NP_VA_MAX, xp, yp)
                 p_limited_kw = min(p_itcp_kw, p_desired_kw)
                 q_limited_qp_kvar = min(abs(q_itcp_kvar), abs(q_desired_kvar))*np.sign(q_desired_kvar)
 
             # Eq. 68, reduce Q if outside of DER Q capability range
-            q_max_inj = der_file.NP_VA_MAX * np.interp(p_desired_kw/der_file.NP_P_MAX, der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'], der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
-            q_max_abs = der_file.NP_VA_MAX * np.interp(p_desired_kw/der_file.NP_P_MAX, der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'], der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
+            q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_desired_kw/self.der_file.NP_P_MAX, self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'], self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
+            q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_desired_kw/self.der_file.NP_P_MAX, self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'], self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
             q_limited_kvar = min(q_max_inj, max(-q_max_abs, q_limited_qp_kvar))
 
         else:

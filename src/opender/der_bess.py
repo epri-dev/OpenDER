@@ -26,22 +26,22 @@ class DER_BESS(DER):
         self.der_input.operating_condition_input_processing(self.der_file)
 
         # Execution delay
-        self.executiondelay.mode_and_execution_delay(self.der_file)
+        self.exec_delay.mode_and_execution_delay(self.der_file)
 
         # Enter service and trip decision making
-        self.der_status = self.enterservicetrip.es_decision(self.der_file, self.executiondelay, self.der_input)
+        self.der_status = self.enterservicetrip.es_decision(self.der_file, self.exec_delay, self.der_input)
 
         # Calculate desired active power
-        self.p_act_supp_kw = self.activepowerfunc.calculate_p_act_supp_kw(self.der_file, self.executiondelay, self.der_input, self.p_out_kw)
+        self.p_act_supp_kw = self.activepowerfunc.calculate_p_funcs(self.der_file, self.exec_delay, self.der_input, self.p_out_kw)
 
         # Enter service ramp
-        self.p_desired_kw = self.enterserviceperf.es_performance(self.der_file, self.executiondelay, self.p_act_supp_kw, self.der_status)
+        self.p_desired_kw = self.enterserviceperf.es_performance(self.der_file, self.exec_delay, self.p_act_supp_kw, self.der_status)
 
         # Calculate desired reactive power
-        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.der_file, self.executiondelay, self.der_input, self.p_desired_kw, self.der_status)
+        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.der_file, self.exec_delay, self.der_input, self.p_desired_kw, self.der_status)
 
         # Limit DER output based on kVA rating and DER capability curve
-        self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.der_file, self.executiondelay, p_desired_kw=self.p_desired_kw,q_desired_kvar=self.q_desired_kvar)
+        self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.der_file, self.exec_delay, p_desired_kw=self.p_desired_kw, q_desired_kvar=self.q_desired_kvar)
 
         # Determine DER model output value
         self.p_out_kw, self.q_out_kvar = rem_ctrl.RemainingControl(self.p_limited_kw, self.q_limited_kvar)

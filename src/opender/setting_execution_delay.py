@@ -22,23 +22,26 @@ class SettingExecutionDelay:
     """
 
     parameters_list = ['AP_LIMIT_ENABLE', 'AP_LIMIT', 'ES_RANDOMIZED_DELAY', 'ES_PERMIT_SERVICE',
-                       'ES_V_LOW', 'ES_V_HIGH', 'ES_F_LOW' , 'ES_F_HIGH', 'ES_DELAY', 'ES_RAMP_RATE',
+                       'ES_V_LOW', 'ES_V_HIGH', 'ES_F_LOW', 'ES_F_HIGH', 'ES_DELAY', 'ES_RAMP_RATE',
                        'CONST_PF_MODE_ENABLE', 'CONST_PF_EXCITATION', 'CONST_PF', 'CONST_Q_MODE_ENABLE', 'CONST_Q',
                        'QV_MODE_ENABLE', 'QV_VREF', 'QV_VREF_AUTO_MODE',
                        'QV_VREF_TIME', 'QV_CURVE_V2', 'QV_CURVE_Q2', 'QV_CURVE_V3', 'QV_CURVE_Q3', 'QV_CURVE_V1',
                        'QV_CURVE_Q1', 'QV_CURVE_V4', 'QV_CURVE_Q4', 'QV_OLRT', 'QP_MODE_ENABLE', 'QP_CURVE_P3_GEN',
-                       'QP_CURVE_P2_GEN', 'QP_CURVE_P1_GEN','QP_CURVE_Q3_GEN', 'QP_CURVE_Q2_GEN', 'QP_CURVE_Q1_GEN',
-                       'PV_MODE_ENABLE', 'PV_CURVE_V1', 'PV_CURVE_P1', 'PV_CURVE_V2',
-                       'PV_CURVE_P2', 'PV_OLRT',
-                       'OV2_TRIP_V', 'OV2_TRIP_T' , 'OV1_TRIP_V' ,'OV1_TRIP_T' , 'UV1_TRIP_V' , 'UV1_TRIP_T', 'UV2_TRIP_V',
-                       'UV2_TRIP_T' , 'OF2_TRIP_F' , 'OF2_TRIP_T' , 'OF1_TRIP_F', 'OF1_TRIP_T', 'UF1_TRIP_F', 'UF1_TRIP_T',
-                       'UF2_TRIP_F', 'UF2_TRIP_T', 'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF', 'PF_OLRT',
+                       'QP_CURVE_P2_GEN', 'QP_CURVE_P1_GEN', 'QP_CURVE_Q3_GEN', 'QP_CURVE_Q2_GEN', 'QP_CURVE_Q1_GEN',
+                       'QP_CURVE_P3_LOAD', 'QP_CURVE_P2_LOAD', 'QP_CURVE_P1_LOAD', 'QP_CURVE_Q3_LOAD',
+                       'QP_CURVE_Q2_LOAD', 'QP_CURVE_Q1_LOAD', 'PV_MODE_ENABLE', 'PV_CURVE_V1', 'PV_CURVE_P1',
+                       'PV_CURVE_V2', 'PV_CURVE_P2', 'PV_OLRT',
+                       'OV2_TRIP_V', 'OV2_TRIP_T', 'OV1_TRIP_V', 'OV1_TRIP_T', 'UV1_TRIP_V', 'UV1_TRIP_T', 'UV2_TRIP_V',
+                       'UV2_TRIP_T', 'OF2_TRIP_F', 'OF2_TRIP_T', 'OF1_TRIP_F', 'OF1_TRIP_T', 'UF1_TRIP_F', 'UF1_TRIP_T',
+                       'UF2_TRIP_F', 'UF2_TRIP_T', 'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF', 'PF_OLRT'
                        ]
 
-    __slots__ = tuple([param.lower()+'_exec' for param in parameters_list]+['tdelay','der_file_exec'])
+    __slots__ = tuple([param.lower()+'_exec' for param in parameters_list]+['tdelay','der_file_exec','der_file'])
 
 
-    def __init__(self):
+    def __init__(self, der_file):
+
+        self.der_file = der_file
 
         self.tdelay = td.TimeDelay()
 
@@ -92,6 +95,12 @@ class SettingExecutionDelay:
         self.qp_curve_q1_gen_exec = None
         self.qp_curve_q2_gen_exec = None
         self.qp_curve_q3_gen_exec = None
+        self.qp_curve_p1_load_exec = None
+        self.qp_curve_p2_load_exec = None
+        self.qp_curve_p3_load_exec = None
+        self.qp_curve_q1_load_exec = None
+        self.qp_curve_q2_load_exec = None
+        self.qp_curve_q3_load_exec = None
         self.qp_mode_enable_exec = None
 
         self.es_v_low_exec = None
@@ -118,9 +127,9 @@ class SettingExecutionDelay:
         self.es_randomized_delay_exec = None
         self.es_ramp_rate_exec = None
 
-    def mode_and_execution_delay(self,der_file):
-        
-        self.der_file_exec = self.tdelay.tdelay(der_file,der_file.NP_SET_EXE_TIME)
+    def mode_and_execution_delay(self):
+
+        self.der_file_exec = self.tdelay.tdelay(self.der_file,self.der_file.NP_SET_EXE_TIME)
 
         self.ap_limit_enable_exec = self.der_file_exec.AP_LIMIT_ENABLE
         self.ap_limit_exec = self.der_file_exec.AP_LIMIT
@@ -157,6 +166,12 @@ class SettingExecutionDelay:
         self.qp_curve_q2_gen_exec = self.der_file_exec.QP_CURVE_Q2_GEN
         self.qp_curve_p3_gen_exec = self.der_file_exec.QP_CURVE_P3_GEN
         self.qp_curve_q3_gen_exec = self.der_file_exec.QP_CURVE_Q3_GEN
+        self.qp_curve_p1_load_exec = self.der_file_exec.QP_CURVE_P1_LOAD
+        self.qp_curve_q1_load_exec = self.der_file_exec.QP_CURVE_Q1_LOAD
+        self.qp_curve_p2_load_exec = self.der_file_exec.QP_CURVE_P2_LOAD
+        self.qp_curve_q2_load_exec = self.der_file_exec.QP_CURVE_Q2_LOAD
+        self.qp_curve_p3_load_exec = self.der_file_exec.QP_CURVE_P3_LOAD
+        self.qp_curve_q3_load_exec = self.der_file_exec.QP_CURVE_Q3_LOAD
         self.pv_mode_enable_exec = self.der_file_exec.PV_MODE_ENABLE
         self.pv_curve_p1_exec = self.der_file_exec.PV_CURVE_P1
         self.pv_curve_v1_exec = self.der_file_exec.PV_CURVE_V1

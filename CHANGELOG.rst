@@ -1,12 +1,16 @@
 
 Changelog
 =========
-Unreleased updates
------------------
+Unreleased changes
+------------------
+* Include some energy storage behaviors (in development)
+
+1.0.2 (2022-07-18)
+------------------
 * Improve model input validity check process
 
 1.0.1 (2022-06-17)
------------------
+------------------
 * Include parameter csv files into the PyPI release
 
 1.0.0 (2022-05-17)

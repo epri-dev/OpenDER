@@ -26,7 +26,7 @@ class EnterServiceTrip:
     """
     Enter Service and Trip related behaviors
     """
-    def __init__(self, STATUS_INIT):
+    def __init__(self, der_file, exec_delay, der_input, STATUS_INIT):
         """
         :NP_P_MIN_PU:	DER minimum active power output
         :ES_RANDOMIZED_DELAY_ACTUAL:	Specified value for enter service randomized delay for simulation purpose
@@ -34,6 +34,11 @@ class EnterServiceTrip:
         :NP_VA_MAX: Apparent power maximum rating
         :STATUS_INIT:   Initial DER Status
         """
+
+        self.der_file = der_file
+        self.exec_delay = exec_delay
+        self.der_input = der_input
+
         # initialize object parameters
         self.es_flag = 0
         self.es_randomized_delay_time = 0
@@ -54,7 +59,7 @@ class EnterServiceTrip:
         self.debug = None
 
 
-    def es_decision(self, der_file, exec_delay, der_input: op_cond_proc.DERInputs):
+    def es_decision(self):
         """
         Generate DER status (ON/OFF) based on enter service and trip settings
         EPRI Report Reference: Section 3.5 in Report #3002021694: IEEE 1547-2018 DER Model
@@ -116,14 +121,14 @@ class EnterServiceTrip:
 
 
         # Eq 9, enter service logic of voltage and frequency checks
-        es_vf_crit = (der_input.v_low_pu >= exec_delay.es_v_low_exec) and (der_input.v_high_pu <= exec_delay.es_v_high_exec) \
-            and (der_input.freq_hz >= exec_delay.es_f_low_exec) and (der_input.freq_hz <= exec_delay.es_f_high_exec) and exec_delay.es_permit_service_exec
+        es_vf_crit = (self.der_input.v_low_pu >= self.exec_delay.es_v_low_exec) and (self.der_input.v_high_pu <= self.exec_delay.es_v_high_exec) \
+            and (self.der_input.freq_hz >= self.exec_delay.es_f_low_exec) and (self.der_input.freq_hz <= self.exec_delay.es_f_high_exec) and self.exec_delay.es_permit_service_exec
 
         # Eq 10, conditional delayed enable that voltage and frequency checks must be satisfied for a time delay period
-        es_vft_crit = self.vft_delay.con_del_enable(es_vf_crit, exec_delay.es_delay_exec)
+        es_vft_crit = self.vft_delay.con_del_enable(es_vf_crit, self.exec_delay.es_delay_exec)
 
         # Calling Eq 11
-        es_p_crit = self.es_p_crit(der_input.p_dc_pu, der_file.NP_P_MIN_PU)
+        es_p_crit = self.es_p_crit(self.der_input.p_dc_pu, self.der_file.NP_P_MIN_PU)
 
         # Eq 12, Enter service criterion met
         es_crit = es_vft_crit and es_p_crit
@@ -133,12 +138,12 @@ class EnterServiceTrip:
             # if DER is on, reset randomized delay to 0 for next time use.
             self.es_randomized_delay_time = 0
         else:
-            if der_file.ES_RANDOMIZED_DELAY_ACTUAL > 0 and es_crit:
-                self.es_randomized_delay_time = der_file.ES_RANDOMIZED_DELAY_ACTUAL
-            elif (exec_delay.es_ramp_rate_exec == 0) and (exec_delay.es_randomized_delay_exec > 0) and (der_file.NP_VA_MAX < 500):
+            if self.der_file.ES_RANDOMIZED_DELAY_ACTUAL > 0 and es_crit:
+                self.es_randomized_delay_time = self.der_file.ES_RANDOMIZED_DELAY_ACTUAL
+            elif (self.exec_delay.es_ramp_rate_exec == 0) and (self.exec_delay.es_randomized_delay_exec > 0) and (self.der_file.NP_VA_MAX < 500):
                 if self.es_randomized_delay_time == 0:
                     # If enabled, create a new randomized delay when enter service criterion made
-                    self.es_randomized_delay_time = np.random.random() * exec_delay.es_randomized_delay_exec
+                    self.es_randomized_delay_time = np.random.random() * self.exec_delay.es_randomized_delay_exec
             else:
                 self.es_randomized_delay_time = 0
 
@@ -148,21 +153,21 @@ class EnterServiceTrip:
         der_status_es = es_crit_delay
 
         # Eq 15, under- and over-voltage, under- and over-frequency trip criterion using conditional delayed enable
-        uv1_trip = self.uv1_delay.con_del_enable(der_input.v_low_pu < exec_delay.uv1_trip_v_exec, exec_delay.uv1_trip_t_exec)
-        ov1_trip = self.ov1_delay.con_del_enable(der_input.v_high_pu > exec_delay.ov1_trip_v_exec, exec_delay.ov1_trip_t_exec)
-        uv2_trip = self.uv2_delay.con_del_enable(der_input.v_low_pu < exec_delay.uv2_trip_v_exec, exec_delay.uv2_trip_t_exec)
-        ov2_trip = self.ov2_delay.con_del_enable(der_input.v_high_pu > exec_delay.ov2_trip_v_exec, exec_delay.ov2_trip_t_exec)
-        uf1_trip = self.uf1_delay.con_del_enable(der_input.freq_hz < exec_delay.uf1_trip_f_exec, exec_delay.uf1_trip_t_exec)
-        of1_trip = self.of1_delay.con_del_enable(der_input.freq_hz > exec_delay.of1_trip_f_exec, exec_delay.of1_trip_t_exec)
-        uf2_trip = self.uf2_delay.con_del_enable(der_input.freq_hz < exec_delay.uf2_trip_f_exec, exec_delay.uf2_trip_t_exec)
-        of2_trip = self.of2_delay.con_del_enable(der_input.freq_hz > exec_delay.of2_trip_f_exec, exec_delay.of2_trip_t_exec)
+        uv1_trip = self.uv1_delay.con_del_enable(self.der_input.v_low_pu < self.exec_delay.uv1_trip_v_exec, self.exec_delay.uv1_trip_t_exec)
+        ov1_trip = self.ov1_delay.con_del_enable(self.der_input.v_high_pu > self.exec_delay.ov1_trip_v_exec, self.exec_delay.ov1_trip_t_exec)
+        uv2_trip = self.uv2_delay.con_del_enable(self.der_input.v_low_pu < self.exec_delay.uv2_trip_v_exec, self.exec_delay.uv2_trip_t_exec)
+        ov2_trip = self.ov2_delay.con_del_enable(self.der_input.v_high_pu > self.exec_delay.ov2_trip_v_exec, self.exec_delay.ov2_trip_t_exec)
+        uf1_trip = self.uf1_delay.con_del_enable(self.der_input.freq_hz < self.exec_delay.uf1_trip_f_exec, self.exec_delay.uf1_trip_t_exec)
+        of1_trip = self.of1_delay.con_del_enable(self.der_input.freq_hz > self.exec_delay.of1_trip_f_exec, self.exec_delay.of1_trip_t_exec)
+        uf2_trip = self.uf2_delay.con_del_enable(self.der_input.freq_hz < self.exec_delay.uf2_trip_f_exec, self.exec_delay.uf2_trip_t_exec)
+        of2_trip = self.of2_delay.con_del_enable(self.der_input.freq_hz > self.exec_delay.of2_trip_f_exec, self.exec_delay.of2_trip_t_exec)
 
         # Eq 16, if available DC power is lower than minimum DER output, trip DER
-        p_min_trip = der_input.p_dc_pu < der_file.NP_P_MIN_PU
+        p_min_trip = self.der_input.p_dc_pu < self.der_file.NP_P_MIN_PU
 
         # Eq 17, final trip decision based on all trip conditions
         der_status_trip = uv1_trip or ov1_trip or uv2_trip or ov2_trip \
-            or uf1_trip or of1_trip or uf2_trip or of2_trip or p_min_trip or not exec_delay.es_permit_service_exec
+            or uf1_trip or of1_trip or uf2_trip or of2_trip or p_min_trip or not self.exec_delay.es_permit_service_exec
         der_status_trip = der_status_trip
 
         # Eq 18 generate DER ON/OFF status based on flip-flop logic

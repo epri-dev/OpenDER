@@ -64,13 +64,15 @@ class DER:
         self.q_out_kvar = None
 
         # DER model modules
-        self.enterservicetrip = EnterServiceTrip(self.der_file.STATUS_INIT)
-        self.enterserviceperf = EnterServicePerformance()
-        self.reactivepowerfunc = DesiredReactivePower()
-        self.limited_p_q = capability_and_priority.CapabilityPriority()
-        self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = DesiredActivePower()
-        self.der_input = DERInputs()
+        self.der_input = DERInputs(self.der_file)
+        self.exec_delay = setting_execution_delay.SettingExecutionDelay(self.der_file)
+        self.enterservicetrip = EnterServiceTrip(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
+        self.activepowerfunc = DesiredActivePower(self.der_file, self.exec_delay, self.der_input)
+        self.enterserviceperf = EnterServicePerformance(self.der_file, self.exec_delay)
+        self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
+        self.limited_p_q = capability_and_priority.CapabilityPriority(self.der_file, self.exec_delay)
+
+
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
                          f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None) -> None:
@@ -135,25 +137,25 @@ class DER:
         self.time = self.time + self.__class__.t_s
 
         # Input processing
-        self.der_input.operating_condition_input_processing(self.der_file)
+        self.der_input.operating_condition_input_processing()
 
         # Execution delay
-        self.executiondelay.mode_and_execution_delay(self.der_file)
+        self.exec_delay.mode_and_execution_delay()
 
         # Enter service and trip decision making
-        self.der_status = self.enterservicetrip.es_decision(self.der_file, self.executiondelay, self.der_input)
+        self.der_status = self.enterservicetrip.es_decision()
 
         # Calculate desired active power
-        self.p_act_supp_kw = self.activepowerfunc.calculate_p_act_supp_kw(self.der_file, self.executiondelay, self.der_input, self.p_out_kw)
+        self.p_act_supp_kw = self.activepowerfunc.calculate_p_funcs(self.p_out_kw)
 
         # Enter service ramp
-        self.p_desired_kw = self.enterserviceperf.es_performance(self.der_file, self.executiondelay, self.p_act_supp_kw, self.der_status)
+        self.p_desired_kw = self.enterserviceperf.es_performance(self.p_act_supp_kw, self.der_status)
 
         # Calculate desired reactive power
-        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.der_file, self.executiondelay, self.der_input, self.p_desired_kw, self.der_status)
+        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.p_desired_kw, self.der_status)
 
         # Limit DER output based on kVA rating and DER capability curve
-        self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.der_file, self.executiondelay, p_desired_kw=self.p_desired_kw,q_desired_kvar=self.q_desired_kvar)
+        self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.p_desired_kw, self.q_desired_kvar)
 
         # Determine DER model output value
         self.p_out_kw, self.q_out_kvar = rem_ctrl.RemainingControl(self.p_limited_kw, self.q_limited_kvar)
@@ -164,12 +166,13 @@ class DER:
         # only used when need to reset DER model
         self.der_status = self.der_file.STATUS_INIT
         self.time = 0
-        self.enterservicetrip = EnterServiceTrip(self.der_file.STATUS_INIT)
-        self.enterserviceperf = EnterServicePerformance()
-        self.reactivepowerfunc = DesiredReactivePower()
-        self.limited_p_q = capability_and_priority.CapabilityPriority()
-        self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = DesiredActivePower()
+        # self.der_input = DERInputs(self.der_file)
+        self.exec_delay = setting_execution_delay.SettingExecutionDelay(self.der_file)
+        self.enterservicetrip = EnterServiceTrip(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
+        self.activepowerfunc = DesiredActivePower(self.der_file, self.exec_delay, self.der_input)
+        self.enterserviceperf = EnterServicePerformance(self.der_file, self.exec_delay)
+        self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
+        self.limited_p_q = capability_and_priority.CapabilityPriority(self.der_file, self.exec_delay)
 
         self.p_out_kw = None
         self.q_out_kvar = None

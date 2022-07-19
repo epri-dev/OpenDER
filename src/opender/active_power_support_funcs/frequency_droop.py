@@ -22,7 +22,12 @@ class FreqDroop:
     EPRI Report Reference: Section 3.6.3 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     
-    def __init__(self):
+    def __init__(self, der_file, exec_delay, der_input):
+
+        self.der_file = der_file
+        self.exec_delay = exec_delay
+        self.der_input = der_input
+
         self.pf_lpf = LowPassFilter()
         self.p_pf_pre_pu_prev = None
         self.p_out_kw_prev = None
@@ -37,7 +42,7 @@ class FreqDroop:
         self.pf_uf_active = 0
         self.pf_of_active = 0
 
-    def calculate_p_pf_pu(self, der_file, exec_delay, der_input, p_out_kw, ap_limit_pu, p_pv_limit_pu):
+    def calculate_p_pf_pu(self, p_out_kw, ap_limit_pu, p_pv_limit_pu):
         
         """
         Calculate power reference according to frequency-droop function
@@ -75,12 +80,12 @@ class FreqDroop:
         """
 
         # Eq. 22, detect if in under-frequency or over-frequency condition
-        if(der_input.freq_hz < (60 - exec_delay.pf_dbuf_exec)) and der_file.PF_MODE_ENABLE:
+        if(self.der_input.freq_hz < (60 - self.exec_delay.pf_dbuf_exec)) and self.der_file.PF_MODE_ENABLE:
             self.pf_uf = 1
         else:
             self.pf_uf = 0
             
-        if(der_input.freq_hz > (60 + exec_delay.pf_dbof_exec)) and der_file.PF_MODE_ENABLE:
+        if(self.der_input.freq_hz > (60 + self.exec_delay.pf_dbof_exec)) and self.der_file.PF_MODE_ENABLE:
             self.pf_of = 1
         else:
             self.pf_of = 0
@@ -93,18 +98,18 @@ class FreqDroop:
 
         # Initialize internal state variables of DER output in previous time step
         if(self.p_out_kw_prev is None):
-            self.p_out_kw_prev = min((der_input.p_dc_pu * der_file.NP_P_MAX * der_file.NP_EFFICIENCY),
-                                     (ap_limit_pu*der_file.NP_P_MAX),
-                                     (p_pv_limit_pu*der_file.NP_P_MAX))
+            self.p_out_kw_prev = min((self.der_input.p_dc_pu * self.der_file.NP_P_MAX * self.der_file.NP_EFFICIENCY),
+                                     (ap_limit_pu*self.der_file.NP_P_MAX),
+                                     (p_pv_limit_pu*self.der_file.NP_P_MAX))
         else:
             self.p_out_kw_prev = p_out_kw
 
         # Initialize internal state variables of pre-disturbance active power output
         if(self.p_pf_pre_pu_prev is None):
-            self.p_pf_pre_pu_prev = min((der_input.p_dc_pu * der_file.NP_EFFICIENCY),ap_limit_pu,p_pv_limit_pu)
+            self.p_pf_pre_pu_prev = min((self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY),ap_limit_pu,p_pv_limit_pu)
 
         # Eq. 23, calculate pre-disturbance active power output
-        p_pf_pre_pu_temp = self.p_out_kw_prev / der_file.NP_P_MAX
+        p_pf_pre_pu_temp = self.p_out_kw_prev / self.der_file.NP_P_MAX
         if(self.pf_uf == 1 and self.pf_uf_prev ==1):
             p_pf_pre_pu = self.p_pf_pre_pu_prev
         elif(self.pf_of == 1 and self.pf_of_prev == 1):
@@ -113,21 +118,21 @@ class FreqDroop:
             p_pf_pre_pu = p_pf_pre_pu_temp
 
         # Eq. 24, calculate active power reference according to frequency-droop
-        p_pf_of_pu = p_pf_pre_pu - ((der_input.freq_hz - (60 + exec_delay.pf_dbof_exec)) / (60 * exec_delay.pf_kof_exec))
-        p_pf_of_pu = max(p_pf_of_pu, der_file.NP_P_MIN_PU)
+        p_pf_of_pu = p_pf_pre_pu - ((self.der_input.freq_hz - (60 + self.exec_delay.pf_dbof_exec)) / (60 * self.exec_delay.pf_kof_exec))
+        p_pf_of_pu = max(p_pf_of_pu, self.der_file.NP_P_MIN_PU)
         
-        p_pf_uf_pu = p_pf_pre_pu + (((60 - exec_delay.pf_dbof_exec) - der_input.freq_hz) / ( (60 * exec_delay.pf_kuf_exec)))
-        p_pf_uf_pu = min(p_pf_uf_pu, der_input.p_dc_pu * der_file.NP_EFFICIENCY)
+        p_pf_uf_pu = p_pf_pre_pu + (((60 - self.exec_delay.pf_dbof_exec) - self.der_input.freq_hz) / ( (60 * self.exec_delay.pf_kuf_exec)))
+        p_pf_uf_pu = min(p_pf_uf_pu, self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY)
         
         if(self.pf_of == 1):
             p_pf_ref_pu = p_pf_of_pu
         elif(self.pf_uf == 1):
             p_pf_ref_pu = p_pf_uf_pu
         else:
-            p_pf_ref_pu = min((der_input.p_dc_pu * der_file.NP_EFFICIENCY),ap_limit_pu, p_pv_limit_pu)
+            p_pf_ref_pu = min((self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY),ap_limit_pu, p_pv_limit_pu)
 
         # Eq. 25, apply the low pass filter
-        pf_olrt_appl = exec_delay.pf_olrt_exec if self.pf_uf or self.pf_of or self.pf_uf_active or self.pf_of_active else 0
+        pf_olrt_appl = self.exec_delay.pf_olrt_exec if self.pf_uf or self.pf_of or self.pf_uf_active or self.pf_of_active else 0
         self.p_pf_pu = self.pf_lpf.low_pass_filter(p_pf_ref_pu, pf_olrt_appl)
 
         # Initialize internal state variable for the first time step of simulation
@@ -135,11 +140,11 @@ class FreqDroop:
             self.p_pf_pu_prev = self.p_pf_pu
 
         # Eq. 26, decide if frequency droop function is active
-        pf_uf_active_set = self.pf_uf and der_file.PF_MODE_ENABLE
+        pf_uf_active_set = self.pf_uf and self.der_file.PF_MODE_ENABLE
         pf_uf_active_reset = (not pf_uf_active_set) and abs(self.p_pf_pu-p_pf_ref_pu)<1.e-2
         self.pf_uf_active = self.pf_uf_active_ff.flipflop(pf_uf_active_set, pf_uf_active_reset)
 
-        pf_of_active_set = self.pf_of and der_file.PF_MODE_ENABLE
+        pf_of_active_set = self.pf_of and self.der_file.PF_MODE_ENABLE
         pf_of_active_reset = (not pf_of_active_set) and abs(self.p_pf_pu-p_pf_ref_pu)<1.e-2
         self.pf_of_active = self.pf_of_active_ff.flipflop(pf_of_active_set, pf_of_active_reset)
 

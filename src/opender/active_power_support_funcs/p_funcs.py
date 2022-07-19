@@ -21,7 +21,11 @@ class DesiredActivePower:
     EPRI Report Reference: Section 3.6 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
-    def __init__(self):
+    def __init__(self,der_file, exec_delay, der_input):
+
+        self.der_file = der_file
+        self.exec_delay = exec_delay
+        self.der_input = der_input
 
         # Intermediate variables (Active power)
         self.pf_uf_active = None
@@ -32,11 +36,11 @@ class DesiredActivePower:
         self.ap_limit_pu = None
         self.p_pv_limit_pu = None
 
-        self.voltwatt = vw.VoltWatt()
-        self.aplimit = active_power_limit.ActivePowerLimit()
-        self.freqwatt = frequency_droop.FreqDroop()
+        self.aplimit = active_power_limit.ActivePowerLimit(self.der_file, self.exec_delay)
+        self.voltwatt = vw.VoltWatt(self.der_file, self.exec_delay, self.der_input)
+        self.freqwatt = frequency_droop.FreqDroop(self.der_file, self.exec_delay, self.der_input)
 
-    def calculate_p_act_supp_kw(self, der_file, exec_delay, der_input, p_out_kw):
+    def calculate_p_funcs(self, p_out_kw):
         """
         :param ap_limit_pu:	Active power limit
         :param p_pv_limit_pu:	Volt-watt power limit
@@ -58,14 +62,18 @@ class DesiredActivePower:
         """
 
         # Active power limit function
-        self.ap_limit_pu = self.aplimit.calculate_ap_limit_pu(der_file, exec_delay)
+        self.ap_limit_pu = self.aplimit.calculate_ap_limit_pu()
 
         # Volt-watt function
-        self.p_pv_limit_pu = self.voltwatt.calculate_p_pv_limit_pu(der_file, exec_delay, der_input, p_out_kw)
+        self.p_pv_limit_pu = self.voltwatt.calculate_p_pv_limit_pu(p_out_kw)
 
         # Frequency-droop function
-        self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqwatt.calculate_p_pf_pu(der_file, exec_delay, der_input, p_out_kw, self.ap_limit_pu, self.p_pv_limit_pu)
+        self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqwatt.calculate_p_pf_pu(p_out_kw, self.ap_limit_pu, self.p_pv_limit_pu)
 
+        return self.calculate_p_act_supp_kw()
+
+
+    def calculate_p_act_supp_kw(self):
         """
         Calculate desired active power according to volt-watt, frequency-droop, and active power limit functions
         EPRI Report Reference: Section 3.6.4 in Report #3002021694: IEEE 1547-2018 DER Model
@@ -74,32 +82,32 @@ class DesiredActivePower:
         p_act_supp_pu = 1
 
         # Eq. 27 calculate desired active power in per unit
-        if(exec_delay.ap_limit_enable_exec == False and exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(der_input.p_dc_pu * der_file.NP_EFFICIENCY, 1)
+        if(self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
+            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, 1)
 
-        if(exec_delay.ap_limit_enable_exec == True and exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(der_input.p_dc_pu * der_file.NP_EFFICIENCY, self.ap_limit_pu, 1)
+        if(self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
+            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.ap_limit_pu, 1)
 
-        if(exec_delay.ap_limit_enable_exec == False and exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(der_input.p_dc_pu * der_file.NP_EFFICIENCY, self.p_pv_limit_pu, 1)
+        if(self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == False and self.pf_of_active == False):
+            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.p_pv_limit_pu, 1)
 
-        if(exec_delay.ap_limit_enable_exec == True and exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(der_input.p_dc_pu * der_file.NP_EFFICIENCY, self.ap_limit_pu, self.p_pv_limit_pu, 1)
+        if(self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == False and self.pf_of_active == False):
+            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.ap_limit_pu, self.p_pv_limit_pu, 1)
 
-        if(exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True):
-            p_act_supp_pu = min(der_input.p_dc_pu * der_file.NP_EFFICIENCY, self.p_pf_pu, 1)
+        if(self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True):
+            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.p_pf_pu, 1)
 
-        if(exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True):
-            p_act_supp_pu = min(der_input.p_dc_pu * der_file.NP_EFFICIENCY, self.p_pv_limit_pu, self.p_pf_pu, 1)
+        if(self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True):
+            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
-        if(exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True):
+        if(self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True):
             p_act_supp_pu = min(self.p_pf_pu, 1)
 
-        if(exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True):
+        if(self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True):
             p_act_supp_pu = min(self.p_pv_limit_pu, self.p_pf_pu, 1)
 
         # Eq. 28 calculate desired active power in kW
-        self.p_act_supp_kw = p_act_supp_pu * der_file.NP_P_MAX
+        self.p_act_supp_kw = p_act_supp_pu * self.der_file.NP_P_MAX
         return self.p_act_supp_kw
 
     def __str__(self):

@@ -28,8 +28,8 @@ import logging
 
 class DERCommonFileFormat:
     parameters_list = ['NP_NORMAL_OP_CAT', 'NP_ABNORMAL_OP_CAT', 'NP_P_MAX', 'NP_P_MAX_OVER_PF', 'NP_OVER_PF',
-                       'NP_P_MAX_UNDER_PF', 'NP_UNDER_PF', 'NP_VA_MAX',
-                       'NP_Q_MAX_INJ', 'NP_Q_MAX_ABS', 'NP_P_MAX_CHARGE', 'NP_APPARENT_POWER_CHARGE_MAX', 'NP_AC_V_NOM',
+                       'NP_P_MAX_UNDER_PF', 'NP_UNDER_PF', 'NP_VA_MAX', 'NP_Q_MAX_INJ', 'NP_Q_MAX_ABS',
+                       'NP_P_MAX_CHARGE', 'NP_APPARENT_POWER_CHARGE_MAX', 'NP_AC_V_NOM', 'NP_TYPE',
                        'AP_LIMIT_ENABLE', 'AP_LIMIT', 'ES_RANDOMIZED_DELAY', 'ES_PERMIT_SERVICE',
                        'ES_V_LOW', 'ES_V_HIGH', 'ES_F_LOW', 'ES_F_HIGH', 'ES_DELAY', 'ES_RAMP_RATE',
                        'CONST_PF_MODE_ENABLE', 'CONST_PF_EXCITATION', 'CONST_PF', 'CONST_Q_MODE_ENABLE', 'CONST_Q',
@@ -110,6 +110,7 @@ class DERCommonFileFormat:
         self._NP_V_MEAS_UNBALANCE = "AVG"
         self._NP_PRIO_OUTSIDE_MIN_Q_REQ = 'REACTIVE'
         self._NP_PHASE = 'THREE'
+        self._NP_TYPE = None
 
         # Function settings with default values
         self._AP_LIMIT_ENABLE = False
@@ -189,6 +190,10 @@ class DERCommonFileFormat:
         self._PF_KOF = 0.05
         self._PF_KUF = 0.05
         self._PF_OLRT = 5
+
+
+        if self.isNotNaN(param.NP_TYPE):
+            self.NP_TYPE = param.NP_TYPE
 
         if self.isNotNaN(param.NP_NORMAL_OP_CAT):
             self.NP_NORMAL_OP_CAT = param.NP_NORMAL_OP_CAT
@@ -371,6 +376,9 @@ class DERCommonFileFormat:
                 self.QP_CURVE_P1_GEN = self.NP_P_MIN_PU
             else:
                 self.QP_CURVE_P1_GEN = 0.2
+        if self.NP_TYPE == 'PV':
+            self.QP_CURVE_Q1_LOAD = self.QP_CURVE_Q1_GEN
+
         if self.isNotNaN(param.QP_CURVE_P2_GEN):
             self.QP_CURVE_P2_GEN = param.QP_CURVE_P2_GEN
         if self.isNotNaN(param.QP_CURVE_P3_GEN):

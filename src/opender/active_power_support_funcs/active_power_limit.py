@@ -20,10 +20,12 @@ class ActivePowerLimit:
 
     EPRI Report Reference: Section 3.6.2 in Report #3002021694: IEEE 1547-2018 DER Model
     """
-    def __init__(self):
+    def __init__(self, der_file, exec_delay):
+        self.der_file = der_file
+        self.exec_delay = exec_delay
         self.ap_limit_ramp = Ramping()
 
-    def calculate_ap_limit_pu(self, der_file, exec_delay):
+    def calculate_ap_limit_pu(self):
         """
         Calculates and returns output active power limit in per unit
 
@@ -42,8 +44,8 @@ class ActivePowerLimit:
         # If active power limit function is not enabled, the "limited active power" value is set to be the same with
         # DER output active power value, such that when the function enables, the active power limit starts to ramp at
         # that value.
-        if exec_delay.ap_limit_enable_exec:
-            ap_limit_pu = self.ap_limit_ramp.ramp(exec_delay.ap_limit_exec, der_file.AP_RT, der_file.AP_RT)
+        if self.exec_delay.ap_limit_enable_exec:
+            ap_limit_pu = self.ap_limit_ramp.ramp(self.exec_delay.ap_limit_exec,self.der_file.AP_RT, self.der_file.AP_RT)
         else:
             ap_limit_pu = self.ap_limit_ramp.ramp(1, 0, 0)
 

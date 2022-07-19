@@ -20,10 +20,12 @@ class WattVAR:
     |  EPRI Report Reference: Section 3.8.3 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
-    def __init__(self):
+    def __init__(self,der_file, exec_delay):
+        self.der_file = der_file
+        self.exec_delay = exec_delay
         self.qp_lpf = LowPassFilter()
         
-    def calculate_q_qp_desired_kvar(self, der_file, exec_delay, p_desired_kw):
+    def calculate_q_qp_desired_kvar(self, p_desired_kw):
         """
         Calculates and returns output reactive power from Watt-VAR function
 
@@ -51,27 +53,46 @@ class WattVAR:
         """
 
         # Calculate desired actve power in per unit
-        p_desired_pu = p_desired_kw/der_file.NP_P_MAX
+        p_desired_pu = p_desired_kw/self.der_file.NP_P_MAX
 
         # Eq. 46, calculate reactive power reference in per unit according to watt-var curve
-        if( p_desired_pu <= exec_delay.qp_curve_p1_gen_exec):
-            q_qp_desired_ref_pu = exec_delay.qp_curve_q1_gen_exec
+        if p_desired_pu < self.exec_delay.qp_curve_p3_load_exec:
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_load_exec
+
+        if (p_desired_pu <= self.exec_delay.qp_curve_p2_load_exec) and (p_desired_pu > self.exec_delay.qp_curve_p3_load_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_load_exec - ((p_desired_pu - self.exec_delay.qp_curve_p3_load_exec)
+                                  / (self.exec_delay.qp_curve_p2_load_exec - self.exec_delay.qp_curve_p3_load_exec)) \
+                                  * (self.exec_delay.qp_curve_q3_load_exec - self.exec_delay.qp_curve_q2_load_exec)
+
+        if (p_desired_pu <= self.exec_delay.qp_curve_p1_load_exec) and (p_desired_pu > self.exec_delay.qp_curve_p2_load_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q2_load_exec - ((p_desired_pu - self.exec_delay.qp_curve_p2_load_exec)
+                                  / (self.exec_delay.qp_curve_p1_load_exec - self.exec_delay.qp_curve_p2_load_exec)) \
+                                  * (self.exec_delay.qp_curve_q2_load_exec - self.exec_delay.qp_curve_q1_load_exec)
+
+        if (p_desired_pu <= self.exec_delay.qp_curve_p1_gen_exec) and (p_desired_pu > self.exec_delay.qp_curve_p1_load_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q1_load_exec - ((p_desired_pu - self.exec_delay.qp_curve_p1_load_exec)
+                                  / (self.exec_delay.qp_curve_p1_gen_exec - self.exec_delay.qp_curve_p1_load_exec)) \
+                                  * (self.exec_delay.qp_curve_q1_load_exec - self.exec_delay.qp_curve_q1_gen_exec)
+
+        if (p_desired_pu <= self.exec_delay.qp_curve_p2_gen_exec) and (p_desired_pu > self.exec_delay.qp_curve_p1_gen_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q1_gen_exec - ((p_desired_pu - self.exec_delay.qp_curve_p1_gen_exec)
+                                  / (self.exec_delay.qp_curve_p2_gen_exec - self.exec_delay.qp_curve_p1_gen_exec)) \
+                                  * (self.exec_delay.qp_curve_q1_gen_exec - self.exec_delay.qp_curve_q2_gen_exec)
             
-        if((p_desired_pu <= exec_delay.qp_curve_p2_gen_exec) and (p_desired_pu > exec_delay.qp_curve_p1_gen_exec)):
-            q_qp_desired_ref_pu = exec_delay.qp_curve_q1_gen_exec - ((p_desired_pu - exec_delay.qp_curve_p1_gen_exec) / (exec_delay.qp_curve_p2_gen_exec - exec_delay.qp_curve_p1_gen_exec)) * (exec_delay.qp_curve_q1_gen_exec - exec_delay.qp_curve_q2_gen_exec)
+        if (p_desired_pu <= self.exec_delay.qp_curve_p3_gen_exec) and (p_desired_pu > self.exec_delay.qp_curve_p2_gen_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q2_gen_exec - ((p_desired_pu - self.exec_delay.qp_curve_p2_gen_exec)
+                                  / (self.exec_delay.qp_curve_p3_gen_exec - self.exec_delay.qp_curve_p2_gen_exec)) \
+                                  * (self.exec_delay.qp_curve_q2_gen_exec - self.exec_delay.qp_curve_q3_gen_exec)
             
-        if((p_desired_pu <= exec_delay.qp_curve_p3_gen_exec) and (p_desired_pu > exec_delay.qp_curve_p2_gen_exec)):
-            q_qp_desired_ref_pu = exec_delay.qp_curve_q2_gen_exec - ((p_desired_pu - exec_delay.qp_curve_p2_gen_exec) / (exec_delay.qp_curve_p3_gen_exec - exec_delay.qp_curve_p2_gen_exec)) * (exec_delay.qp_curve_q2_gen_exec - exec_delay.qp_curve_q3_gen_exec)
-            
-        if( p_desired_pu > exec_delay.qp_curve_p3_gen_exec):
-            q_qp_desired_ref_pu = exec_delay.qp_curve_q3_gen_exec
+        if p_desired_pu > self.exec_delay.qp_curve_p3_gen_exec:
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_gen_exec
 
         # Eq. 47, calculate actual value of reactive power reference
-        q_qp_desired_ref_kvar = q_qp_desired_ref_pu * der_file.NP_VA_MAX
+        q_qp_desired_ref_kvar = q_qp_desired_ref_pu * self.der_file.NP_VA_MAX
 
         # Eq. 48, apply the low pass filter. Note that there can be multiple different ways to implement this behavior
         # in actual DER. The model may be updated in a future version, according to the lab test results.
 
-        q_qp_desired_kvar = self.qp_lpf.low_pass_filter(q_qp_desired_ref_kvar, der_file.QP_RT)
+        q_qp_desired_kvar = self.qp_lpf.low_pass_filter(q_qp_desired_ref_kvar, self.der_file.QP_RT)
         
         return q_qp_desired_kvar

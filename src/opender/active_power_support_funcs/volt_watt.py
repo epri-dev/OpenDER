@@ -25,10 +25,13 @@ class VoltWatt:
     |  EPRI Report Reference: Section 3.6.1 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
-    def __init__(self):
+    def __init__(self, der_file, exec_delay, der_input):
+        self.der_file = der_file
+        self.exec_delay = exec_delay
+        self.der_input = der_input
         self.pv_lpf = LowPassFilter()
         
-    def calculate_p_pv_limit_pu(self, der_file, exec_delay, der_input, p_out_kw):
+    def calculate_p_pv_limit_pu(self, p_out_kw):
         """
         Calculate active power limits by volt-watt function in per unit
 
@@ -51,16 +54,16 @@ class VoltWatt:
         """
         
         # Eq. 19, calculate active power limit according to volt-watt curve
-        if(der_input.v_meas_pu <= exec_delay.pv_curve_v1_exec):
-            p_pv_limit_ref_pu = exec_delay.pv_curve_p1_exec
-        if(der_input.v_meas_pu >= exec_delay.pv_curve_v2_exec):
-            p_pv_limit_ref_pu = exec_delay.pv_curve_p2_exec
-        if(der_input.v_meas_pu > exec_delay.pv_curve_v1_exec and der_input.v_meas_pu < exec_delay.pv_curve_v2_exec):
-            p_pv_limit_ref_pu = exec_delay.pv_curve_p1_exec - (der_input.v_meas_pu - exec_delay.pv_curve_v1_exec)/(exec_delay.pv_curve_v2_exec-exec_delay.pv_curve_v1_exec) * (exec_delay.pv_curve_p1_exec - exec_delay.pv_curve_p2_exec)
+        if self.der_input.v_meas_pu <= self.exec_delay.pv_curve_v1_exec:
+            p_pv_limit_ref_pu = self.exec_delay.pv_curve_p1_exec
+        if self.der_input.v_meas_pu >= self.exec_delay.pv_curve_v2_exec:
+            p_pv_limit_ref_pu = self.exec_delay.pv_curve_p2_exec
+        if self.exec_delay.pv_curve_v1_exec < self.der_input.v_meas_pu < self.exec_delay.pv_curve_v2_exec:
+            p_pv_limit_ref_pu = self.exec_delay.pv_curve_p1_exec - (self.der_input.v_meas_pu - self.exec_delay.pv_curve_v1_exec)/(self.exec_delay.pv_curve_v2_exec-self.exec_delay.pv_curve_v1_exec) * (self.exec_delay.pv_curve_p1_exec - self.exec_delay.pv_curve_p2_exec)
 
         # Eq. 20, apply the low pass filter
-        if exec_delay.pv_mode_enable_exec:
-            p_pv_limit_pu = self.pv_lpf.low_pass_filter(p_pv_limit_ref_pu, exec_delay.pv_olrt_exec)
+        if self.exec_delay.pv_mode_enable_exec:
+            p_pv_limit_pu = self.pv_lpf.low_pass_filter(p_pv_limit_ref_pu, self.exec_delay.pv_olrt_exec)
         else:
             p_pv_limit_pu = self.pv_lpf.low_pass_filter(1, 0)
 

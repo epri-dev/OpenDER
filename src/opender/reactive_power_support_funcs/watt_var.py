@@ -56,7 +56,7 @@ class WattVAR:
         p_desired_pu = p_desired_kw/self.der_file.NP_P_MAX
 
         # Eq. 46, calculate reactive power reference in per unit according to watt-var curve
-        if p_desired_pu < self.exec_delay.qp_curve_p3_load_exec:
+        if p_desired_pu <= self.exec_delay.qp_curve_p3_load_exec:
             q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_load_exec
 
         if (p_desired_pu <= self.exec_delay.qp_curve_p2_load_exec) and (p_desired_pu > self.exec_delay.qp_curve_p3_load_exec):

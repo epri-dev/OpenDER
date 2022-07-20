@@ -46,7 +46,7 @@ class DERInputs:
         self.v_high_pu = None
         self.v_low_pu = None
 
-        self.p_dc_pu = None
+        self.p_avl_pu = None
         self.p_dem_pu = None
 
     def operating_condition_input_processing(self):
@@ -87,13 +87,6 @@ class DERInputs:
 
         if self.der_file.NP_PHASE == "THREE":
 
-            if self.theta_a is None:
-                self.theta_a = 0
-            if self.theta_b is None:
-                self.theta_b = -2 * math.pi / 3
-            if self.theta_c is None:
-                self.theta_c = 2 * math.pi / 3
-
             # Eq. 1, calculate per unit value of three phase voltage
             v_a_pu = (math.sqrt(3) * self.v_a) / (self.der_file.NP_AC_V_NOM)
             v_b_pu = (math.sqrt(3) * self.v_b) / (self.der_file.NP_AC_V_NOM)
@@ -122,9 +115,9 @@ class DERInputs:
             # Eq. 6, single phase applicable voltage
             self.v_meas_pu = self.v_high_pu = self.v_low_pu = (self.v / self.der_file.NP_AC_V_NOM)
 
-        # Eq. 7, DER power in per unit
+        # Eq. 7, DER power in per unit #TODO change model spec
         if self.p_dc_kw is not None:
-            self.p_dc_pu = self.p_dc_kw / self.der_file.NP_P_MAX
+            self.p_avl_pu = self.p_dc_kw / self.der_file.NP_P_MAX * self.der_file.NP_EFFICIENCY
 
         if self.p_dem_kw is not None:
             self.p_dem_pu = self.p_dem_kw / self.der_file.NP_P_MAX
@@ -151,14 +144,23 @@ class DERInputs:
                     or self.v_a != self.v_a or self.v_b != self.v_b or self.v_c != self.v_c):
                 raise ValueError("ValueError: check failed for v_a, v_b, v_c")
 
+            if self.theta_a is None:
+                self.theta_a = 0
+            if self.theta_b is None:
+                self.theta_b = -2 * math.pi / 3
+            if self.theta_c is None:
+                self.theta_c = 2 * math.pi / 3
+
+
         if self.freq_hz is None:
             logging.error("Error: F is not defined! Assuming 60Hz")
             self.freq_hz = 60
 
         if self.p_dc_kw is None:
-            logging.error("ValueError: p_dc_kw is not defined! Assuming 0")
+            if self.der_file.NP_TYPE == 'PV':
+                logging.error("ValueError: p_dc_kw is not defined! Assuming 0")
             self.p_dc_kw = 0
 
 
     def __str__(self):
-        return f"v_meas_pu = {self.v_meas_pu}, v_high_pu = {self.v_high_pu}, v_low_pu = {self.v_low_pu}, freq_hz = {self.freq_hz}, p_dc_pu = {self.p_dc_pu}"
+        return f"v_meas_pu = {self.v_meas_pu}, v_high_pu = {self.v_high_pu}, v_low_pu = {self.v_low_pu}, freq_hz = {self.freq_hz}, p_avl_pu = {self.p_avl_pu}"

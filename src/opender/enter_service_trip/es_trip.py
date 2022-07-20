@@ -19,6 +19,7 @@ from opender.auxiliary_funcs.flipflop import FlipFlop
 from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 from opender.input_processing import op_cond_proc
 import numpy as np
+import logging
 
 
 #%%
@@ -128,7 +129,7 @@ class EnterServiceTrip:
         es_vft_crit = self.vft_delay.con_del_enable(es_vf_crit, self.exec_delay.es_delay_exec)
 
         # Calling Eq 11
-        es_p_crit = self.es_p_crit(self.der_input.p_dc_pu, self.der_file.NP_P_MIN_PU)
+        es_p_crit = self.es_p_crit(self.der_input.p_avl_pu, self.der_file.NP_P_MIN_PU)
 
         # Eq 12, Enter service criterion met
         es_crit = es_vft_crit and es_p_crit
@@ -163,12 +164,17 @@ class EnterServiceTrip:
         of2_trip = self.of2_delay.con_del_enable(self.der_input.freq_hz > self.exec_delay.of2_trip_f_exec, self.exec_delay.of2_trip_t_exec)
 
         # Eq 16, if available DC power is lower than minimum DER output, trip DER
-        p_min_trip = self.der_input.p_dc_pu < self.der_file.NP_P_MIN_PU
+        p_min_trip = self.der_input.p_avl_pu < self.der_file.NP_P_MIN_PU
 
         # Eq 17, final trip decision based on all trip conditions
         der_status_trip = uv1_trip or ov1_trip or uv2_trip or ov2_trip \
             or uf1_trip or of1_trip or uf2_trip or of2_trip or p_min_trip or not self.exec_delay.es_permit_service_exec
         der_status_trip = der_status_trip
+
+        # if der_status_es and not self.der_status_flipflop.ff_out_prev:
+        #     logging.info('Entering Service')
+        # if der_status_trip and not self.der_status_flipflop.ff_out_prev:
+        #     logging.info('Trip')
 
         # Eq 18 generate DER ON/OFF status based on flip-flop logic
         self.der_status = self.der_status_flipflop.flipflop(int(der_status_es), int(der_status_trip))
@@ -176,6 +182,6 @@ class EnterServiceTrip:
         # return der_status output
         return self.der_status
         
-    def es_p_crit(self, p_dc_pu, NP_P_MIN_PU):
+    def es_p_crit(self, p_avl_pu, NP_P_MIN_PU):
         # Eq 11, available DC power must be greater than DER minimum output
-        return p_dc_pu >= NP_P_MIN_PU
+        return p_avl_pu >= NP_P_MIN_PU

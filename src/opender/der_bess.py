@@ -1,49 +1,67 @@
 from .der import DER
 from .active_power_support_funcs.p_funcs_bess import DesiredActivePowerBESS
 from .enter_service_trip.es_trip_bess import EnterServiceTripBESS
-from typing import Tuple
+from .capability_and_priority.capability_and_priority import CapabilityPriority
+from typing import Tuple, Union, List
 from . import rem_ctrl
+import numpy as np
 
 class DER_BESS(DER):
     def __init__(self):
         super(DER_BESS, self).__init__()
         # replace active power support functions and enter service
-        self.activepowerfunc = DesiredActivePowerBESS()
-        self.enterservicetrip = EnterServiceTripBESS(self.der_file.STATUS_INIT)
+        self.activepowerfunc = DesiredActivePowerBESS(self.der_file, self.exec_delay, self.der_input)
+        self.enterservicetrip = EnterServiceTripBESS(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
+        self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
 
-
-    def run(self) -> Tuple[float, float]:
+    def update_der_input(self, p_dem_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
+                         f: float = None, v_pu: Union[List[float], float] = None, p_dem_pu: float = None) -> None:
         """
-        Main calculation loop.
-        Call this function once for power flow analysis, or call this function in each simulation time step in dynamic
-        simulation.
+        Update DER inputs
+        :param p_dem_kw:	Demand AC power in kW
+        :param p_dem_pu:	Demand AC power in per unit
+        :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
+        :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
+        :param theta: DER RPA voltage angles
+        :param f: DER RPA frequency in Hertz
         """
 
-        # Elapsed time calculation
-        self.time = self.time + self.__class__.t_s
+        if p_dem_kw is not None:
+            self.der_input.p_dem_kw = p_dem_kw
 
-        # Input processing
-        self.der_input.operating_condition_input_processing(self.der_file)
+        if p_dem_pu is not None:
+            self.der_input.p_dem_kw = p_dem_pu * self.der_file.NP_P_MAX
 
-        # Execution delay
-        self.exec_delay.mode_and_execution_delay(self.der_file)
+        if f is not None:
+            self.der_input.freq_hz = f
 
-        # Enter service and trip decision making
-        self.der_status = self.enterservicetrip.es_decision(self.der_file, self.exec_delay, self.der_input)
+        if v is not None:
+            if self.der_file.NP_PHASE == "THREE":
+                if type(v) is float or type(v) is int:
+                    v = [v, v, v]
+                self.der_input.v_a = v[0]
+                self.der_input.v_b = v[1]
+                self.der_input.v_c = v[2]
 
-        # Calculate desired active power
-        self.p_act_supp_kw = self.activepowerfunc.calculate_p_funcs(self.der_file, self.exec_delay, self.der_input, self.p_out_kw)
+            if self.der_file.NP_PHASE == "SINGLE":
+                self.der_input.v = v
 
-        # Enter service ramp
-        self.p_desired_kw = self.enterserviceperf.es_performance(self.der_file, self.exec_delay, self.p_act_supp_kw, self.der_status)
+        if v_pu is not None:
+            if self.der_file.NP_PHASE == "THREE":
+                v_base = self.der_file.NP_AC_V_NOM / np.sqrt(3)
+                if type(v_pu) is float or type(v_pu) is int:
+                    v_pu = [v_pu * v_base, v_pu * v_base, v_pu * v_base]
+                else:
+                    v_pu = [v_pu[0] * v_base, v_pu[1] * v_base, v_pu[2] * v_base]
 
-        # Calculate desired reactive power
-        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.der_file, self.exec_delay, self.der_input, self.p_desired_kw, self.der_status)
+                self.der_input.v_a = v_pu[0]
+                self.der_input.v_b = v_pu[1]
+                self.der_input.v_c = v_pu[2]
 
-        # Limit DER output based on kVA rating and DER capability curve
-        self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.der_file, self.exec_delay, p_desired_kw=self.p_desired_kw, q_desired_kvar=self.q_desired_kvar)
+            if self.der_file.NP_PHASE == "SINGLE":
+                self.der_input.v = v_pu * self.der_file.NP_AC_V_NOM
 
-        # Determine DER model output value
-        self.p_out_kw, self.q_out_kvar = rem_ctrl.RemainingControl(self.p_limited_kw, self.q_limited_kvar)
-
-        return self.p_out_kw,self.q_out_kvar
+        if theta is not None:
+            self.der_input.theta_a = theta[0]
+            self.der_input.theta_b = theta[1]
+            self.der_input.theta_c = theta[2]

@@ -21,7 +21,7 @@ class DesiredActivePower:
     EPRI Report Reference: Section 3.6 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
-    def __init__(self,der_file, exec_delay, der_input):
+    def __init__(self, der_file, exec_delay, der_input):
 
         self.der_file = der_file
         self.exec_delay = exec_delay
@@ -70,10 +70,10 @@ class DesiredActivePower:
         # Frequency-droop function
         self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqwatt.calculate_p_pf_pu(p_out_kw, self.ap_limit_pu, self.p_pv_limit_pu)
 
-        return self.calculate_p_act_supp_kw()
+        return self.calculate_p_act_supp_kw(p_out_kw)
 
 
-    def calculate_p_act_supp_kw(self):
+    def calculate_p_act_supp_kw(self, p_out_kw):
         """
         Calculate desired active power according to volt-watt, frequency-droop, and active power limit functions
         EPRI Report Reference: Section 3.6.4 in Report #3002021694: IEEE 1547-2018 DER Model
@@ -83,22 +83,22 @@ class DesiredActivePower:
 
         # Eq. 27 calculate desired active power in per unit
         if(self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, 1)
+            p_act_supp_pu = min(self.der_input.p_avl_pu, 1)
 
         if(self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.ap_limit_pu, 1)
+            p_act_supp_pu = min(self.der_input.p_avl_pu, self.ap_limit_pu, 1)
 
         if(self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.p_pv_limit_pu, 1)
+            p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, 1)
 
         if(self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.ap_limit_pu, self.p_pv_limit_pu, 1)
+            p_act_supp_pu = min(self.der_input.p_avl_pu, self.ap_limit_pu, self.p_pv_limit_pu, 1)
 
         if(self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True):
-            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.p_pf_pu, 1)
+            p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
 
         if(self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True):
-            p_act_supp_pu = min(self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY, self.p_pv_limit_pu, self.p_pf_pu, 1)
+            p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
         if(self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True):
             p_act_supp_pu = min(self.p_pf_pu, 1)

@@ -98,7 +98,7 @@ class FreqDroop:
 
         # Initialize internal state variables of DER output in previous time step
         if(self.p_out_kw_prev is None):
-            self.p_out_kw_prev = min((self.der_input.p_dc_pu * self.der_file.NP_P_MAX * self.der_file.NP_EFFICIENCY),
+            self.p_out_kw_prev = min((self.der_input.p_avl_pu * self.der_file.NP_P_MAX),
                                      (ap_limit_pu*self.der_file.NP_P_MAX),
                                      (p_pv_limit_pu*self.der_file.NP_P_MAX))
         else:
@@ -106,7 +106,7 @@ class FreqDroop:
 
         # Initialize internal state variables of pre-disturbance active power output
         if(self.p_pf_pre_pu_prev is None):
-            self.p_pf_pre_pu_prev = min((self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY),ap_limit_pu,p_pv_limit_pu)
+            self.p_pf_pre_pu_prev = min(self.der_input.p_avl_pu, ap_limit_pu, p_pv_limit_pu)
 
         # Eq. 23, calculate pre-disturbance active power output
         p_pf_pre_pu_temp = self.p_out_kw_prev / self.der_file.NP_P_MAX
@@ -122,14 +122,14 @@ class FreqDroop:
         p_pf_of_pu = max(p_pf_of_pu, self.der_file.NP_P_MIN_PU)
         
         p_pf_uf_pu = p_pf_pre_pu + (((60 - self.exec_delay.pf_dbof_exec) - self.der_input.freq_hz) / ( (60 * self.exec_delay.pf_kuf_exec)))
-        p_pf_uf_pu = min(p_pf_uf_pu, self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY)
+        p_pf_uf_pu = min(p_pf_uf_pu, self.der_input.p_avl_pu)
         
         if(self.pf_of == 1):
             p_pf_ref_pu = p_pf_of_pu
         elif(self.pf_uf == 1):
             p_pf_ref_pu = p_pf_uf_pu
         else:
-            p_pf_ref_pu = min((self.der_input.p_dc_pu * self.der_file.NP_EFFICIENCY),ap_limit_pu, p_pv_limit_pu)
+            p_pf_ref_pu = min(self.der_input.p_avl_pu, ap_limit_pu, p_pv_limit_pu)
 
         # Eq. 25, apply the low pass filter
         pf_olrt_appl = self.exec_delay.pf_olrt_exec if self.pf_uf or self.pf_of or self.pf_uf_active or self.pf_of_active else 0

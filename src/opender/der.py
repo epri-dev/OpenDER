@@ -17,6 +17,7 @@
 
 # @author: Jithendar Anandan
 # @email: janandan@epri.com
+import logging
 
 from . import common_file_format
 from .active_power_support_funcs.p_funcs import DesiredActivePower
@@ -24,11 +25,12 @@ from .reactive_power_support_funcs.q_funcs import DesiredReactivePower
 from . import rem_ctrl
 from .enter_service_trip.es_trip import EnterServiceTrip
 from .enter_service_trip.es_perf import EnterServicePerformance
-from . import capability_and_priority
+from .capability_and_priority.capability_and_priority import CapabilityPriority
 from opender.input_processing.op_cond_proc import DERInputs
 from . import setting_execution_delay
 from typing import Union, List, Tuple
 import numpy as np
+import logging
 
 
 
@@ -42,14 +44,15 @@ class DER:
         :param der_file_obj: DER common file format object created from common_file_format.py
         """
 
+        self.time = 0       # Elapsed time from start of simulation
+        self.name = 'DER1'  # Identification if multiple DERs are defined
+        self.bus = None     # Bus which DER is connected to
+
         if der_file_obj is None:
             der_file_obj = common_file_format.DERCommonFileFormat()
 
         self.der_file = der_file_obj
         self.der_file.nameplate_value_validity_check()
-        self.time = 0       # Elapsed time from start of simulation
-        self.name = 'DER1'  # Identification if multiple DERs are defined
-        self.bus = None     # Bus which DER is connected to
 
         # Intermediate variables
         self.p_act_supp_kw = None
@@ -70,8 +73,7 @@ class DER:
         self.activepowerfunc = DesiredActivePower(self.der_file, self.exec_delay, self.der_input)
         self.enterserviceperf = EnterServicePerformance(self.der_file, self.exec_delay)
         self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
-        self.limited_p_q = capability_and_priority.CapabilityPriority(self.der_file, self.exec_delay)
-
+        self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
 
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
@@ -172,7 +174,7 @@ class DER:
         self.activepowerfunc = DesiredActivePower(self.der_file, self.exec_delay, self.der_input)
         self.enterserviceperf = EnterServicePerformance(self.der_file, self.exec_delay)
         self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
-        self.limited_p_q = capability_and_priority.CapabilityPriority(self.der_file, self.exec_delay)
+        self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
 
         self.p_out_kw = None
         self.q_out_kvar = None
@@ -184,4 +186,11 @@ class DER:
                f"p_act_supp_kw={self.p_act_supp_kw:.2f}, q_desired_kvar={self.q_desired_kvar:.2f}, " \
                f"p_out_kw={self.p_out_kw:.2f}, q_out_kvar={self.q_out_kvar:.2f}"
 
-
+    # @property
+    # def name(self):
+    #     return self._name
+    #
+    # @name.setter
+    # def name(self, name):
+    #     self._name = name
+    #     logging.Formatter()

@@ -29,26 +29,41 @@ import logging
 class DERCommonFileFormat:
     parameters_list = ['NP_NORMAL_OP_CAT', 'NP_ABNORMAL_OP_CAT', 'NP_P_MAX', 'NP_P_MAX_OVER_PF', 'NP_OVER_PF',
                        'NP_P_MAX_UNDER_PF', 'NP_UNDER_PF', 'NP_VA_MAX', 'NP_Q_MAX_INJ', 'NP_Q_MAX_ABS',
-                       'NP_P_MAX_CHARGE', 'NP_APPARENT_POWER_CHARGE_MAX', 'NP_AC_V_NOM', 'NP_TYPE',
-                       'AP_LIMIT_ENABLE', 'AP_LIMIT', 'ES_RANDOMIZED_DELAY', 'ES_PERMIT_SERVICE',
+                       'NP_P_MAX_CHARGE', 'NP_APPARENT_POWER_CHARGE_MAX', 'NP_AC_V_NOM',
+
+                       'AP_LIMIT_ENABLE', 'AP_LIMIT',
+
+                       'ES_RANDOMIZED_DELAY', 'ES_PERMIT_SERVICE',
                        'ES_V_LOW', 'ES_V_HIGH', 'ES_F_LOW', 'ES_F_HIGH', 'ES_DELAY', 'ES_RAMP_RATE',
+
                        'CONST_PF_MODE_ENABLE', 'CONST_PF_EXCITATION', 'CONST_PF', 'CONST_Q_MODE_ENABLE', 'CONST_Q',
+
                        'QV_MODE_ENABLE', 'QV_VREF', 'QV_VREF_AUTO_MODE',
                        'QV_VREF_TIME', 'QV_CURVE_V2', 'QV_CURVE_Q2', 'QV_CURVE_V3', 'QV_CURVE_Q3', 'QV_CURVE_V1',
-                       'QV_CURVE_Q1', 'QV_CURVE_V4', 'QV_CURVE_Q4', 'QV_OLRT', 'QP_MODE_ENABLE', 'QP_CURVE_P3_GEN',
-                       'QP_CURVE_P2_GEN', 'QP_CURVE_P1_GEN', 'QP_CURVE_Q3_GEN', 'QP_CURVE_Q2_GEN', 'QP_CURVE_Q1_GEN',
-                       'QP_CURVE_P3_LOAD', 'QP_CURVE_P2_LOAD', 'QP_CURVE_P1_LOAD', 'QP_CURVE_Q3_LOAD',
-                       'QP_CURVE_Q2_LOAD', 'QP_CURVE_Q1_LOAD', 'PV_MODE_ENABLE', 'PV_CURVE_V1', 'PV_CURVE_P1',
-                       'PV_CURVE_V2', 'PV_CURVE_P2', 'PV_OLRT',
+                       'QV_CURVE_Q1', 'QV_CURVE_V4', 'QV_CURVE_Q4', 'QV_OLRT',
+
+                       'QP_MODE_ENABLE', 'QP_CURVE_P3_GEN', 'QP_CURVE_P2_GEN', 'QP_CURVE_P1_GEN', 'QP_CURVE_Q3_GEN',
+                       'QP_CURVE_Q2_GEN', 'QP_CURVE_Q1_GEN', 'QP_CURVE_P3_LOAD', 'QP_CURVE_P2_LOAD', 'QP_CURVE_P1_LOAD',
+                       'QP_CURVE_Q3_LOAD', 'QP_CURVE_Q2_LOAD', 'QP_CURVE_Q1_LOAD',
+
+                       'PV_MODE_ENABLE', 'PV_CURVE_V1', 'PV_CURVE_P1', 'PV_CURVE_V2', 'PV_CURVE_P2', 'PV_OLRT',
+
                        'OV2_TRIP_V', 'OV2_TRIP_T', 'OV1_TRIP_V', 'OV1_TRIP_T', 'UV1_TRIP_V', 'UV1_TRIP_T', 'UV2_TRIP_V',
                        'UV2_TRIP_T', 'OF2_TRIP_F', 'OF2_TRIP_T', 'OF1_TRIP_F', 'OF1_TRIP_T', 'UF1_TRIP_F', 'UF1_TRIP_T',
-                       'UF2_TRIP_F', 'UF2_TRIP_T', 'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF',
-                       'PF_OLRT',
+                       'UF2_TRIP_F', 'UF2_TRIP_T',
+
+                       'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF', 'PF_OLRT',
+
                        'NP_EFFICIENCY', 'NP_V_DC', 'P_Q_INJ_PU', 'P_Q_ABS_PU', 'Q_MAX_INJ_PU', 'Q_MAX_ABS_PU',
                        'NP_PRIO_OUTSIDE_MIN_Q_REQ', 'NP_V_MEAS_UNBALANCE', 'NP_PHASE', 'NP_P_MIN_PU', 'AP_RT',
-                       'CONST_PF_RT',
-                       'CONST_Q_RT', 'QP_RT', 'NP_SET_EXE_TIME', 'NP_MODE_TRANSITION_TIME', 'STATUS_INIT',
-                       'ES_RANDOMIZED_DELAY_ACTUAL', 'NP_Q_CAPABILITY_BY_P_CURVE', 'NP_Q_CAPABILITY_LOW_P']
+                       'CONST_PF_RT', 'CONST_Q_RT', 'QP_RT', 'NP_SET_EXE_TIME', 'NP_MODE_TRANSITION_TIME',
+                       'STATUS_INIT', 'ES_RANDOMIZED_DELAY_ACTUAL', 'NP_Q_CAPABILITY_BY_P_CURVE',
+                       'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE',
+
+                       'NP_BESS_SOC_MAX', 'NP_BESS_SOC_MIN', 'NP_BESS_CAPACITY', 'NP_BESS_SELF_DISCHARGE',
+                       'NP_BESS_SELF_DISCHARGE_SOC', 'NP_BESS_P_MAX_BY_SOC', 'P_DISCHARGE_MAX_PU',
+                       'SOC_P_MAX_DISCHARGE', 'P_CHARGE_MAX_PU', 'SOC_P_MAX_CHARGE', 'SOC_INIT'
+                       ]
 
     __slots__ = tuple(['_' + param for param in parameters_list])
 
@@ -147,16 +162,16 @@ class DERCommonFileFormat:
         self._CONST_Q = 0
 
         self._QP_CURVE_P1_GEN = None
-        self._QP_CURVE_P2_GEN = 0.5
         self._QP_CURVE_Q1_GEN = 0
+        self._QP_CURVE_P2_GEN = 0.5
         self._QP_CURVE_Q2_GEN = 0
         self._QP_CURVE_P3_GEN = 1
         self._QP_CURVE_Q3_GEN = None
-        self._QP_CURVE_P1_LOAD = 0
-        self._QP_CURVE_P2_LOAD = 0.5
-        self._QP_CURVE_Q1_LOAD = 0
+        self._QP_CURVE_P2_LOAD = -0.5
         self._QP_CURVE_Q2_LOAD = 0
-        self._QP_CURVE_P3_LOAD = 1
+        self._QP_CURVE_P1_LOAD = 0
+        self._QP_CURVE_Q1_LOAD = 0
+        self._QP_CURVE_P3_LOAD = -1
         self._QP_CURVE_Q3_LOAD = 0.44
 
         self._QP_MODE_ENABLE = False
@@ -191,6 +206,17 @@ class DERCommonFileFormat:
         self._PF_KUF = 0.05
         self._PF_OLRT = 5
 
+        self._NP_BESS_SOC_MAX = 1
+        self._NP_BESS_SOC_MIN = 0
+        self._NP_BESS_CAPACITY = None
+        self._NP_BESS_SELF_DISCHARGE = 0
+        self._NP_BESS_SELF_DISCHARGE_SOC = 0
+        self._NP_BESS_P_MAX_BY_SOC = dict()
+        self._P_DISCHARGE_MAX_PU = None
+        self._SOC_P_MAX_DISCHARGE = None
+        self._P_CHARGE_MAX_PU = None
+        self._SOC_P_MAX_CHARGE = None
+        self._SOC_INIT = 0.5
 
         if self.isNotNaN(param.NP_TYPE):
             self.NP_TYPE = param.NP_TYPE
@@ -485,6 +511,31 @@ class DERCommonFileFormat:
         if self.isNotNaN(param.PF_OLRT):
             self.PF_OLRT = param.PF_OLRT
 
+        if self.isNotNaN(param.NP_BESS_SOC_MAX):
+            self.NP_BESS_SOC_MAX = param.NP_BESS_SOC_MAX
+        if self.isNotNaN(param.NP_BESS_SOC_MIN):
+            self.NP_BESS_SOC_MIN = param.NP_BESS_SOC_MIN
+        if self.isNotNaN(param.NP_BESS_CAPACITY):
+            self.NP_BESS_CAPACITY = param.NP_BESS_CAPACITY
+        if self.isNotNaN(param.NP_BESS_SELF_DISCHARGE):
+            self.NP_BESS_SELF_DISCHARGE = param.NP_BESS_SELF_DISCHARGE
+        if self.isNotNaN(param.NP_BESS_SELF_DISCHARGE_SOC):
+            self.NP_BESS_SELF_DISCHARGE_SOC = param.NP_BESS_SELF_DISCHARGE_SOC
+        if self.isNotNaN(param.NP_BESS_P_MAX_BY_SOC):
+            self.NP_BESS_P_MAX_BY_SOC = param.NP_BESS_P_MAX_BY_SOC
+        if self.isNotNaN(param.P_DISCHARGE_MAX_PU):
+            self.P_DISCHARGE_MAX_PU = param.P_DISCHARGE_MAX_PU
+        if self.isNotNaN(param.SOC_P_MAX_DISCHARGE):
+            self.SOC_P_MAX_DISCHARGE = param.SOC_P_MAX_DISCHARGE
+        if self.isNotNaN(param.P_CHARGE_MAX_PU):
+            self.P_CHARGE_MAX_PU = param.P_CHARGE_MAX_PU
+        if self.isNotNaN(param.SOC_P_MAX_CHARGE):
+            self.SOC_P_MAX_CHARGE = param.SOC_P_MAX_CHARGE
+        if self.isNotNaN(param.SOC_INIT):
+            self.SOC_INIT = param.SOC_INIT
+        self.initialize_NP_BESS_P_MAX_BY_SOC()
+
+
     def _get_parameter_list(self, file_info_type):
         return [f"{item}-{file_info_type}" for item in self.__class__.parameters_list]
 
@@ -577,12 +628,12 @@ class DERCommonFileFormat:
                 'P_Q_INJ_PU': [float(x) for x in self.P_Q_INJ_PU.strip('][').split(',')],
                 'Q_MAX_INJ_PU': [float(x) for x in self.Q_MAX_INJ_PU.strip('][').split(',')],
             }
-            if self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'][0] != 0:
-                self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'].insert(0, 0)
+            if self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'][0] > -1:
+                self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'].insert(0, -1)
                 self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'].\
                     insert(0,self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'][0])
-            if self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'][0] != 0:
-                self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'].insert(0, 0)
+            if self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'][0] > -1:
+                self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'].insert(0, -1)
                 self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'].\
                     insert(0,self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'][0])
 
@@ -617,11 +668,44 @@ class DERCommonFileFormat:
            len(self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])) or \
            (len(self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU']) !=
            len(self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])):
-            raise ValueError("ValueError: Check failed for reactive power curve NP_Q_CAPABILITY_BY_P_CURVE")
+            raise ValueError("ValueError: Check failed for reactive power curve NP_Q_CAPABILITY_BY_P_CURVE, please"
+                             "make sure all four arrays have the same length")
 
         if not self.der_q_capability_validity_check(self.NP_Q_CAPABILITY_BY_P_CURVE, self.NP_NORMAL_OP_CAT):
             logging.warning("Warning: DER reactive capability curve defined by NP_Q_CAPABILITY_BY_P_CURVE "
                             "should be greater than the range defined in IEEE 1547-2018 Clause 5.2")
+
+    def initialize_NP_BESS_P_MAX_BY_SOC(self):
+        """
+        Initialize Maximum active power limitation by SOC curve using 4 array inputs of P_DISCHARGE_MAX_PU,
+        SOC_P_MAX_DISCHARGE, P_CHARGE_MAX_PU, SOC_P_MAX_CHARGE
+        """
+        if self.isNotNaN(self.P_DISCHARGE_MAX_PU) and self.isNotNaN(self.SOC_P_MAX_DISCHARGE) \
+                and self.isNotNaN(self.P_CHARGE_MAX_PU) and self.isNotNaN(self.SOC_P_MAX_CHARGE):
+            self.NP_BESS_P_MAX_BY_SOC = {
+                'P_DISCHARGE_MAX_PU': [float(x) for x in self.P_DISCHARGE_MAX_PU.strip('][').split(',')],
+                'SOC_P_MAX_DISCHARGE': [float(x) for x in self.SOC_P_MAX_DISCHARGE.strip('][').split(',')],
+                'P_CHARGE_MAX_PU': [float(x) for x in self.P_CHARGE_MAX_PU.strip('][').split(',')],
+                'SOC_P_MAX_CHARGE': [float(x) for x in self.SOC_P_MAX_CHARGE.strip('][').split(',')],
+            }
+
+        else:
+
+            self.NP_BESS_P_MAX_BY_SOC = {
+                'P_DISCHARGE_MAX_PU': [1, 1],
+                'SOC_P_MAX_DISCHARGE': [self.NP_BESS_SOC_MIN, self.NP_BESS_SOC_MAX],
+                'P_CHARGE_MAX_PU': [1, 1],
+                'SOC_P_MAX_CHARGE': [self.NP_BESS_SOC_MIN, self.NP_BESS_SOC_MAX]
+            }
+
+        if (len(self.NP_BESS_P_MAX_BY_SOC['P_DISCHARGE_MAX_PU']) !=
+            len(self.NP_BESS_P_MAX_BY_SOC['SOC_P_MAX_DISCHARGE'])) or \
+                (len(self.NP_BESS_P_MAX_BY_SOC['P_CHARGE_MAX_PU']) !=
+                 len(self.NP_BESS_P_MAX_BY_SOC['SOC_P_MAX_CHARGE'])):
+            raise ValueError("ValueError: Check failed for reactive power curve NP_BESS_SELF_DISCHARGE_SOC, please"
+                             "make sure all four arrays have the same length")
+
+
 
     def der_q_capability_validity_check(self, NP_Q_CAPABILITY_BY_P_CURVE, NP_NORMAL_OP_CAT):
         """
@@ -662,6 +746,7 @@ class DERCommonFileFormat:
                 return False
 
         return True
+
 
     @property
     def NP_NORMAL_OP_CAT(self):
@@ -1298,7 +1383,7 @@ class DERCommonFileFormat:
         self._QP_CURVE_P3_GEN = QP_CURVE_P3_GEN
         if self.QP_CURVE_P3_GEN < (self.QP_CURVE_P2_GEN + 0.1) or self.QP_CURVE_P3_GEN > 1:
             logging.warning("Warning: check failed for QP_CURVE_P3_GEN. For the piecewise linear curve setting of "
-                            "watt-var control, the corner points should have their voltage settings monotonically "
+                            "watt-var control, the corner points should have their active power settings monotonically "
                             "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
 
     @property
@@ -1309,8 +1394,8 @@ class DERCommonFileFormat:
     def QP_CURVE_P2_GEN(self, QP_CURVE_P2_GEN):
         self._QP_CURVE_P2_GEN = QP_CURVE_P2_GEN
         if self.QP_CURVE_P2_GEN < 0.4 or self.QP_CURVE_P2_GEN > 0.8:
-            logging.warning("Warning: check failed for QP_CURVE_P2_GEN. For the piecewise linear curve setting "
-                            "of watt-var control, the corner points should have their voltage settings monotonically "
+            logging.warning("Warning: check failed for QP_CURVE_P2_GEN. For the piecewise linear curve setting of "
+                            "watt-var control, the corner points should have their active power settings monotonically "
                             "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
 
     @property
@@ -1322,7 +1407,7 @@ class DERCommonFileFormat:
         self._QP_CURVE_P1_GEN = QP_CURVE_P1_GEN
         if self.QP_CURVE_P1_GEN < self.NP_P_MIN_PU or self.QP_CURVE_P1_GEN > (self.QP_CURVE_P2_GEN - 0.1):
             logging.warning("Warning: check failed for QP_CURVE_P1_GEN. For the piecewise linear curve setting of "
-                            "watt-var control, the corner points should have their voltage settings monotonically "
+                            "watt-var control, the corner points should have their active power settings monotonically "
                             "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
 
     @property
@@ -1334,7 +1419,7 @@ class DERCommonFileFormat:
         self._QP_CURVE_P1_LOAD = QP_CURVE_P1_LOAD
         if self._QP_CURVE_P1_LOAD < (self.QP_CURVE_P2_LOAD + 0.1) or self._QP_CURVE_P1_LOAD > 0:
             logging.warning("Warning: check failed for QP_CURVE_P1_LOAD. For the piecewise linear curve setting of "
-                            "watt-var control, the corner points should have their voltage settings monotonically "
+                            "watt-var control, the corner points should have their active power settings monotonically "
                             "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
 
 
@@ -1347,7 +1432,7 @@ class DERCommonFileFormat:
         self._QP_CURVE_P2_LOAD = QP_CURVE_P2_LOAD
         if self._QP_CURVE_P2_LOAD < -0.8 or self._QP_CURVE_P2_LOAD > -0.4:
             logging.warning("Warning: check failed for QP_CURVE_P2_LOAD. For the piecewise linear curve setting of "
-                            "watt-var control, the corner points should have their voltage settings monotonically "
+                            "watt-var control, the corner points should have their active power settings monotonically "
                             "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
 
     @property
@@ -1359,7 +1444,7 @@ class DERCommonFileFormat:
         self._QP_CURVE_P3_LOAD = QP_CURVE_P3_LOAD
         if self._QP_CURVE_P3_LOAD < -1 or self._QP_CURVE_P3_LOAD > (self.QP_CURVE_P2_LOAD + 0.1):
             logging.warning("Warning: check failed for QP_CURVE_P3_LOAD. For the piecewise linear curve setting of "
-                            "watt-var control, the corner points should have their voltage settings monotonically "
+                            "watt-var control, the corner points should have their active power settings monotonically "
                             "increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.4")
 
 
@@ -1841,6 +1926,100 @@ class DERCommonFileFormat:
             logging.warning("Warning: Active power limit function response time should be greater than or equal to 0,"
                             " and smaller than or equal to 30 seconds, according to IEEE 1547-2018 Clause 4.6.2.")
 
+    @property
+    def NP_BESS_SOC_MAX(self):
+        return self._NP_BESS_SOC_MAX
+
+    @NP_BESS_SOC_MAX.setter
+    def NP_BESS_SOC_MAX(self, NP_BESS_SOC_MAX):
+        self._NP_BESS_SOC_MAX = NP_BESS_SOC_MAX
+        if self._NP_BESS_SOC_MAX > 1 or self._NP_BESS_SOC_MAX < 0:
+            logging.warning("Warning: BESS maximum state of charge should be between 0 an 1")
+
+    @property
+    def NP_BESS_SOC_MIN(self):
+        return self._NP_BESS_SOC_MIN
+
+    @NP_BESS_SOC_MIN.setter
+    def NP_BESS_SOC_MIN(self, NP_BESS_SOC_MIN):
+        self._NP_BESS_SOC_MIN = NP_BESS_SOC_MIN
+        if self._NP_BESS_SOC_MIN > 1 or self._NP_BESS_SOC_MIN < 0:
+            logging.warning("Warning: BESS minimum state of charge should be between 0 an 1")
+
+    @property
+    def NP_BESS_CAPACITY(self):
+        return self._NP_BESS_CAPACITY
+
+    @NP_BESS_CAPACITY.setter
+    def NP_BESS_CAPACITY(self, NP_BESS_CAPACITY):
+        self._NP_BESS_CAPACITY = NP_BESS_CAPACITY
+
+    @property
+    def NP_BESS_SELF_DISCHARGE(self):
+        return self._NP_BESS_SELF_DISCHARGE
+
+    @NP_BESS_SELF_DISCHARGE.setter
+    def NP_BESS_SELF_DISCHARGE(self, NP_BESS_SELF_DISCHARGE):
+        self._NP_BESS_SELF_DISCHARGE = NP_BESS_SELF_DISCHARGE
+
+    @property
+    def NP_BESS_SELF_DISCHARGE_SOC(self):
+        return self._NP_BESS_SELF_DISCHARGE_SOC
+
+    @NP_BESS_SELF_DISCHARGE_SOC.setter
+    def NP_BESS_SELF_DISCHARGE_SOC(self, NP_BESS_SELF_DISCHARGE_SOC):
+        self._NP_BESS_SELF_DISCHARGE_SOC = NP_BESS_SELF_DISCHARGE_SOC
+
+    @property
+    def NP_BESS_P_MAX_BY_SOC(self):
+        return self._NP_BESS_P_MAX_BY_SOC
+
+    @NP_BESS_P_MAX_BY_SOC.setter
+    def NP_BESS_P_MAX_BY_SOC(self, NP_BESS_P_MAX_BY_SOC):
+        self._NP_BESS_P_MAX_BY_SOC = NP_BESS_P_MAX_BY_SOC
+
+    @property
+    def P_DISCHARGE_MAX_PU(self):
+        return self._P_DISCHARGE_MAX_PU
+
+    @P_DISCHARGE_MAX_PU.setter
+    def P_DISCHARGE_MAX_PU(self, P_DISCHARGE_MAX_PU):
+        self._P_DISCHARGE_MAX_PU = P_DISCHARGE_MAX_PU
+
+    @property
+    def SOC_P_MAX_DISCHARGE(self):
+        return self._SOC_P_MAX_DISCHARGE
+
+    @SOC_P_MAX_DISCHARGE.setter
+    def SOC_P_MAX_DISCHARGE(self, SOC_P_MAX_DISCHARGE):
+        self._SOC_P_MAX_DISCHARGE = SOC_P_MAX_DISCHARGE
+
+    @property
+    def P_CHARGE_MAX_PU(self):
+        return self._P_CHARGE_MAX_PU
+
+    @P_CHARGE_MAX_PU.setter
+    def P_CHARGE_MAX_PU(self, P_CHARGE_MAX_PU):
+        self._P_CHARGE_MAX_PU = P_CHARGE_MAX_PU
+
+    @property
+    def SOC_P_MAX_CHARGE(self):
+        return self._SOC_P_MAX_CHARGE
+
+    @SOC_P_MAX_CHARGE.setter
+    def SOC_P_MAX_CHARGE(self, SOC_P_MAX_CHARGE):
+        self._SOC_P_MAX_CHARGE = SOC_P_MAX_CHARGE
+
+    @property
+    def SOC_INIT(self):
+        return self._SOC_INIT
+
+    @SOC_INIT.setter
+    def SOC_INIT(self, SOC_INIT):
+        self._SOC_INIT = SOC_INIT
+        if self._SOC_INIT > 1 or self._SOC_INIT < 0:
+            self._SOC_INIT = 0.5
+            logging.error('SoC initial value not valid, using 0.5 instead')
 
 if __name__ == "__main__":
     import pathlib

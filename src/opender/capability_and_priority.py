@@ -184,7 +184,7 @@ class CapabilityPriority:
             else:
                 # Eq. 67, find intercept point of VA limit circle and watt-var curve
                 WattVar_Curve = {'P_PU': [exec_delay.qp_curve_p1_gen_exec, exec_delay.qp_curve_p2_gen_exec, exec_delay.qp_curve_p3_gen_exec],
-                                 'Q_PU': [exec_delay.qp_curve_q1_gen_exec, exec_delay.qp_curve_q2_gen_exec, exec_delay.qp_curve_q3_gen_exec]},
+                                 'Q_PU': [exec_delay.qp_curve_q1_gen_exec, exec_delay.qp_curve_q2_gen_exec, exec_delay.qp_curve_q3_gen_exec]}
                 xp = [x*der_file.NP_P_MAX for x in WattVar_Curve['P_PU']]
                 yp = [y*der_file.NP_VA_MAX for y in WattVar_Curve['Q_PU']]
                 p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(der_file.NP_VA_MAX, xp, yp)

@@ -4,7 +4,6 @@ from opender.active_power_support_funcs.bess_specifc.soc import StateOfCharge
 class DesiredActivePowerBESS(DesiredActivePower):
     def __init__(self, der_file, exec_delay, der_input):
         super(DesiredActivePowerBESS, self).__init__(der_file, exec_delay, der_input)
-        self.der_input.p_avl_pu = 1 #TODO discussion - is this the best place to set available power? Or need to change freq-droop
         self.soc_calc = StateOfCharge(der_file)
 
     def calculate_p_act_supp_kw(self, p_out_kw):

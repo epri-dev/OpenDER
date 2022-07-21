@@ -129,7 +129,7 @@ class EnterServiceTrip:
         es_vft_crit = self.vft_delay.con_del_enable(es_vf_crit, self.exec_delay.es_delay_exec)
 
         # Calling Eq 11
-        es_p_crit = self.es_p_crit(self.der_input.p_avl_pu, self.der_file.NP_P_MIN_PU)
+        es_p_crit = self.der_input.p_avl_pu > self.der_file.NP_P_MIN_PU
 
         # Eq 12, Enter service criterion met
         es_crit = es_vft_crit and es_p_crit

@@ -187,8 +187,12 @@ class CapabilityPriority:
                 q_limited_qp_kvar = q_desired_kvar
             else:
                 # Eq. 67, find intercept point of VA limit circle and watt-var curve
-                WattVar_Curve = {'P_PU': [self.exec_delay.qp_curve_p1_gen_exec, self.exec_delay.qp_curve_p2_gen_exec, self.exec_delay.qp_curve_p3_gen_exec],
-                                 'Q_PU': [self.exec_delay.qp_curve_q1_gen_exec, self.exec_delay.qp_curve_q2_gen_exec, self.exec_delay.qp_curve_q3_gen_exec]},
+                WattVar_Curve = {'P_PU': [self.exec_delay.qp_curve_p3_load_exec, self.exec_delay.qp_curve_p2_load_exec,
+                                          self.exec_delay.qp_curve_p1_load_exec, self.exec_delay.qp_curve_p1_gen_exec,
+                                          self.exec_delay.qp_curve_p2_gen_exec, self.exec_delay.qp_curve_p3_gen_exec],
+                                 'Q_PU': [self.exec_delay.qp_curve_q3_load_exec, self.exec_delay.qp_curve_q2_load_exec,
+                                          self.exec_delay.qp_curve_q1_load_exec,self.exec_delay.qp_curve_q1_gen_exec,
+                                          self.exec_delay.qp_curve_q2_gen_exec, self.exec_delay.qp_curve_q3_gen_exec]}
                 xp = [x*self.der_file.NP_P_MAX for x in WattVar_Curve['P_PU']]
                 yp = [y*self.der_file.NP_VA_MAX for y in WattVar_Curve['Q_PU']]
                 p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(self.der_file.NP_VA_MAX, xp, yp)

@@ -33,7 +33,7 @@ class StateOfCharge:
 
     def calculate_p_max_by_soc(self):
 
-        if DER.t_s <= 7200:  # for time series simulation
+        if DER.t_s <= 7200 and self.der_file.NP_BESS_CAPACITY is not None:  # for time series simulation
             self.p_max_charge_pu_ts = min(((self.der_file.NP_BESS_SOC_MAX - self.bess_soc) / DER.t_s * 3600 + self.der_file.NP_BESS_SELF_DISCHARGE_SOC * self.bess_soc + self.der_file.NP_BESS_SELF_DISCHARGE) * self.der_file.NP_BESS_CAPACITY / self.der_file.NP_EFFICIENCY / self.der_file.NP_P_MAX_CHARGE, 1)
             self.p_max_discharge_pu_ts = max(0, min(((self.bess_soc - self.der_file.NP_BESS_SOC_MIN) / DER.t_s * 3600 - self.der_file.NP_BESS_SELF_DISCHARGE_SOC * self.bess_soc - self.der_file.NP_BESS_SELF_DISCHARGE) * self.der_file.NP_BESS_CAPACITY / self.der_file.NP_P_MAX, 1))
 

@@ -109,7 +109,7 @@ class DERCommonFileFormat:
         self._Q_MAX_INJ_PU = None
         self._Q_MAX_ABS_PU = None
         self._NP_Q_CAPABILITY_BY_P_CURVE = None
-        self._NP_Q_CAPABILITY_LOW_P = 'SAME'
+        self._NP_Q_CAPABILITY_LOW_P = 'REDUCED'
         self._NP_P_MAX_CHARGE = 0
         self._NP_APPARENT_POWER_CHARGE_MAX = None
 
@@ -651,8 +651,8 @@ class DERCommonFileFormat:
 
             if self.NP_Q_CAPABILITY_LOW_P == 'REDUCED':
                 self.NP_Q_CAPABILITY_BY_P_CURVE = {
-                    'P_Q_INJ_PU': [-1, 0.04999, 0.05, 0.2, 1],
-                    'P_Q_ABS_PU': [-1, 0.04999, 0.05, 0.2, 1],
+                    'P_Q_INJ_PU': [0, 0.04999, 0.05, 0.2, 1],
+                    'P_Q_ABS_PU': [0, 0.04999, 0.05, 0.2, 1],
                     'Q_MAX_INJ_PU': [0, 0, q_max_inj_pu / 4, q_max_inj_pu, q_max_inj_pu],
                     'Q_MAX_ABS_PU': [0, 0, q_max_abs_pu / 4, q_max_abs_pu, q_max_abs_pu]
                 }

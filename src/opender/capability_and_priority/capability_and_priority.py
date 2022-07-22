@@ -15,7 +15,7 @@ import numpy as np
 
 
 #%%
-def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3):
+def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3, ):
     """
     Find out the interception point of piece-wise function defined by xp and yp at given magnitude
 
@@ -32,17 +32,17 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3):
     :param x: interception point on x axis
     :param y: interception point on y axis
     """
-    # step 1: extend the list/array to the right to at least cover the requested mag
-    xn = max(mag, xp[-1]+mag)
-    yn = (yp[-1]-yp[-2])/(xp[-1]-xp[-2])*(xn-xp[-2])+yp[-2]
-    xnew = np.append(xp, xn)
-    ynew = np.append(yp, yn)
+    # # step 1: extend the list/array to the right to at least cover the requested mag
+    # xn = max(mag, xp[-1]+mag)
+    # yn = (yp[-1]-yp[-2])/(xp[-1]-xp[-2])*(xn-xp[-2])+yp[-2]
+    # xnew = np.append(xp, xn)
+    # ynew = np.append(yp, yn)
     # step 2: iterate until an intersection point is found
     x = mag
     imax = 50
     for ii in range(imax):
-        y = np.interp(x, xnew, ynew)
-        m = np.sqrt(x**2+y**2)
+        y = np.interp(x, xp, yp)
+        m = np.sign(x) * np.sqrt(x**2+y**2)
         if abs(m-mag) < err:
             break
         else:
@@ -187,16 +187,24 @@ class CapabilityPriority:
                 q_limited_qp_kvar = q_desired_kvar
             else:
                 # Eq. 67, find intercept point of VA limit circle and watt-var curve
-                WattVar_Curve = {'P_PU': [self.exec_delay.qp_curve_p3_load_exec, self.exec_delay.qp_curve_p2_load_exec,
+                WattVar_Curve = {'P_PU': [-1,
+                                          self.exec_delay.qp_curve_p3_load_exec, self.exec_delay.qp_curve_p2_load_exec,
                                           self.exec_delay.qp_curve_p1_load_exec, self.exec_delay.qp_curve_p1_gen_exec,
-                                          self.exec_delay.qp_curve_p2_gen_exec, self.exec_delay.qp_curve_p3_gen_exec],
-                                 'Q_PU': [self.exec_delay.qp_curve_q3_load_exec, self.exec_delay.qp_curve_q2_load_exec,
+                                          self.exec_delay.qp_curve_p2_gen_exec, self.exec_delay.qp_curve_p3_gen_exec, 1],
+                                 'Q_PU': [self.exec_delay.qp_curve_q3_load_exec,
+                                          self.exec_delay.qp_curve_q3_load_exec, self.exec_delay.qp_curve_q2_load_exec,
                                           self.exec_delay.qp_curve_q1_load_exec,self.exec_delay.qp_curve_q1_gen_exec,
-                                          self.exec_delay.qp_curve_q2_gen_exec, self.exec_delay.qp_curve_q3_gen_exec]}
+                                          self.exec_delay.qp_curve_q2_gen_exec, self.exec_delay.qp_curve_q3_gen_exec,
+                                          self.exec_delay.qp_curve_q3_gen_exec]}
                 xp = [x*self.der_file.NP_P_MAX for x in WattVar_Curve['P_PU']]
                 yp = [y*self.der_file.NP_VA_MAX for y in WattVar_Curve['Q_PU']]
-                p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(self.der_file.NP_VA_MAX, xp, yp)
-                p_limited_kw = min(p_itcp_kw, p_desired_kw)
+
+                if p_desired_kw > 0:
+                    p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(self.der_file.NP_VA_MAX, xp, yp)
+                    p_limited_kw = min(p_itcp_kw, p_desired_kw)
+                else:
+                    p_itcp_kw, q_itcp_kvar = intercep_piecewise_circle(-self.der_file.NP_VA_MAX, xp, yp)
+                    p_limited_kw = max(p_itcp_kw, p_desired_kw)
                 q_limited_qp_kvar = min(abs(q_itcp_kvar), abs(q_desired_kvar))*np.sign(q_desired_kvar)
 
             # Eq. 68, reduce Q if outside of DER Q capability range

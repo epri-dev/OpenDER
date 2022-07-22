@@ -20,9 +20,10 @@ Created on Thu March 24 00:45:28 2022
 import math
 import cmath #For complex number operations
 import logging
+from opender.common_file_format import DERCommonFileFormat
 
 class DERInputs:
-    def __init__(self, der_file):
+    def __init__(self, der_file: DERCommonFileFormat):
 
         self.der_file = der_file
         # Operating condition inputs to the DER model

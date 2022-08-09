@@ -4,9 +4,9 @@ import opender
 
 P_MAX_CURVE={
     'P_DISCHARGE_MAX_PU': [0.2, 1],
-    'SOC_P_MAX_DISCHARGE': [0, 0.5],
+    'SOC_P_DISCHARGE_MAX': [0, 0.5],
     'P_CHARGE_MAX_PU': [1, 0.2],
-    'SOC_P_MAX_CHARGE': [0.5, 1]
+    'SOC_P_CHARGE_MAX': [0.5, 1]
 }
 
 input_list = [  # p_dc, p_limit, p_expected, q_expected

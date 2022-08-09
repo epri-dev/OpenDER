@@ -16,7 +16,7 @@ class DER_BESS(DER):
         # replace active power support functions and enter service
         self.activepowerfunc = DesiredActivePowerBESS(self.der_file, self.exec_delay, self.der_input)
         # self.enterservicetrip = EnterServiceTripBESS(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
-        self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
+        # self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
 
     def update_der_input(self, p_dem_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
                          f: float = None, v_pu: Union[List[float], float] = None, p_dem_pu: float = None) -> None:

@@ -15,7 +15,7 @@ class DesiredActivePowerBESS(DesiredActivePower):
         # Calculate SoC
         self.soc_calc.calculate_soc(p_out_kw)
 
-        # Calculate P limits by SoC
+        # Calculate P limits
         self.soc_calc.calculate_p_max_by_soc()
 
         # Calculate active power based on grid-support functions

@@ -123,7 +123,6 @@ class DERInputs:
         if self.p_dem_kw is not None:
             self.p_dem_pu = self.p_dem_kw / self.der_file.NP_P_MAX
 
-        # return self.v_meas_pu, self.v_low_pu, self.v_high_pu, self.p_dc_pu
 
     def operating_conditions_validity_check(self):
         # Validity Check for DER Model operating conditions

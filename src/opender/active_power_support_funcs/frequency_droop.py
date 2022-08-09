@@ -56,7 +56,7 @@ class FreqDroop:
         :param pf_kuf_exec:	Under frequency slope signal (PF_KUF) after execution delay
         :param pf_olrt_exec:	Frequency-Active power open-loop response time signal (PF_OLRT) after execution delay
         :param pf_olrt_appl:  Applied open-loop response time for frequency droop function
-        :param p_dc_pu:	DER available DC power in pu
+        :param p_avl_pu:	DER available DC power in pu
         :param NP_EFFICIENCY:	DER system efficiency for DC/AC power conversion
         :param NP_P_MIN_PU:	DER minimum active power output
         :param NP_P_MAX:	DER active power rating at unity power factor

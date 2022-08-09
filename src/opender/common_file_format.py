@@ -62,7 +62,7 @@ class DERCommonFileFormat:
 
                        'NP_BESS_SOC_MAX', 'NP_BESS_SOC_MIN', 'NP_BESS_CAPACITY', 'NP_BESS_SELF_DISCHARGE',
                        'NP_BESS_SELF_DISCHARGE_SOC', 'NP_BESS_P_MAX_BY_SOC', 'P_DISCHARGE_MAX_PU',
-                       'SOC_P_MAX_DISCHARGE', 'P_CHARGE_MAX_PU', 'SOC_P_MAX_CHARGE', 'SOC_INIT'
+                       'SOC_P_DISCHARGE_MAX', 'P_CHARGE_MAX_PU', 'SOC_P_CHARGE_MAX', 'SOC_INIT'
                        ]
 
     __slots__ = tuple(['_' + param for param in parameters_list])
@@ -213,9 +213,9 @@ class DERCommonFileFormat:
         self._NP_BESS_SELF_DISCHARGE_SOC = 0
         self._NP_BESS_P_MAX_BY_SOC = dict()
         self._P_DISCHARGE_MAX_PU = None
-        self._SOC_P_MAX_DISCHARGE = None
+        self._SOC_P_DISCHARGE_MAX = None
         self._P_CHARGE_MAX_PU = None
-        self._SOC_P_MAX_CHARGE = None
+        self._SOC_P_CHARGE_MAX = None
         self._SOC_INIT = 0.5
 
         if self.isNotNaN(param.NP_TYPE):
@@ -525,12 +525,12 @@ class DERCommonFileFormat:
             self.NP_BESS_P_MAX_BY_SOC = param.NP_BESS_P_MAX_BY_SOC
         if self.isNotNaN(param.P_DISCHARGE_MAX_PU):
             self.P_DISCHARGE_MAX_PU = param.P_DISCHARGE_MAX_PU
-        if self.isNotNaN(param.SOC_P_MAX_DISCHARGE):
-            self.SOC_P_MAX_DISCHARGE = param.SOC_P_MAX_DISCHARGE
+        if self.isNotNaN(param.SOC_P_DISCHARGE_MAX):
+            self.SOC_P_DISCHARGE_MAX = param.SOC_P_DISCHARGE_MAX
         if self.isNotNaN(param.P_CHARGE_MAX_PU):
             self.P_CHARGE_MAX_PU = param.P_CHARGE_MAX_PU
-        if self.isNotNaN(param.SOC_P_MAX_CHARGE):
-            self.SOC_P_MAX_CHARGE = param.SOC_P_MAX_CHARGE
+        if self.isNotNaN(param.SOC_P_CHARGE_MAX):
+            self.SOC_P_CHARGE_MAX = param.SOC_P_CHARGE_MAX
         if self.isNotNaN(param.SOC_INIT):
             self.SOC_INIT = param.SOC_INIT
         self.initialize_NP_BESS_P_MAX_BY_SOC()
@@ -678,30 +678,30 @@ class DERCommonFileFormat:
     def initialize_NP_BESS_P_MAX_BY_SOC(self):
         """
         Initialize Maximum active power limitation by SOC curve using 4 array inputs of P_DISCHARGE_MAX_PU,
-        SOC_P_MAX_DISCHARGE, P_CHARGE_MAX_PU, SOC_P_MAX_CHARGE
+        SOC_P_DISCHARGE_MAX, P_CHARGE_MAX_PU, SOC_P_CHARGE_MAX
         """
-        if self.isNotNaN(self.P_DISCHARGE_MAX_PU) and self.isNotNaN(self.SOC_P_MAX_DISCHARGE) \
-                and self.isNotNaN(self.P_CHARGE_MAX_PU) and self.isNotNaN(self.SOC_P_MAX_CHARGE):
+        if self.isNotNaN(self.P_DISCHARGE_MAX_PU) and self.isNotNaN(self.SOC_P_DISCHARGE_MAX) \
+                and self.isNotNaN(self.P_CHARGE_MAX_PU) and self.isNotNaN(self.SOC_P_CHARGE_MAX):
             self.NP_BESS_P_MAX_BY_SOC = {
                 'P_DISCHARGE_MAX_PU': [float(x) for x in self.P_DISCHARGE_MAX_PU.strip('][').split(',')],
-                'SOC_P_MAX_DISCHARGE': [float(x) for x in self.SOC_P_MAX_DISCHARGE.strip('][').split(',')],
+                'SOC_P_DISCHARGE_MAX': [float(x) for x in self.SOC_P_DISCHARGE_MAX.strip('][').split(',')],
                 'P_CHARGE_MAX_PU': [float(x) for x in self.P_CHARGE_MAX_PU.strip('][').split(',')],
-                'SOC_P_MAX_CHARGE': [float(x) for x in self.SOC_P_MAX_CHARGE.strip('][').split(',')],
+                'SOC_P_CHARGE_MAX': [float(x) for x in self.SOC_P_CHARGE_MAX.strip('][').split(',')],
             }
 
         else:
 
             self.NP_BESS_P_MAX_BY_SOC = {
                 'P_DISCHARGE_MAX_PU': [1, 1],
-                'SOC_P_MAX_DISCHARGE': [self.NP_BESS_SOC_MIN, self.NP_BESS_SOC_MAX],
+                'SOC_P_DISCHARGE_MAX': [self.NP_BESS_SOC_MIN, self.NP_BESS_SOC_MAX],
                 'P_CHARGE_MAX_PU': [1, 1],
-                'SOC_P_MAX_CHARGE': [self.NP_BESS_SOC_MIN, self.NP_BESS_SOC_MAX]
+                'SOC_P_CHARGE_MAX': [self.NP_BESS_SOC_MIN, self.NP_BESS_SOC_MAX]
             }
 
         if (len(self.NP_BESS_P_MAX_BY_SOC['P_DISCHARGE_MAX_PU']) !=
-            len(self.NP_BESS_P_MAX_BY_SOC['SOC_P_MAX_DISCHARGE'])) or \
+            len(self.NP_BESS_P_MAX_BY_SOC['SOC_P_DISCHARGE_MAX'])) or \
                 (len(self.NP_BESS_P_MAX_BY_SOC['P_CHARGE_MAX_PU']) !=
-                 len(self.NP_BESS_P_MAX_BY_SOC['SOC_P_MAX_CHARGE'])):
+                 len(self.NP_BESS_P_MAX_BY_SOC['SOC_P_CHARGE_MAX'])):
             raise ValueError("ValueError: Check failed for reactive power curve NP_BESS_SELF_DISCHARGE_SOC, please"
                              "make sure all four arrays have the same length")
 
@@ -1987,12 +1987,12 @@ class DERCommonFileFormat:
         self._P_DISCHARGE_MAX_PU = P_DISCHARGE_MAX_PU
 
     @property
-    def SOC_P_MAX_DISCHARGE(self):
-        return self._SOC_P_MAX_DISCHARGE
+    def SOC_P_DISCHARGE_MAX(self):
+        return self._SOC_P_DISCHARGE_MAX
 
-    @SOC_P_MAX_DISCHARGE.setter
-    def SOC_P_MAX_DISCHARGE(self, SOC_P_MAX_DISCHARGE):
-        self._SOC_P_MAX_DISCHARGE = SOC_P_MAX_DISCHARGE
+    @SOC_P_DISCHARGE_MAX.setter
+    def SOC_P_DISCHARGE_MAX(self, SOC_P_DISCHARGE_MAX):
+        self._SOC_P_DISCHARGE_MAX = SOC_P_DISCHARGE_MAX
 
     @property
     def P_CHARGE_MAX_PU(self):
@@ -2003,12 +2003,12 @@ class DERCommonFileFormat:
         self._P_CHARGE_MAX_PU = P_CHARGE_MAX_PU
 
     @property
-    def SOC_P_MAX_CHARGE(self):
-        return self._SOC_P_MAX_CHARGE
+    def SOC_P_CHARGE_MAX(self):
+        return self._SOC_P_CHARGE_MAX
 
-    @SOC_P_MAX_CHARGE.setter
-    def SOC_P_MAX_CHARGE(self, SOC_P_MAX_CHARGE):
-        self._SOC_P_MAX_CHARGE = SOC_P_MAX_CHARGE
+    @SOC_P_CHARGE_MAX.setter
+    def SOC_P_CHARGE_MAX(self, SOC_P_CHARGE_MAX):
+        self._SOC_P_CHARGE_MAX = SOC_P_CHARGE_MAX
 
     @property
     def SOC_INIT(self):

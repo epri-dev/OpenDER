@@ -52,7 +52,7 @@ class WattVAR:
 
         """
 
-        # Calculate desired actve power in per unit
+        # Calculate desired active power in per unit
         p_desired_pu = p_desired_kw / (self.der_file.NP_P_MAX if p_desired_kw > 0 else self.der_file.NP_P_MAX_CHARGE)
 
         # Eq. 46, calculate reactive power reference in per unit according to watt-var curve

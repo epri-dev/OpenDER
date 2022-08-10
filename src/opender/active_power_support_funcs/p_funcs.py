@@ -31,6 +31,7 @@ class DesiredActivePower:
         self.pf_uf_active = None
         self.pf_of_active = None
         self.p_pf_pu = None
+        self.p_act_supp_pu = None
         self.p_act_supp_kw = None
         self.p_desired_kw = None
         self.ap_limit_pu = None
@@ -70,45 +71,48 @@ class DesiredActivePower:
         # Frequency-droop function
         self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqwatt.calculate_p_pf_pu(p_out_kw, self.ap_limit_pu, self.p_pv_limit_pu)
 
+        self.calculate_p_act_supp_pu()
+
         return self.calculate_p_act_supp_kw(p_out_kw)
 
-
     def calculate_p_act_supp_kw(self, p_out_kw):
+        # Eq. 28 calculate desired active power in kW
+        self.p_act_supp_kw = min(self.der_input.p_avl_pu, self.p_act_supp_pu) * self.der_file.NP_P_MAX
+        return self.p_act_supp_kw
+
+    def calculate_p_act_supp_pu(self):
         """
         Calculate desired active power according to volt-watt, frequency-droop, and active power limit functions
         EPRI Report Reference: Section 3.6.4 in Report #3002021694: IEEE 1547-2018 DER Model
         """
         # Calculate active power based on grid-support functions
-        p_act_supp_pu = 1
 
         # Eq. 27 calculate desired active power in per unit
         if(self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(self.der_input.p_avl_pu, 1)
+            self.p_act_supp_pu = 1
 
         if(self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(self.der_input.p_avl_pu, self.ap_limit_pu, 1)
+            self.p_act_supp_pu = min(self.ap_limit_pu, 1)
 
         if(self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, 1)
+            self.p_act_supp_pu = min(self.p_pv_limit_pu, 1)
 
         if(self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == False and self.pf_of_active == False):
-            p_act_supp_pu = min(self.der_input.p_avl_pu, self.ap_limit_pu, self.p_pv_limit_pu, 1)
+            self.p_act_supp_pu = min(self.ap_limit_pu, self.p_pv_limit_pu, 1)
 
         if(self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True):
-            p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
+            self.p_act_supp_pu = min(self.p_pf_pu, 1)
 
         if(self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True):
-            p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
+            self.p_act_supp_pu = min(self.p_pv_limit_pu, self.p_pf_pu, 1)
 
         if(self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True):
-            p_act_supp_pu = min(self.p_pf_pu, 1)
+            self.p_act_supp_pu = min(self.p_pf_pu, 1)
 
         if(self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True):
-            p_act_supp_pu = min(self.p_pv_limit_pu, self.p_pf_pu, 1)
+            self.p_act_supp_pu = min(self.p_pv_limit_pu, self.p_pf_pu, 1)
 
-        # Eq. 28 calculate desired active power in kW
-        self.p_act_supp_kw = p_act_supp_pu * self.der_file.NP_P_MAX
-        return self.p_act_supp_kw
+
 
     def __str__(self):
         return f"ap_limit_pu = {self.ap_limit_pu}, p_pv_limit_pu = {self.p_pv_limit_pu}, p_pf_pu = {self.p_pf_pu}, p_act_supp_kw = {self.p_act_supp_kw}"

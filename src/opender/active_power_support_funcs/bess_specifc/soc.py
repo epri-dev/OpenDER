@@ -7,8 +7,8 @@ class StateOfCharge:
     def __init__(self, der_file):
         self.der_file = der_file
         self.bess_soc = der_file.SOC_INIT
-        self.p_max_charge_pu = self.p_max_charge_pu_ts = self.p_max_charge_pu_soc = der_file.NP_P_MAX_CHARGE
-        self.p_max_discharge_pu = self.p_max_discharge_pu_ts = self.p_max_discharge_pu_soc = der_file.NP_P_MAX
+        self.p_max_charge_pu = self.p_max_charge_pu_ts = self.p_max_charge_pu_soc = 1
+        self.p_max_discharge_pu = self.p_max_discharge_pu_ts = self.p_max_discharge_pu_soc = 1
 
     def calculate_soc(self, p_out_kw):
         p_charge_kw = p_discharge_kw = 0

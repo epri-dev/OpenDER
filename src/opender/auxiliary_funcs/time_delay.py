@@ -40,40 +40,34 @@ class TimeDelay:
         
         :param tdelay_out: Time delayed value
         """
-        if (self.tdelay_in_prev is None):
+        if self.tdelay_in_prev is None:
             self.tdelay_in_prev = tdelay_in
-        if (self.tdelay_out_hold is None):
+        if self.tdelay_out_hold is None:
             self.tdelay_out_hold = tdelay_in
 
-        if(tdelay_time < der.DER.t_s):
+        if tdelay_time < der.DER.t_s:
             tdelay_out = tdelay_in
             self.tdelay_out_hold = tdelay_in
             self.tdelay_in_value = []
             self.tdelay_in_time = []
 
-        elif(tdelay_time > 0 and tdelay_time >= der.DER.t_s):
+        elif tdelay_time > 0 and tdelay_time >= der.DER.t_s:
 
-            #if not self.tdelay_in_value and tdelay_in is not None:
-                #self.tdelay_in_value.append(tdelay_in)
-                #self.tdelay_in_time.append(tdelay_time)
-                
             if self.tdelay_in_time:
                 self.tdelay_in_time = [item - der.DER.t_s for item in self.tdelay_in_time]
-                
-                """
-                 If there is an element in the time array 𝑡𝑡𝑑𝑑𝑒𝑒𝑙𝑙𝑒𝑒𝑦𝑦_𝑖𝑖𝑒𝑒_𝑡𝑡𝑖𝑖𝑚𝑚𝑒𝑒_𝑒𝑒𝑝𝑝𝑝𝑝𝑒𝑒𝑦𝑦 is less than 0, 
-                 it indicates the time delay has passed 
-                """
+
+                # If there is an element in the time array tdelay_in_time is less than 0,
+                # it indicates the time delay has passed
                 for x in self.tdelay_in_time:
-                    if(x <= 0): 
-                        #index - position of the first occurenece of the elapsed time
+                    if x <= 0:
+                        # index - position of the first occurrence of the elapsed time
                         index = self.tdelay_in_time.index(x)
                         self.tdelay_out_hold = self.tdelay_in_value[index]
                         del self.tdelay_in_time[index]
                         del self.tdelay_in_value[index]
             
-        if (tdelay_in is not None):
-            if(tdelay_in != self.tdelay_in_prev):
+        if tdelay_in is not None:
+            if tdelay_in != self.tdelay_in_prev:
                 self.tdelay_in_value.append(tdelay_in)
                 self.tdelay_in_time.append(tdelay_time)
                 self.tdelay_in_prev = tdelay_in

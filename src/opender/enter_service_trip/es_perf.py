@@ -91,31 +91,28 @@ class EnterServicePerformance:
         :param p_desired_kw:	Desired output active power considering DER enter service performance
         """
 
-        # Eq. 29, input available power
+        # Eq. 3.7.1-1, input available power
         if der_status:
             p_es_kw = p_act_supp_kw
         else:
             p_es_kw = 0
 
-        # Eq. 30, ramp rate limiter
-        if self.exec_delay.es_ramp_rate_exec>0:
-            p_es_ramp_kw = self.der_file.NP_P_MAX * self.rrl.ramp(p_es_kw/self.der_file.NP_P_MAX, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
-        else:
-            p_es_ramp_kw = p_es_kw
+        # Eq. 3.7.1-2, ramp rate limiter
+        p_es_ramp_kw = self.der_file.NP_P_MAX * self.rrl.ramp(p_es_kw/self.der_file.NP_P_MAX, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
 
-        # Eq. 31 Edge detector to identify Enter Service decision
+        # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
         es_flag_set = self.edge.run(der_status)
 
-        # Eq. 32 Enter service ramp complete
+        # Eq. 3.7.1-4 Enter service ramp complete
         es_flag_reset = (p_es_ramp_kw == p_es_kw) or not der_status
 
-        # Eq. 33, flip-flop logic to determine if in enter service ramp
+        # Eq. 3.7.1-5, flip-flop logic to determine if in enter service ramp
         if es_flag_reset:
             self.es_flag = 0
         elif es_flag_set:
             self.es_flag = 1
 
-        # Eq. 34, output selector
+        # Eq. 3.7.1-6, output selector
         if self.es_flag:
             self.p_desired_kw = p_es_ramp_kw
         else:

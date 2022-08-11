@@ -48,7 +48,7 @@ class LowPassFilter:
         if(t_olrt < (1.15 * der.DER.t_s)):
             lpf_out = lpf_in
         else:
-            # Eq. 71, apply first order lag
+            # Eq. 3.11.1-2, apply first order lag
             t_olrt_t = t_olrt/1.15
             lpf_out = ((der.DER.t_s / (der.DER.t_s + t_olrt_t)) * (lpf_in + self.lpf_in_prev)) + ((t_olrt_t - der.DER.t_s) / (
                         der.DER.t_s + t_olrt_t) * self.lpf_out_prev)

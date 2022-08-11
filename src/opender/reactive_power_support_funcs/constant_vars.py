@@ -46,12 +46,12 @@ class ConstantVARs:
         :param q_const_q_desired_kvar"	Output reactive power from constant reactive power function
         """
 
-        # Eq. 49, calculate desired reactive power in unit of kvar
+        # Eq. 3.8.1-16, calculate desired reactive power in unit of kvar
         const_q_desired_ref_kvar = self.exec_delay.const_q_exec * self.der_file.NP_VA_MAX
 
-        # Eq. 50, apply the low pass filter to the reference reactive power. Note that there can be multiple different
-        # ways to implement this behavior in an actual DER. The model may be updated in a future version, according
-        # to the lab test results.
+        # Eq. 3.8.1-17, apply the low pass filter to the reference reactive power. Note that there can be multiple
+        # different ways to implement this behavior in an actual DER. The model may be updated in a future version,
+        # according to the lab test results.
         const_q_desired_kvar = self.const_q_lpf.low_pass_filter(const_q_desired_ref_kvar, self.der_file.CONST_Q_RT)
 
         return const_q_desired_kvar

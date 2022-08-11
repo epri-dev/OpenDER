@@ -44,7 +44,7 @@ class Ramping:
             self.ramp_out_prev = ramp_in
         ramp_out = None
 
-        # Eq. 73 and 74, apply ramp rate limit
+        # Eq. 3.11.2-2 and -3, apply ramp rate limit
         if(ramp_up_time != 0):
             ramp_up_limit = der.DER.t_s / ramp_up_time
             if ((self.ramp_out_prev + ramp_up_limit) < ramp_in):

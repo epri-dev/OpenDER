@@ -37,7 +37,8 @@ class FlipFlop:
         Output:
         :param ff_out: flipflop logic output
         """
-        
+
+        # Eq. 3.11.5-2 Flipflop logic
         if(ff_set == 0 and ff_reset == 0):
             ff_out = self.ff_out_prev
         elif(ff_set == 1 and ff_reset == 0):

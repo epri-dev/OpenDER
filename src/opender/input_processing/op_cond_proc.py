@@ -63,8 +63,9 @@ class DERInputs:
         :param v:	Single-phase RMS voltage at RPA of DER
         :param NP_PHASE:	Single or Three-phase DER
         :param NP_AC_V_NOM: AC voltage base-nominal voltage rating
-        :param p_dc_kw: Available DC power
         :param NP_P_MAX:	Active power rating at unity power factor
+        :param p_dc_kw: Available DC power
+        :param p_dem_kw: Active Power Demand for BESS DER
 
         Internal variable:
         
@@ -80,7 +81,8 @@ class DERInputs:
         :param v_meas_pu:	Applicable voltage for volt-var and volt-watt calculation in per unit
         :param v_high_pu:	Maximum applicable voltage as enter service, over voltage trip criterion in per unit
         :param v_low_pu:	Minimum applicable voltage as enter service, over voltage trip criterion in per uni
-        :param v_meas_pu:	DER available DC power in per uni
+        :param p_avl_pu:    DER available active power in per unit considering efficiency
+        :param p_dem_pu:    BESS DER active power demand in per unit
         """
 
         # perform input validity check
@@ -88,40 +90,44 @@ class DERInputs:
 
         if self.der_file.NP_PHASE == "THREE":
 
-            # Eq. 1, calculate per unit value of three phase voltage
+            # Eq. 3.3.1-1, calculate per unit value of three phase voltage
             v_a_pu = (math.sqrt(3) * self.v_a) / (self.der_file.NP_AC_V_NOM)
             v_b_pu = (math.sqrt(3) * self.v_b) / (self.der_file.NP_AC_V_NOM)
             v_c_pu = (math.sqrt(3) * self.v_c) / (self.der_file.NP_AC_V_NOM)
 
-            # Eq. 2, if DER responds to the average of three phase RMS value
+            # Eq. 3.3.1-2, if DER responds to the average of three phase RMS value
             if self.der_file.NP_V_MEAS_UNBALANCE == "AVG":
                 self.v_meas_pu = (v_a_pu + v_b_pu + v_c_pu)/3
 
-            # Eq. 3, if DER responds to positive sequence component of voltage.
+            # Eq. 3.3.1-3, if DER responds to positive sequence component of voltage.
             if self.der_file.NP_V_MEAS_UNBALANCE == "POS":
                 self.v_meas_pu = abs(v_a_pu + (v_b_pu * cmath.exp(1j*((2/3)*math.pi + self.theta_b - self.theta_a)))
                                      + (v_c_pu * cmath.exp(1j*((-2/3)*math.pi + self.theta_c - self.theta_a))))/3
 
-            # Eq. 4, calculate phase-to-phase voltages
+            # Eq. 3.3.1-4, calculate phase-to-phase voltages
             v_ab_pu = abs((v_a_pu - v_b_pu * cmath.exp((self.theta_b - self.theta_a)*1j)) / math.sqrt(3))
             v_bc_pu = abs((v_b_pu - v_c_pu * cmath.exp((self.theta_c - self.theta_b)*1j)) / math.sqrt(3))
             v_ca_pu = abs((v_c_pu - v_a_pu * cmath.exp((self.theta_a - self.theta_c)*1j)) / math.sqrt(3))
 
-            # Eq. 5, calculate maximum and minimum voltages
+            # Eq. 3.3.1-5, calculate maximum and minimum voltages
             self.v_low_pu = min(v_a_pu, v_b_pu, v_c_pu, v_ab_pu, v_bc_pu, v_ca_pu)
             self.v_high_pu = max(v_a_pu, v_b_pu, v_c_pu, v_ab_pu, v_bc_pu, v_ca_pu)
 
         elif(self.der_file.NP_PHASE == "SINGLE"):
 
-            # Eq. 6, single phase applicable voltage
+            # Eq. 3.3.1-6, single phase applicable voltage
             self.v_meas_pu = self.v_high_pu = self.v_low_pu = (self.v / self.der_file.NP_AC_V_NOM)
 
-        # Eq. 7, DER power in per unit #TODO change model spec
+        # Eq. 3.3.2-1, For PV DER: available power in per unit considering efficiency
         if self.p_dc_kw is not None:
             self.p_avl_pu = self.p_dc_kw / self.der_file.NP_P_MAX * self.der_file.NP_EFFICIENCY
 
+        # For BESS DER
         if self.p_dem_kw is not None:
+            # Eq. 3.3.3-1, DER active power demand in per unit
             self.p_dem_pu = self.p_dem_kw / self.der_file.NP_P_MAX
+            # Eq. 3.3.3-2, DER available power is max
+            self.p_avl_pu = 1
 
 
     def operating_conditions_validity_check(self):

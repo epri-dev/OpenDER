@@ -38,12 +38,10 @@ class ActivePowerLimit:
         :param ap_limit_pu:	Active power limit
         """
 
-        # Eq:21, The final power limitation is subjected to the response time. In this model a ramp rate limit
+        # Eq: 3.6.1-5, The final power limitation is subjected to the response time. In this model a ramp rate limit
         # is applied. Note that there can be multiple different ways to implement this behavior in an actual DER.
         # The model may be updated in a future version according to the lab test results.
-        # If active power limit function is not enabled, the "limited active power" value is set to be the same with
-        # DER output active power value, such that when the function enables, the active power limit starts to ramp at
-        # that value.
+        # If active power limit function is not enabled, the "limited active power" value is set to 1
         if self.exec_delay.ap_limit_enable_exec:
             ap_limit_pu = self.ap_limit_ramp.ramp(self.exec_delay.ap_limit_exec,self.der_file.AP_RT, self.der_file.AP_RT)
         else:

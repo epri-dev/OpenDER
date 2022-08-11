@@ -11,12 +11,10 @@ class DER_BESS(DER):
         super(DER_BESS, self).__init__()
         self.der_file.NP_Q_CAPABILITY_LOW_P = 'SAME'
         self.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
-        self.der_input.p_avl_pu = 1 #TODO discussion - is this the best place to set available power? Or need to change freq-droop
 
         # replace active power support functions and enter service
         self.activepowerfunc = DesiredActivePowerBESS(self.der_file, self.exec_delay, self.der_input)
-        # self.enterservicetrip = EnterServiceTripBESS(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
-        # self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
+        self.enterservicetrip = EnterServiceTripBESS(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
 
     def update_der_input(self, p_dem_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
                          f: float = None, v_pu: Union[List[float], float] = None, p_dem_pu: float = None) -> None:

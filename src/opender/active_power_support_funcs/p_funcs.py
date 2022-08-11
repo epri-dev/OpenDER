@@ -76,7 +76,7 @@ class DesiredActivePower:
         return self.calculate_p_act_supp_kw(p_out_kw)
 
     def calculate_p_act_supp_kw(self, p_out_kw):
-        # Eq. 28 calculate desired active power in kW
+        # Eq. 3.6.2-1 calculate desired active power in kW
         self.p_act_supp_kw = min(self.der_input.p_avl_pu, self.p_act_supp_pu) * self.der_file.NP_P_MAX
         return self.p_act_supp_kw
 
@@ -87,7 +87,7 @@ class DesiredActivePower:
         """
         # Calculate active power based on grid-support functions
 
-        # Eq. 27 calculate desired active power in per unit
+        # Eq. 3.6.1-11 calculate desired active power in per unit
         if(self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == False and self.pf_of_active == False):
             self.p_act_supp_pu = 1
 

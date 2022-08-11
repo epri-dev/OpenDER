@@ -339,7 +339,7 @@ class DERCommonFileFormat:
         if self.isNotNaN(param.CONST_PF):
             self.CONST_PF = param.CONST_PF
 
-        if (self.NP_NORMAL_OP_CAT == "CAT_A"):
+        if self.NP_NORMAL_OP_CAT == "CAT_A":
             self.QV_CURVE_V2 = 1
             self.QV_CURVE_V3 = 1
             self.QV_CURVE_V1 = 0.9
@@ -398,7 +398,7 @@ class DERCommonFileFormat:
         if self.isNotNaN(param.QP_CURVE_P1_GEN):
             self.QP_CURVE_P1_GEN = param.QP_CURVE_P1_GEN
         else:
-            if (self.NP_P_MIN_PU > 0.2):
+            if self.NP_P_MIN_PU > 0.2:
                 self.QP_CURVE_P1_GEN = self.NP_P_MIN_PU
             else:
                 self.QP_CURVE_P1_GEN = 0.2
@@ -623,10 +623,10 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.P_Q_ABS_PU) and self.isNotNaN(self.P_Q_INJ_PU) \
                 and self.isNotNaN(self.Q_MAX_ABS_PU) and self.isNotNaN(self.Q_MAX_INJ_PU):
             self.NP_Q_CAPABILITY_BY_P_CURVE = {
-                'P_Q_ABS_PU': [float(x) for x in self.P_Q_ABS_PU.strip('][').split(',')],
-                'Q_MAX_ABS_PU': [float(x) for x in self.Q_MAX_ABS_PU.strip('][').split(',')],
-                'P_Q_INJ_PU': [float(x) for x in self.P_Q_INJ_PU.strip('][').split(',')],
-                'Q_MAX_INJ_PU': [float(x) for x in self.Q_MAX_INJ_PU.strip('][').split(',')],
+                'P_Q_ABS_PU': [float(x) for x in self.P_Q_ABS_PU.split(' ')],
+                'Q_MAX_ABS_PU': [float(x) for x in self.Q_MAX_ABS_PU.split(' ')],
+                'P_Q_INJ_PU': [float(x) for x in self.P_Q_INJ_PU.split(' ')],
+                'Q_MAX_INJ_PU': [float(x) for x in self.Q_MAX_INJ_PU.split(' ')],
             }
             if self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'][0] > -1:
                 self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'].insert(0, -1)

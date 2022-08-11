@@ -54,6 +54,8 @@ class DERCommonFileFormat:
 
                        'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF', 'PF_OLRT',
 
+                       'MC_LVRT_V1', 'MC_HVRT_V1',
+
                        'NP_EFFICIENCY', 'NP_V_DC', 'P_Q_INJ_PU', 'P_Q_ABS_PU', 'Q_MAX_INJ_PU', 'Q_MAX_ABS_PU',
                        'NP_PRIO_OUTSIDE_MIN_Q_REQ', 'NP_V_MEAS_UNBALANCE', 'NP_PHASE', 'NP_P_MIN_PU', 'AP_RT',
                        'CONST_PF_RT', 'CONST_Q_RT', 'QP_RT', 'NP_SET_EXE_TIME', 'NP_MODE_TRANSITION_TIME',
@@ -205,6 +207,9 @@ class DERCommonFileFormat:
         self._PF_KOF = 0.05
         self._PF_KUF = 0.05
         self._PF_OLRT = 5
+
+        self._MC_LVRT_V1 = None
+        self._MC_HVRT_V1 = None
 
         self._NP_BESS_SOC_MAX = 1
         self._NP_BESS_SOC_MIN = 0
@@ -453,18 +458,25 @@ class DERCommonFileFormat:
             self.UV1_TRIP_T = 2
             self.UV2_TRIP_V = 0.45
             self.UV2_TRIP_T = 0.16
+            self.MC_LVRT_V1 = 0
+            self.MC_HVRT_V1 = 2
+
         elif self.NP_ABNORMAL_OP_CAT == "CAT_II":
             self.OV1_TRIP_T = 2
             self.UV1_TRIP_V = 0.7
             self.UV1_TRIP_T = 10
             self.UV2_TRIP_V = 0.45
             self.UV2_TRIP_T = 0.16
+            self.MC_LVRT_V1 = 0
+            self.MC_HVRT_V1 = 2
         else:
             self.OV1_TRIP_T = 13
             self.UV1_TRIP_V = 0.88
             self.UV1_TRIP_T = 21
             self.UV2_TRIP_V = 0.5
             self.UV2_TRIP_T = 2
+            self.MC_LVRT_V1 = 0.5
+            self.MC_HVRT_V1 = 1.1
 
         if self.isNotNaN(param.OV2_TRIP_V):
             self.OV2_TRIP_V = param.OV2_TRIP_V
@@ -510,6 +522,10 @@ class DERCommonFileFormat:
             self.PF_KUF = param.PF_KUF
         if self.isNotNaN(param.PF_OLRT):
             self.PF_OLRT = param.PF_OLRT
+        if self.isNotNaN(param.MC_LVRT_V1):
+            self.MC_LVRT_V1 = param.MC_LVRT_V1
+        if self.isNotNaN(param.MC_HVRT_V1):
+            self.MC_HVRT_V1 = param.MC_HVRT_V1
 
         if self.isNotNaN(param.NP_BESS_SOC_MAX):
             self.NP_BESS_SOC_MAX = param.NP_BESS_SOC_MAX
@@ -1896,6 +1912,27 @@ class DERCommonFileFormat:
         if self.PF_OLRT < 0.2 or self.PF_OLRT > 10:
             logging.warning("Warning: Frequency-droop function open-loop response time should be within the range "
                             "defined in IEEE 1547-2018 Clause 6.5.2.7.2")
+    @property
+    def MC_LVRT_V1(self):
+        return self._MC_LVRT_V1
+
+    @MC_LVRT_V1.setter
+    def MC_LVRT_V1(self, MC_LVRT_V1):
+        self._MC_LVRT_V1 = MC_LVRT_V1
+        if self._MC_LVRT_V1 < 0 or self._MC_LVRT_V1 > 0.88:
+            logging.warning("Warning: Low-voltage momentary cessation curve point 1 voltage should be between 0 and "
+                            "0.88 per unit")
+
+    @property
+    def MC_HVRT_V1(self):
+        return self._MC_HVRT_V1
+
+    @MC_HVRT_V1.setter
+    def MC_LVRT_V1(self, MC_HVRT_V1):
+        self._MC_HVRT_V1 = MC_HVRT_V1
+        if self._MC_HVRT_V1 < 1.1:
+            logging.warning("Warning: High-voltage momentary cessation curve point 1 voltage should be greater or "
+                            "equal to 1.1 per unit")
 
     @property
     def STATUS_INIT(self):

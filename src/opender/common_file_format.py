@@ -1928,7 +1928,7 @@ class DERCommonFileFormat:
         return self._MC_HVRT_V1
 
     @MC_HVRT_V1.setter
-    def MC_LVRT_V1(self, MC_HVRT_V1):
+    def MC_HVRT_V1(self, MC_HVRT_V1):
         self._MC_HVRT_V1 = MC_HVRT_V1
         if self._MC_HVRT_V1 < 1.1:
             logging.warning("Warning: High-voltage momentary cessation curve point 1 voltage should be greater or "

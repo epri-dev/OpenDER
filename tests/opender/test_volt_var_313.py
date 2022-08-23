@@ -63,8 +63,7 @@ class TestVoltVar313:
         self.si_obj.der_file.NP_Q_MAX_ABS = 46.2
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c= 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu)
         self.si_obj.run()
 
         # Check inputs
@@ -83,10 +82,9 @@ class TestVoltVar313:
         assert 46.2 == self.si_obj.der_file.NP_Q_MAX_ABS
 
         # Check Results
-        p_actual = round(self.si_obj.p_out_kw, 1)
-        q_actual = round(self.si_obj.q_out_kvar, 1)
 
-        p_message = (f"It should be {p_expected} instead it is {p_actual}")
-        assert p_expected == p_actual, p_message
-        q_message = (f"It should be {q_expected} instead it is {q_actual}")
-        assert q_expected == q_actual, q_message
+
+        p_message = (f"It should be {p_expected} instead it is {self.si_obj.p_out_kw }")
+        assert abs(self.si_obj.p_out_kw - p_expected)<0.1, p_message
+        q_message = (f"It should be {q_expected} instead it is {self.si_obj.q_out_kvar}")
+        assert abs(self.si_obj.q_out_kvar - q_expected)<0.1, q_message

@@ -22,17 +22,19 @@ are permitted provided that the following conditions are met:
 
 import pytest
 
-input_list = [  # p_dc, p_limit, p_expected, q_expected
+input_list = [  # p_dem, p_limit, p_expected, q_expected
     (100, 0.5, 50, 0),
-    (30, 0.5, 30, 0)
+    (30, 0.5, 30, 0),
+    (0, -0.5, -40, 0),
+    (-50, -0.5, -50, 0),
 ]
 
 
 class TestLimitP:
 
     @pytest.fixture(autouse=True)
-    def _request(self, si_obj_creation):
-        self.si_obj = si_obj_creation
+    def _request(self, bess_obj_creation):
+        self.si_obj = bess_obj_creation
 
     @pytest.mark.parametrize("p_dc, p_limit, p_expected, q_expected", input_list,
                              ids=[f"AP p_dc={i[0]}, p_per={i[1]}, p_expected={i[2]}, q_expected={i[3]}"
@@ -41,15 +43,15 @@ class TestLimitP:
 
         self.si_obj.der_file.AP_LIMIT_ENABLE = "ENABLED"
         self.si_obj.der_file.AP_LIMIT = p_limit
+        self.si_obj.der_file.NP_P_MAX_CHARGE = 80
 
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.update_der_input(v_pu=1)
+        self.si_obj.update_der_input(v_pu=1, p_dem_kw=p_dc)
         self.si_obj.run()
 
         # Check inputs
         assert True == self.si_obj.der_file.AP_LIMIT_ENABLE
         assert p_limit == self.si_obj.der_file.AP_LIMIT
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc == self.si_obj.der_input.p_dem_kw
 
         # Check Results
         p_actual = self.si_obj.p_out_kw

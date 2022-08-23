@@ -61,7 +61,7 @@ class TestEnterService562:
         t1=0
         period1=max(60,2*self.si_obj.der_file.ES_DELAY+self.si_obj.der_file.ES_RANDOMIZED_DELAY)
         self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         self.si_obj.der_input.freq_hz = init_f
 
         while t1+t_s<=period1:
@@ -72,7 +72,7 @@ class TestEnterService562:
         t2=0
         period2=max(60,2*self.si_obj.der_file.ES_DELAY+self.si_obj.der_file.ES_RANDOMIZED_DELAY)
         self.si_obj.der_file.ES_PERMIT_SERVICE = True
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         while t2+t_s<=period2:
             self.si_obj.run()
             assert False == self.si_obj.der_status, f'enter service stage h) fail, at t={t2}'
@@ -81,7 +81,7 @@ class TestEnterService562:
         t3=0
         period3=0.25*self.si_obj.der_file.ES_DELAY
         v_pu = final_v
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         self.si_obj.der_input.freq_hz=final_f
         while t3+t_s <= period3:
             self.si_obj.run()
@@ -90,12 +90,12 @@ class TestEnterService562:
 
         t4=0
         v_pu = init_v
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         self.si_obj.der_input.freq_hz=init_f
         self.si_obj.run()
 
         v_pu = final_v
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         self.si_obj.der_input.freq_hz=final_f
 
         while self.si_obj.der_status == False:

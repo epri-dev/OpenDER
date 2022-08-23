@@ -59,8 +59,7 @@ class TestVoltWatt331:
         self.si_obj.der_file.PV_CURVE_P2 = 0.4
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c= 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu)
         self.si_obj.run()
 
         # Check inputs

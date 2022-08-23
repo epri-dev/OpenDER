@@ -56,8 +56,7 @@ class TestConstantPowerFactor:
         self.si_obj.der_file.CONST_PF_EXCITATION = "INJ" if pf >= 0 else "ABS"
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c= 277.128129, 277.128129, 277.128129
+        self.si_obj.update_der_input(v_pu=1, p_dc_kw=p_dc)
         self.si_obj.run()
 
         # Check inputs
@@ -94,8 +93,7 @@ class TestConstantPowerFactor:
         self.si_obj.der_file.AP_LIMIT = p_limit
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c= 277.128129, 277.128129, 277.128129
+        self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=1)
         self.si_obj.run()
 
         # Check inputs

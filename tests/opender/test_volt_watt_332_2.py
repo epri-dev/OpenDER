@@ -71,9 +71,8 @@ class TestVoltWatt3322:
         self.si_obj.der_file.OV2_TRIP_V = 1.2
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu[0], 277.128129 * v_pu[1], 277.128129 * v_pu[2]
-        self.si_obj.der_input.theta_a, self.si_obj.der_input.theta_b, self.si_obj.der_input.theta_c = 1 * v_pu[3], 1 * v_pu[4], 1 * v_pu[5]
+        self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu[0:3], theta=v_pu[3:6])
+
         self.si_obj.run()
 
         # Check inputs

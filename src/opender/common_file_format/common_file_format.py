@@ -840,9 +840,8 @@ class DERCommonFileFormat:
     @NP_P_MIN_PU.setter
     def NP_P_MIN_PU(self, NP_P_MIN_PU):
         self._NP_P_MIN_PU = NP_P_MIN_PU
-        if self._NP_P_MIN_PU > 1:
-            logging.error("Error: DER minimum active power in per unit should be less than 1")
-        #TODO removed <0 check, need further discussion. To be updated in model spec document
+        if self._NP_P_MIN_PU > 1 or self._NP_P_MIN_PU < 0 :
+            logging.error("Error: DER minimum active power in per unit should be greater or equal to 0 and less than 1")
 
     @property
     def NP_PHASE(self):

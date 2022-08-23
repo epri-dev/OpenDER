@@ -124,6 +124,13 @@ class DERCommonFileFormatBESS(DERCommonFileFormat):
                              "make sure all four arrays have the same length")
 
 
+    @DERCommonFileFormat.NP_P_MIN_PU.setter
+    def NP_P_MIN_PU(self, NP_P_MIN_PU):
+        self._NP_P_MIN_PU = NP_P_MIN_PU
+        if self._NP_P_MIN_PU > 0:
+            logging.error("Error: For BESS DER, its minimum active power in per unit should be less than 0")
+
+
     @property
     def NP_BESS_SOC_MAX(self):
         return self._NP_BESS_SOC_MAX

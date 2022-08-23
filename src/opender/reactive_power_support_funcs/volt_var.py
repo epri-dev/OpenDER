@@ -18,7 +18,7 @@ from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
 class VoltVAR:
     """
     |  Voltage–Reactive Power (Volt-var) Function
-    |  EPRI Report Reference: Section 3.8.2 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.9.2 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     def __init__(self, der_file, exec_delay, der_input):
 
@@ -76,7 +76,7 @@ class VoltVAR:
         :param q_qv_desired_kvar: Output reactive power from volt-var function
         """
 
-        # Eq. 3.8.1-3, The applied VRef is determined by either the VRef control setpoint or low pass filtered
+        # Eq. 3.9.1-3, The applied VRef is determined by either the VRef control setpoint or low pass filtered
         # applicable voltage, depending on the enable signal
         if(self.exec_delay.qv_vref_auto_mode_exec == 0):
             qv_vref_appl = self.exec_delay.qv_vref_exec
@@ -126,7 +126,7 @@ class VoltVAR:
         if self.qv_curve_v4_exec_prev is None:
             self.qv_curve_v4_exec_prev = self.exec_delay.qv_curve_v4_exec
 
-        # Eq. 3.8.1-4, The applied volt-var curve voltage settings should shift according to the changes of applied
+        # Eq. 3.9.1-4, The applied volt-var curve voltage settings should shift according to the changes of applied
         # VRef. If applied VRef changes (qv_vref_appl ≠ qv_vref_appl_prev):
         if qv_vref_appl != self.qv_vref_appl_prev:
             qv_curve_v1_appl = self.qv_curve_v1_appl_prev + qv_vref_appl - self.qv_vref_appl_prev
@@ -139,7 +139,7 @@ class VoltVAR:
             qv_curve_v3_appl = self.qv_curve_v3_appl_prev
             qv_curve_v4_appl = self.qv_curve_v4_appl_prev
 
-        # Eq. 3.8.1-5 ~ -8, if voltage settings change, the applied volt-var curve voltage settings should follow the
+        # Eq. 3.9.1-5 ~ -8, if voltage settings change, the applied volt-var curve voltage settings should follow the
         # controlled settings change
         if self.exec_delay.qv_curve_v1_exec != self.qv_curve_v1_exec_prev:
             qv_curve_v1_appl = self.exec_delay.qv_curve_v1_exec
@@ -153,7 +153,7 @@ class VoltVAR:
         if self.exec_delay.qv_curve_v4_exec != self.qv_curve_v4_exec_prev:
             qv_curve_v4_appl = self.exec_delay.qv_curve_v4_exec
         
-        # Eq. 3.8.1-9, Volt-VAR Reactive power reference calculation in p.u
+        # Eq. 3.9.1-9, Volt-VAR Reactive power reference calculation in p.u
         if self.der_input.v_meas_pu < qv_curve_v1_appl:
             q_qv_desired_ref_pu = self.exec_delay.qv_curve_q1_exec
             
@@ -169,10 +169,10 @@ class VoltVAR:
         if self.der_input.v_meas_pu > qv_curve_v4_appl:
             q_qv_desired_ref_pu = self.exec_delay.qv_curve_q4_exec
         
-        # Eq. 3.8.1-10, Volt-VAR Reactive power reference calculation in kvar
+        # Eq. 3.9.1-10, Volt-VAR Reactive power reference calculation in kvar
         q_qv_desired_ref_kvar = q_qv_desired_ref_pu * self.der_file.NP_VA_MAX
 
-        # Eq. 3.8.1-11, OLRT using LPF
+        # Eq. 3.9.1-11, OLRT using LPF
         q_qv_desired_kvar = self.qv_lpf.low_pass_filter(q_qv_desired_ref_kvar, self.exec_delay.qv_olrt_exec)
         
         # Resetting internal state variables

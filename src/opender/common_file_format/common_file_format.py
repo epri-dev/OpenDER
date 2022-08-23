@@ -62,16 +62,13 @@ class DERCommonFileFormat:
                        'STATUS_INIT', 'ES_RANDOMIZED_DELAY_ACTUAL', 'NP_Q_CAPABILITY_BY_P_CURVE',
                        'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE',
 
-                       'NP_BESS_SOC_MAX', 'NP_BESS_SOC_MIN', 'NP_BESS_CAPACITY', 'NP_BESS_SELF_DISCHARGE',
-                       'NP_BESS_SELF_DISCHARGE_SOC', 'NP_BESS_P_MAX_BY_SOC', 'P_DISCHARGE_MAX_PU',
-                       'SOC_P_DISCHARGE_MAX', 'P_CHARGE_MAX_PU', 'SOC_P_CHARGE_MAX', 'SOC_INIT'
                        ]
 
-    __slots__ = tuple(['_' + param for param in parameters_list])
+    __slots__ = tuple(['_' + param for param in parameters_list]) + tuple(['param_inputs'])
 
     def __init__(self,
-                 as_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("Parameters", "AS-with std-values.csv"),
-                 model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("Parameters",
+                 as_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters", "AS-with std-values.csv"),
+                 model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters",
                                                                                   "Model-parameters.csv")):
         """
         Creating a DER common file format object
@@ -91,10 +88,10 @@ class DERCommonFileFormat:
 
         # Filtering dataframe with the parameters present in the parameter_list array
         df = pd.concat(frames)
-        df = df.reindex(index=self.__class__.parameters_list)
+        df = df.reindex(index=self._get_parameter_list())
 
-        df["New Index"] = self.__class__.parameters_list
-        param = df.reset_index().set_index("New Index")["VALUE"].apply(pd.to_numeric, errors="ignore")
+        df["New Index"] = self._get_parameter_list()
+        self.param_inputs = df.reset_index().set_index("New Index")["VALUE"].apply(pd.to_numeric, errors="ignore")
 
         # Nameplate Variables with default values
         self._NP_NORMAL_OP_CAT = "CAT_A"
@@ -211,138 +208,126 @@ class DERCommonFileFormat:
         self._MC_LVRT_V1 = None
         self._MC_HVRT_V1 = None
 
-        self._NP_BESS_SOC_MAX = 1
-        self._NP_BESS_SOC_MIN = 0
-        self._NP_BESS_CAPACITY = None
-        self._NP_BESS_SELF_DISCHARGE = 0
-        self._NP_BESS_SELF_DISCHARGE_SOC = 0
-        self._NP_BESS_P_MAX_BY_SOC = dict()
-        self._P_DISCHARGE_MAX_PU = None
-        self._SOC_P_DISCHARGE_MAX = None
-        self._P_CHARGE_MAX_PU = None
-        self._SOC_P_CHARGE_MAX = None
-        self._SOC_INIT = 0.5
+        if self.isNotNaN(self.param_inputs.NP_TYPE):
+            self.NP_TYPE = self.param_inputs.NP_TYPE
 
-        if self.isNotNaN(param.NP_TYPE):
-            self.NP_TYPE = param.NP_TYPE
+        if self.isNotNaN(self.param_inputs.NP_NORMAL_OP_CAT):
+            self.NP_NORMAL_OP_CAT = self.param_inputs.NP_NORMAL_OP_CAT
+        if self.isNotNaN(self.param_inputs.NP_ABNORMAL_OP_CAT):
+            self.NP_ABNORMAL_OP_CAT = self.param_inputs.NP_ABNORMAL_OP_CAT
 
-        if self.isNotNaN(param.NP_NORMAL_OP_CAT):
-            self.NP_NORMAL_OP_CAT = param.NP_NORMAL_OP_CAT
-        if self.isNotNaN(param.NP_ABNORMAL_OP_CAT):
-            self.NP_ABNORMAL_OP_CAT = param.NP_ABNORMAL_OP_CAT
+        if self.isNotNaN(self.param_inputs.NP_VA_MAX):
+            self.NP_VA_MAX = self.param_inputs.NP_VA_MAX
+        if self.isNotNaN(self.param_inputs.NP_P_MAX):
+            self.NP_P_MAX = self.param_inputs.NP_P_MAX
 
-        if self.isNotNaN(param.NP_VA_MAX):
-            self.NP_VA_MAX = param.NP_VA_MAX
-        if self.isNotNaN(param.NP_P_MAX):
-            self.NP_P_MAX = param.NP_P_MAX
+        if self.isNotNaN(self.param_inputs.NP_P_MAX_OVER_PF):
+            self.NP_P_MAX_OVER_PF = self.param_inputs.NP_P_MAX_OVER_PF
+        if self.isNotNaN(self.param_inputs.NP_OVER_PF):
+            self.NP_OVER_PF = self.param_inputs.NP_OVER_PF
+        if self.isNotNaN(self.param_inputs.NP_P_MAX_UNDER_PF):
+            self.NP_P_MAX_UNDER_PF = self.param_inputs.NP_P_MAX_UNDER_PF
+        if self.isNotNaN(self.param_inputs.NP_UNDER_PF):
+            self.NP_UNDER_PF = self.param_inputs.NP_UNDER_PF
 
-        if self.isNotNaN(param.NP_P_MAX_OVER_PF):
-            self.NP_P_MAX_OVER_PF = param.NP_P_MAX_OVER_PF
-        if self.isNotNaN(param.NP_OVER_PF):
-            self.NP_OVER_PF = param.NP_OVER_PF
-        if self.isNotNaN(param.NP_P_MAX_UNDER_PF):
-            self.NP_P_MAX_UNDER_PF = param.NP_P_MAX_UNDER_PF
-        if self.isNotNaN(param.NP_UNDER_PF):
-            self.NP_UNDER_PF = param.NP_UNDER_PF
-
-        if self.isNotNaN(param.NP_Q_MAX_INJ):
-            self.NP_Q_MAX_INJ = param.NP_Q_MAX_INJ
-        if self.isNotNaN(param.NP_Q_MAX_ABS):
-            self.NP_Q_MAX_ABS = param.NP_Q_MAX_ABS
-        if self.isNotNaN(param.NP_P_MAX_CHARGE):
-            self.NP_P_MAX_CHARGE = param.NP_P_MAX_CHARGE
-        if self.isNotNaN(param.NP_APPARENT_POWER_CHARGE_MAX):
-            self.NP_APPARENT_POWER_CHARGE_MAX = param.NP_APPARENT_POWER_CHARGE_MAX
-        if self.isNotNaN(param.NP_AC_V_NOM):
-            self.NP_AC_V_NOM = param.NP_AC_V_NOM
+        if self.isNotNaN(self.param_inputs.NP_Q_MAX_INJ):
+            self.NP_Q_MAX_INJ = self.param_inputs.NP_Q_MAX_INJ
+        if self.isNotNaN(self.param_inputs.NP_Q_MAX_ABS):
+            self.NP_Q_MAX_ABS = self.param_inputs.NP_Q_MAX_ABS
+        if self.isNotNaN(self.param_inputs.NP_P_MAX_CHARGE):
+            self.NP_P_MAX_CHARGE = self.param_inputs.NP_P_MAX_CHARGE
+        if self.isNotNaN(self.param_inputs.NP_APPARENT_POWER_CHARGE_MAX):
+            self.NP_APPARENT_POWER_CHARGE_MAX = self.param_inputs.NP_APPARENT_POWER_CHARGE_MAX
+        if self.isNotNaN(self.param_inputs.NP_AC_V_NOM):
+            self.NP_AC_V_NOM = self.param_inputs.NP_AC_V_NOM
 
         self.nameplate_value_validity_check()
 
-        if self.isNotNaN(param.P_Q_ABS_PU):
-            self.P_Q_ABS_PU = param.P_Q_ABS_PU
-        if self.isNotNaN(param.P_Q_INJ_PU):
-            self.P_Q_INJ_PU = param.P_Q_INJ_PU
-        if self.isNotNaN(param.Q_MAX_ABS_PU):
-            self.Q_MAX_ABS_PU = param.Q_MAX_ABS_PU
-        if self.isNotNaN(param.Q_MAX_INJ_PU):
-            self.Q_MAX_INJ_PU = param.Q_MAX_INJ_PU
+        if self.isNotNaN(self.param_inputs.P_Q_ABS_PU):
+            self.P_Q_ABS_PU = self.param_inputs.P_Q_ABS_PU
+        if self.isNotNaN(self.param_inputs.P_Q_INJ_PU):
+            self.P_Q_INJ_PU = self.param_inputs.P_Q_INJ_PU
+        if self.isNotNaN(self.param_inputs.Q_MAX_ABS_PU):
+            self.Q_MAX_ABS_PU = self.param_inputs.Q_MAX_ABS_PU
+        if self.isNotNaN(self.param_inputs.Q_MAX_INJ_PU):
+            self.Q_MAX_INJ_PU = self.param_inputs.Q_MAX_INJ_PU
 
         self.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
-        if self.isNotNaN(param.NP_EFFICIENCY):
-            self.NP_EFFICIENCY = param.NP_EFFICIENCY
+        if self.isNotNaN(self.param_inputs.NP_EFFICIENCY):
+            self.NP_EFFICIENCY = self.param_inputs.NP_EFFICIENCY
 
-        if self.isNotNaN(param.NP_V_DC):
-            self.NP_V_DC = param.NP_V_DC
+        if self.isNotNaN(self.param_inputs.NP_V_DC):
+            self.NP_V_DC = self.param_inputs.NP_V_DC
 
-        if self.isNotNaN(param.NP_PRIO_OUTSIDE_MIN_Q_REQ):
-            self.NP_PRIO_OUTSIDE_MIN_Q_REQ = param.NP_PRIO_OUTSIDE_MIN_Q_REQ
+        if self.isNotNaN(self.param_inputs.NP_PRIO_OUTSIDE_MIN_Q_REQ):
+            self.NP_PRIO_OUTSIDE_MIN_Q_REQ = self.param_inputs.NP_PRIO_OUTSIDE_MIN_Q_REQ
 
-        if self.isNotNaN(param.NP_V_MEAS_UNBALANCE):
-            self.NP_V_MEAS_UNBALANCE = param.NP_V_MEAS_UNBALANCE
+        if self.isNotNaN(self.param_inputs.NP_V_MEAS_UNBALANCE):
+            self.NP_V_MEAS_UNBALANCE = self.param_inputs.NP_V_MEAS_UNBALANCE
 
-        if self.isNotNaN(param.NP_PHASE):
-            self.NP_PHASE = param.NP_PHASE
+        if self.isNotNaN(self.param_inputs.NP_PHASE):
+            self.NP_PHASE = self.param_inputs.NP_PHASE
 
-        if self.isNotNaN(param.NP_P_MIN_PU):
-            self.NP_P_MIN_PU = param.NP_P_MIN_PU
+        if self.isNotNaN(self.param_inputs.NP_P_MIN_PU):
+            self.NP_P_MIN_PU = self.param_inputs.NP_P_MIN_PU
 
-        if self.isNotNaN(param.ES_RANDOMIZED_DELAY_ACTUAL):
-            self.ES_RANDOMIZED_DELAY_ACTUAL = param.ES_RANDOMIZED_DELAY_ACTUAL
+        if self.isNotNaN(self.param_inputs.ES_RANDOMIZED_DELAY_ACTUAL):
+            self.ES_RANDOMIZED_DELAY_ACTUAL = self.param_inputs.ES_RANDOMIZED_DELAY_ACTUAL
 
-        if self.isNotNaN(param.AP_RT):
-            self.AP_RT = param.AP_RT
+        if self.isNotNaN(self.param_inputs.AP_RT):
+            self.AP_RT = self.param_inputs.AP_RT
 
-        if self.isNotNaN(param.CONST_PF_RT):
-            self.CONST_PF_RT = param.CONST_PF_RT
+        if self.isNotNaN(self.param_inputs.CONST_PF_RT):
+            self.CONST_PF_RT = self.param_inputs.CONST_PF_RT
 
-        if self.isNotNaN(param.CONST_Q_RT):
-            self.CONST_Q_RT = param.CONST_Q_RT
+        if self.isNotNaN(self.param_inputs.CONST_Q_RT):
+            self.CONST_Q_RT = self.param_inputs.CONST_Q_RT
 
-        if self.isNotNaN(param.QP_RT):
-            self.QP_RT = param.QP_RT
+        if self.isNotNaN(self.param_inputs.QP_RT):
+            self.QP_RT = self.param_inputs.QP_RT
 
-        if self.isNotNaN(param.PF_MODE_ENABLE):
-            self.PF_MODE_ENABLE = param.PF_MODE_ENABLE
+        if self.isNotNaN(self.param_inputs.PF_MODE_ENABLE):
+            self.PF_MODE_ENABLE = self.param_inputs.PF_MODE_ENABLE
 
-        if self.isNotNaN(param.NP_SET_EXE_TIME):
-            self.NP_SET_EXE_TIME = param.NP_SET_EXE_TIME
+        if self.isNotNaN(self.param_inputs.NP_SET_EXE_TIME):
+            self.NP_SET_EXE_TIME = self.param_inputs.NP_SET_EXE_TIME
 
-        if self.isNotNaN(param.NP_MODE_TRANSITION_TIME):
-            self.NP_MODE_TRANSITION_TIME = param.NP_MODE_TRANSITION_TIME
+        if self.isNotNaN(self.param_inputs.NP_MODE_TRANSITION_TIME):
+            self.NP_MODE_TRANSITION_TIME = self.param_inputs.NP_MODE_TRANSITION_TIME
 
-        if self.isNotNaN(param.STATUS_INIT):
-            self.STATUS_INIT = param.STATUS_INIT
+        if self.isNotNaN(self.param_inputs.STATUS_INIT):
+            self.STATUS_INIT = self.param_inputs.STATUS_INIT
 
-        if self.isNotNaN(param.AP_LIMIT_ENABLE):
-            self.AP_LIMIT_ENABLE = param.AP_LIMIT_ENABLE
-        if self.isNotNaN(param.AP_LIMIT):
-            self.AP_LIMIT = param.AP_LIMIT
+        if self.isNotNaN(self.param_inputs.AP_LIMIT_ENABLE):
+            self.AP_LIMIT_ENABLE = self.param_inputs.AP_LIMIT_ENABLE
+        if self.isNotNaN(self.param_inputs.AP_LIMIT):
+            self.AP_LIMIT = self.param_inputs.AP_LIMIT
 
-        if self.isNotNaN(param.ES_PERMIT_SERVICE):
-            self.ES_PERMIT_SERVICE = param.ES_PERMIT_SERVICE
-        if self.isNotNaN(param.ES_V_LOW):
-            self.ES_V_LOW = param.ES_V_LOW
-        if self.isNotNaN(param.ES_V_HIGH):
-            self.ES_V_HIGH = param.ES_V_HIGH
+        if self.isNotNaN(self.param_inputs.ES_PERMIT_SERVICE):
+            self.ES_PERMIT_SERVICE = self.param_inputs.ES_PERMIT_SERVICE
+        if self.isNotNaN(self.param_inputs.ES_V_LOW):
+            self.ES_V_LOW = self.param_inputs.ES_V_LOW
+        if self.isNotNaN(self.param_inputs.ES_V_HIGH):
+            self.ES_V_HIGH = self.param_inputs.ES_V_HIGH
 
-        if self.isNotNaN(param.ES_F_LOW):
-            self.ES_F_LOW = param.ES_F_LOW
-        if self.isNotNaN(param.ES_F_HIGH):
-            self.ES_F_HIGH = param.ES_F_HIGH
-        if self.isNotNaN(param.ES_DELAY):
-            self.ES_DELAY = param.ES_DELAY
-        if self.isNotNaN(param.ES_RAMP_RATE):
-            self.ES_RAMP_RATE = param.ES_RAMP_RATE
-        if self.isNotNaN(param.ES_RANDOMIZED_DELAY):
-            self.ES_RANDOMIZED_DELAY = param.ES_RANDOMIZED_DELAY
+        if self.isNotNaN(self.param_inputs.ES_F_LOW):
+            self.ES_F_LOW = self.param_inputs.ES_F_LOW
+        if self.isNotNaN(self.param_inputs.ES_F_HIGH):
+            self.ES_F_HIGH = self.param_inputs.ES_F_HIGH
+        if self.isNotNaN(self.param_inputs.ES_DELAY):
+            self.ES_DELAY = self.param_inputs.ES_DELAY
+        if self.isNotNaN(self.param_inputs.ES_RAMP_RATE):
+            self.ES_RAMP_RATE = self.param_inputs.ES_RAMP_RATE
+        if self.isNotNaN(self.param_inputs.ES_RANDOMIZED_DELAY):
+            self.ES_RANDOMIZED_DELAY = self.param_inputs.ES_RANDOMIZED_DELAY
 
-        if self.isNotNaN(param.CONST_PF_MODE_ENABLE):
-            self.CONST_PF_MODE_ENABLE = param.CONST_PF_MODE_ENABLE
-        if self.isNotNaN(param.CONST_PF_EXCITATION):
-            self.CONST_PF_EXCITATION = param.CONST_PF_EXCITATION
-        if self.isNotNaN(param.CONST_PF):
-            self.CONST_PF = param.CONST_PF
+        if self.isNotNaN(self.param_inputs.CONST_PF_MODE_ENABLE):
+            self.CONST_PF_MODE_ENABLE = self.param_inputs.CONST_PF_MODE_ENABLE
+        if self.isNotNaN(self.param_inputs.CONST_PF_EXCITATION):
+            self.CONST_PF_EXCITATION = self.param_inputs.CONST_PF_EXCITATION
+        if self.isNotNaN(self.param_inputs.CONST_PF):
+            self.CONST_PF = self.param_inputs.CONST_PF
 
         if self.NP_NORMAL_OP_CAT == "CAT_A":
             self.QV_CURVE_V2 = 1
@@ -363,45 +348,45 @@ class DERCommonFileFormat:
             self.QV_OLRT = 5
             self.QP_CURVE_Q3_GEN = -0.44
 
-        if self.isNotNaN(param.QV_MODE_ENABLE):
-            self.QV_MODE_ENABLE = param.QV_MODE_ENABLE
-        if self.isNotNaN(param.QV_VREF):
-            self.QV_VREF = param.QV_VREF
-        if self.isNotNaN(param.QV_VREF_TIME):
-            self.QV_VREF_TIME = param.QV_VREF_TIME
-        if self.isNotNaN(param.QV_VREF_AUTO_MODE):
-            self.QV_VREF_AUTO_MODE = param.QV_VREF_AUTO_MODE
+        if self.isNotNaN(self.param_inputs.QV_MODE_ENABLE):
+            self.QV_MODE_ENABLE = self.param_inputs.QV_MODE_ENABLE
+        if self.isNotNaN(self.param_inputs.QV_VREF):
+            self.QV_VREF = self.param_inputs.QV_VREF
+        if self.isNotNaN(self.param_inputs.QV_VREF_TIME):
+            self.QV_VREF_TIME = self.param_inputs.QV_VREF_TIME
+        if self.isNotNaN(self.param_inputs.QV_VREF_AUTO_MODE):
+            self.QV_VREF_AUTO_MODE = self.param_inputs.QV_VREF_AUTO_MODE
 
-        if self.isNotNaN(param.QV_CURVE_V2):
-            self.QV_CURVE_V2 = param.QV_CURVE_V2
-        if self.isNotNaN(param.QV_CURVE_V3):
-            self.QV_CURVE_V3 = param.QV_CURVE_V3
-        if self.isNotNaN(param.QV_CURVE_V1):
-            self.QV_CURVE_V1 = param.QV_CURVE_V1
-        if self.isNotNaN(param.QV_CURVE_V4):
-            self.QV_CURVE_V4 = param.QV_CURVE_V4
+        if self.isNotNaN(self.param_inputs.QV_CURVE_V2):
+            self.QV_CURVE_V2 = self.param_inputs.QV_CURVE_V2
+        if self.isNotNaN(self.param_inputs.QV_CURVE_V3):
+            self.QV_CURVE_V3 = self.param_inputs.QV_CURVE_V3
+        if self.isNotNaN(self.param_inputs.QV_CURVE_V1):
+            self.QV_CURVE_V1 = self.param_inputs.QV_CURVE_V1
+        if self.isNotNaN(self.param_inputs.QV_CURVE_V4):
+            self.QV_CURVE_V4 = self.param_inputs.QV_CURVE_V4
 
-        if self.isNotNaN(param.QV_CURVE_Q1):
-            self.QV_CURVE_Q1 = param.QV_CURVE_Q1
-        if self.isNotNaN(param.QV_CURVE_Q2):
-            self.QV_CURVE_Q2 = param.QV_CURVE_Q2
-        if self.isNotNaN(param.QV_CURVE_Q3):
-            self.QV_CURVE_Q3 = param.QV_CURVE_Q3
-        if self.isNotNaN(param.QV_CURVE_Q4):
-            self.QV_CURVE_Q4 = param.QV_CURVE_Q4
-        if self.isNotNaN(param.QV_OLRT):
-            self.QV_OLRT = param.QV_OLRT
+        if self.isNotNaN(self.param_inputs.QV_CURVE_Q1):
+            self.QV_CURVE_Q1 = self.param_inputs.QV_CURVE_Q1
+        if self.isNotNaN(self.param_inputs.QV_CURVE_Q2):
+            self.QV_CURVE_Q2 = self.param_inputs.QV_CURVE_Q2
+        if self.isNotNaN(self.param_inputs.QV_CURVE_Q3):
+            self.QV_CURVE_Q3 = self.param_inputs.QV_CURVE_Q3
+        if self.isNotNaN(self.param_inputs.QV_CURVE_Q4):
+            self.QV_CURVE_Q4 = self.param_inputs.QV_CURVE_Q4
+        if self.isNotNaN(self.param_inputs.QV_OLRT):
+            self.QV_OLRT = self.param_inputs.QV_OLRT
 
-        if self.isNotNaN(param.CONST_Q_MODE_ENABLE):
-            self.CONST_Q_MODE_ENABLE = param.CONST_Q_MODE_ENABLE
-        if self.isNotNaN(param.CONST_Q):
-            self.CONST_Q = param.CONST_Q
+        if self.isNotNaN(self.param_inputs.CONST_Q_MODE_ENABLE):
+            self.CONST_Q_MODE_ENABLE = self.param_inputs.CONST_Q_MODE_ENABLE
+        if self.isNotNaN(self.param_inputs.CONST_Q):
+            self.CONST_Q = self.param_inputs.CONST_Q
 
-        if self.isNotNaN(param.QP_MODE_ENABLE):
-            self.QP_MODE_ENABLE = param.QP_MODE_ENABLE
+        if self.isNotNaN(self.param_inputs.QP_MODE_ENABLE):
+            self.QP_MODE_ENABLE = self.param_inputs.QP_MODE_ENABLE
 
-        if self.isNotNaN(param.QP_CURVE_P1_GEN):
-            self.QP_CURVE_P1_GEN = param.QP_CURVE_P1_GEN
+        if self.isNotNaN(self.param_inputs.QP_CURVE_P1_GEN):
+            self.QP_CURVE_P1_GEN = self.param_inputs.QP_CURVE_P1_GEN
         else:
             if self.NP_P_MIN_PU > 0.2:
                 self.QP_CURVE_P1_GEN = self.NP_P_MIN_PU
@@ -410,47 +395,47 @@ class DERCommonFileFormat:
         if self.NP_TYPE == 'PV':
             self.QP_CURVE_Q1_LOAD = self.QP_CURVE_Q1_GEN
 
-        if self.isNotNaN(param.QP_CURVE_P2_GEN):
-            self.QP_CURVE_P2_GEN = param.QP_CURVE_P2_GEN
-        if self.isNotNaN(param.QP_CURVE_P3_GEN):
-            self.QP_CURVE_P3_GEN = param.QP_CURVE_P3_GEN
-        if self.isNotNaN(param.QP_CURVE_Q3_GEN):
-            self.QP_CURVE_Q3_GEN = param.QP_CURVE_Q3_GEN
-        if self.isNotNaN(param.QP_CURVE_Q2_GEN):
-            self.QP_CURVE_Q2_GEN = param.QP_CURVE_Q2_GEN
-        if self.isNotNaN(param.QP_CURVE_Q1_GEN):
-            self.QP_CURVE_Q1_GEN = param.QP_CURVE_Q1_GEN
+        if self.isNotNaN(self.param_inputs.QP_CURVE_P2_GEN):
+            self.QP_CURVE_P2_GEN = self.param_inputs.QP_CURVE_P2_GEN
+        if self.isNotNaN(self.param_inputs.QP_CURVE_P3_GEN):
+            self.QP_CURVE_P3_GEN = self.param_inputs.QP_CURVE_P3_GEN
+        if self.isNotNaN(self.param_inputs.QP_CURVE_Q3_GEN):
+            self.QP_CURVE_Q3_GEN = self.param_inputs.QP_CURVE_Q3_GEN
+        if self.isNotNaN(self.param_inputs.QP_CURVE_Q2_GEN):
+            self.QP_CURVE_Q2_GEN = self.param_inputs.QP_CURVE_Q2_GEN
+        if self.isNotNaN(self.param_inputs.QP_CURVE_Q1_GEN):
+            self.QP_CURVE_Q1_GEN = self.param_inputs.QP_CURVE_Q1_GEN
 
-        if self.isNotNaN(param.QP_CURVE_P1_LOAD):
-            self.QP_CURVE_P1_LOAD = param.QP_CURVE_P1_LOAD
-        if self.isNotNaN(param.QP_CURVE_P2_LOAD):
-            self.QP_CURVE_P2_LOAD = param.QP_CURVE_P2_LOAD
-        if self.isNotNaN(param.QP_CURVE_P3_LOAD):
-            self.QP_CURVE_P3_LOAD = param.QP_CURVE_P3_LOAD
-        if self.isNotNaN(param.QP_CURVE_Q3_LOAD):
-            self.QP_CURVE_Q3_LOAD = param.QP_CURVE_Q3_LOAD
-        if self.isNotNaN(param.QP_CURVE_Q2_LOAD):
-            self.QP_CURVE_Q2_LOAD = param.QP_CURVE_Q2_LOAD
-        if self.isNotNaN(param.QP_CURVE_Q1_LOAD):
-            self.QP_CURVE_Q1_LOAD = param.QP_CURVE_Q1_LOAD
+        if self.isNotNaN(self.param_inputs.QP_CURVE_P1_LOAD):
+            self.QP_CURVE_P1_LOAD = self.param_inputs.QP_CURVE_P1_LOAD
+        if self.isNotNaN(self.param_inputs.QP_CURVE_P2_LOAD):
+            self.QP_CURVE_P2_LOAD = self.param_inputs.QP_CURVE_P2_LOAD
+        if self.isNotNaN(self.param_inputs.QP_CURVE_P3_LOAD):
+            self.QP_CURVE_P3_LOAD = self.param_inputs.QP_CURVE_P3_LOAD
+        if self.isNotNaN(self.param_inputs.QP_CURVE_Q3_LOAD):
+            self.QP_CURVE_Q3_LOAD = self.param_inputs.QP_CURVE_Q3_LOAD
+        if self.isNotNaN(self.param_inputs.QP_CURVE_Q2_LOAD):
+            self.QP_CURVE_Q2_LOAD = self.param_inputs.QP_CURVE_Q2_LOAD
+        if self.isNotNaN(self.param_inputs.QP_CURVE_Q1_LOAD):
+            self.QP_CURVE_Q1_LOAD = self.param_inputs.QP_CURVE_Q1_LOAD
 
-        if self.isNotNaN(param.PV_MODE_ENABLE):
-            self.PV_MODE_ENABLE = param.PV_MODE_ENABLE
-        if self.isNotNaN(param.PV_CURVE_V2):
-            self.PV_CURVE_V2 = param.PV_CURVE_V2
-        if self.isNotNaN(param.PV_CURVE_P2):
-            self.PV_CURVE_P2 = param.PV_CURVE_P2
+        if self.isNotNaN(self.param_inputs.PV_MODE_ENABLE):
+            self.PV_MODE_ENABLE = self.param_inputs.PV_MODE_ENABLE
+        if self.isNotNaN(self.param_inputs.PV_CURVE_V2):
+            self.PV_CURVE_V2 = self.param_inputs.PV_CURVE_V2
+        if self.isNotNaN(self.param_inputs.PV_CURVE_P2):
+            self.PV_CURVE_P2 = self.param_inputs.PV_CURVE_P2
         else:
             if (self.NP_P_MIN_PU > 0.2):
                 self.PV_CURVE_P2 = 0.2
             else:
                 self.PV_CURVE_P2 = self.NP_P_MIN_PU
-        if self.isNotNaN(param.PV_CURVE_V1):
-            self.PV_CURVE_V1 = param.PV_CURVE_V1
-        if self.isNotNaN(param.PV_CURVE_P1):
-            self.PV_CURVE_P1 = param.PV_CURVE_P1
-        if self.isNotNaN(param.PV_OLRT):
-            self.PV_OLRT = param.PV_OLRT
+        if self.isNotNaN(self.param_inputs.PV_CURVE_V1):
+            self.PV_CURVE_V1 = self.param_inputs.PV_CURVE_V1
+        if self.isNotNaN(self.param_inputs.PV_CURVE_P1):
+            self.PV_CURVE_P1 = self.param_inputs.PV_CURVE_P1
+        if self.isNotNaN(self.param_inputs.PV_OLRT):
+            self.PV_OLRT = self.param_inputs.PV_OLRT
 
         if self.NP_ABNORMAL_OP_CAT == "CAT_I":
             self.OV1_TRIP_T = 2
@@ -478,82 +463,59 @@ class DERCommonFileFormat:
             self.MC_LVRT_V1 = 0.5
             self.MC_HVRT_V1 = 1.1
 
-        if self.isNotNaN(param.OV2_TRIP_V):
-            self.OV2_TRIP_V = param.OV2_TRIP_V
-        if self.isNotNaN(param.OV2_TRIP_T):
-            self.OV2_TRIP_T = param.OV2_TRIP_T
-        if self.isNotNaN(param.OV1_TRIP_V):
-            self.OV1_TRIP_V = param.OV1_TRIP_V
-        if self.isNotNaN(param.OF2_TRIP_F):
-            self.OF2_TRIP_F = param.OF2_TRIP_F
-        if self.isNotNaN(param.OF1_TRIP_F):
-            self.OF1_TRIP_F = param.OF1_TRIP_F
-        if self.isNotNaN(param.OF1_TRIP_T):
-            self.OF1_TRIP_T = param.OF1_TRIP_T
-        if self.isNotNaN(param.OF2_TRIP_T):
-            self.OF2_TRIP_T = param.OF2_TRIP_T
-        if self.isNotNaN(param.UF1_TRIP_F):
-            self.UF1_TRIP_F = param.UF1_TRIP_F
-        if self.isNotNaN(param.UF1_TRIP_T):
-            self.UF1_TRIP_T = param.UF1_TRIP_T
-        if self.isNotNaN(param.UF2_TRIP_F):
-            self.UF2_TRIP_F = param.UF2_TRIP_F
-        if self.isNotNaN(param.UF2_TRIP_T):
-            self.UF2_TRIP_T = param.UF2_TRIP_T
+        if self.isNotNaN(self.param_inputs.OV2_TRIP_V):
+            self.OV2_TRIP_V = self.param_inputs.OV2_TRIP_V
+        if self.isNotNaN(self.param_inputs.OV2_TRIP_T):
+            self.OV2_TRIP_T = self.param_inputs.OV2_TRIP_T
+        if self.isNotNaN(self.param_inputs.OV1_TRIP_V):
+            self.OV1_TRIP_V = self.param_inputs.OV1_TRIP_V
+        if self.isNotNaN(self.param_inputs.OF2_TRIP_F):
+            self.OF2_TRIP_F = self.param_inputs.OF2_TRIP_F
+        if self.isNotNaN(self.param_inputs.OF1_TRIP_F):
+            self.OF1_TRIP_F = self.param_inputs.OF1_TRIP_F
+        if self.isNotNaN(self.param_inputs.OF1_TRIP_T):
+            self.OF1_TRIP_T = self.param_inputs.OF1_TRIP_T
+        if self.isNotNaN(self.param_inputs.OF2_TRIP_T):
+            self.OF2_TRIP_T = self.param_inputs.OF2_TRIP_T
+        if self.isNotNaN(self.param_inputs.UF1_TRIP_F):
+            self.UF1_TRIP_F = self.param_inputs.UF1_TRIP_F
+        if self.isNotNaN(self.param_inputs.UF1_TRIP_T):
+            self.UF1_TRIP_T = self.param_inputs.UF1_TRIP_T
+        if self.isNotNaN(self.param_inputs.UF2_TRIP_F):
+            self.UF2_TRIP_F = self.param_inputs.UF2_TRIP_F
+        if self.isNotNaN(self.param_inputs.UF2_TRIP_T):
+            self.UF2_TRIP_T = self.param_inputs.UF2_TRIP_T
 
-        if self.isNotNaN(param.OV1_TRIP_T):
-            self.OV1_TRIP_T = param.OV1_TRIP_T
-        if self.isNotNaN(param.UV1_TRIP_V):
-            self.UV1_TRIP_V = param.UV1_TRIP_V
-        if self.isNotNaN(param.UV1_TRIP_T):
-            self.UV1_TRIP_T = param.UV1_TRIP_T
-        if self.isNotNaN(param.UV2_TRIP_V):
-            self.UV2_TRIP_V = param.UV2_TRIP_V
-        if self.isNotNaN(param.UV2_TRIP_T):
-            self.UV2_TRIP_T = param.UV2_TRIP_T
+        if self.isNotNaN(self.param_inputs.OV1_TRIP_T):
+            self.OV1_TRIP_T = self.param_inputs.OV1_TRIP_T
+        if self.isNotNaN(self.param_inputs.UV1_TRIP_V):
+            self.UV1_TRIP_V = self.param_inputs.UV1_TRIP_V
+        if self.isNotNaN(self.param_inputs.UV1_TRIP_T):
+            self.UV1_TRIP_T = self.param_inputs.UV1_TRIP_T
+        if self.isNotNaN(self.param_inputs.UV2_TRIP_V):
+            self.UV2_TRIP_V = self.param_inputs.UV2_TRIP_V
+        if self.isNotNaN(self.param_inputs.UV2_TRIP_T):
+            self.UV2_TRIP_T = self.param_inputs.UV2_TRIP_T
 
-        if self.isNotNaN(param.PF_DBOF):
-            self.PF_DBOF = param.PF_DBOF
-        if self.isNotNaN(param.PF_DBUF):
-            self.PF_DBUF = param.PF_DBUF
-        if self.isNotNaN(param.PF_KOF):
-            self.PF_KOF = param.PF_KOF
-        if self.isNotNaN(param.PF_KUF):
-            self.PF_KUF = param.PF_KUF
-        if self.isNotNaN(param.PF_OLRT):
-            self.PF_OLRT = param.PF_OLRT
-        if self.isNotNaN(param.MC_LVRT_V1):
-            self.MC_LVRT_V1 = param.MC_LVRT_V1
-        if self.isNotNaN(param.MC_HVRT_V1):
-            self.MC_HVRT_V1 = param.MC_HVRT_V1
-
-        if self.isNotNaN(param.NP_BESS_SOC_MAX):
-            self.NP_BESS_SOC_MAX = param.NP_BESS_SOC_MAX
-        if self.isNotNaN(param.NP_BESS_SOC_MIN):
-            self.NP_BESS_SOC_MIN = param.NP_BESS_SOC_MIN
-        if self.isNotNaN(param.NP_BESS_CAPACITY):
-            self.NP_BESS_CAPACITY = param.NP_BESS_CAPACITY
-        if self.isNotNaN(param.NP_BESS_SELF_DISCHARGE):
-            self.NP_BESS_SELF_DISCHARGE = param.NP_BESS_SELF_DISCHARGE
-        if self.isNotNaN(param.NP_BESS_SELF_DISCHARGE_SOC):
-            self.NP_BESS_SELF_DISCHARGE_SOC = param.NP_BESS_SELF_DISCHARGE_SOC
-        if self.isNotNaN(param.NP_BESS_P_MAX_BY_SOC):
-            self.NP_BESS_P_MAX_BY_SOC = param.NP_BESS_P_MAX_BY_SOC
-        if self.isNotNaN(param.P_DISCHARGE_MAX_PU):
-            self.P_DISCHARGE_MAX_PU = param.P_DISCHARGE_MAX_PU
-        if self.isNotNaN(param.SOC_P_DISCHARGE_MAX):
-            self.SOC_P_DISCHARGE_MAX = param.SOC_P_DISCHARGE_MAX
-        if self.isNotNaN(param.P_CHARGE_MAX_PU):
-            self.P_CHARGE_MAX_PU = param.P_CHARGE_MAX_PU
-        if self.isNotNaN(param.SOC_P_CHARGE_MAX):
-            self.SOC_P_CHARGE_MAX = param.SOC_P_CHARGE_MAX
-        if self.isNotNaN(param.SOC_INIT):
-            self.SOC_INIT = param.SOC_INIT
-        self.initialize_NP_BESS_P_MAX_BY_SOC()
+        if self.isNotNaN(self.param_inputs.PF_DBOF):
+            self.PF_DBOF = self.param_inputs.PF_DBOF
+        if self.isNotNaN(self.param_inputs.PF_DBUF):
+            self.PF_DBUF = self.param_inputs.PF_DBUF
+        if self.isNotNaN(self.param_inputs.PF_KOF):
+            self.PF_KOF = self.param_inputs.PF_KOF
+        if self.isNotNaN(self.param_inputs.PF_KUF):
+            self.PF_KUF = self.param_inputs.PF_KUF
+        if self.isNotNaN(self.param_inputs.PF_OLRT):
+            self.PF_OLRT = self.param_inputs.PF_OLRT
+        if self.isNotNaN(self.param_inputs.MC_LVRT_V1):
+            self.MC_LVRT_V1 = self.param_inputs.MC_LVRT_V1
+        if self.isNotNaN(self.param_inputs.MC_HVRT_V1):
+            self.MC_HVRT_V1 = self.param_inputs.MC_HVRT_V1
 
 
-    def _get_parameter_list(self, file_info_type):
-        return [f"{item}-{file_info_type}" for item in self.__class__.parameters_list]
+
+    def _get_parameter_list(self):
+        return self.__class__.parameters_list
 
     def nameplate_value_validity_check(self):
         """
@@ -690,36 +652,6 @@ class DERCommonFileFormat:
         if not self.der_q_capability_validity_check(self.NP_Q_CAPABILITY_BY_P_CURVE, self.NP_NORMAL_OP_CAT):
             logging.warning("Warning: DER reactive capability curve defined by NP_Q_CAPABILITY_BY_P_CURVE "
                             "should be greater than the range defined in IEEE 1547-2018 Clause 5.2")
-
-    def initialize_NP_BESS_P_MAX_BY_SOC(self):
-        """
-        Initialize Maximum active power limitation by SOC curve using 4 array inputs of P_DISCHARGE_MAX_PU,
-        SOC_P_DISCHARGE_MAX, P_CHARGE_MAX_PU, SOC_P_CHARGE_MAX
-        """
-        if self.isNotNaN(self.P_DISCHARGE_MAX_PU) and self.isNotNaN(self.SOC_P_DISCHARGE_MAX) \
-                and self.isNotNaN(self.P_CHARGE_MAX_PU) and self.isNotNaN(self.SOC_P_CHARGE_MAX):
-            self.NP_BESS_P_MAX_BY_SOC = {
-                'P_DISCHARGE_MAX_PU': [float(x) for x in self.P_DISCHARGE_MAX_PU.strip('][').split(',')],
-                'SOC_P_DISCHARGE_MAX': [float(x) for x in self.SOC_P_DISCHARGE_MAX.strip('][').split(',')],
-                'P_CHARGE_MAX_PU': [float(x) for x in self.P_CHARGE_MAX_PU.strip('][').split(',')],
-                'SOC_P_CHARGE_MAX': [float(x) for x in self.SOC_P_CHARGE_MAX.strip('][').split(',')],
-            }
-
-        else:
-
-            self.NP_BESS_P_MAX_BY_SOC = {
-                'P_DISCHARGE_MAX_PU': [1, 1],
-                'SOC_P_DISCHARGE_MAX': [self.NP_BESS_SOC_MIN, self.NP_BESS_SOC_MAX],
-                'P_CHARGE_MAX_PU': [1, 1],
-                'SOC_P_CHARGE_MAX': [self.NP_BESS_SOC_MIN, self.NP_BESS_SOC_MAX]
-            }
-
-        if (len(self.NP_BESS_P_MAX_BY_SOC['P_DISCHARGE_MAX_PU']) !=
-            len(self.NP_BESS_P_MAX_BY_SOC['SOC_P_DISCHARGE_MAX'])) or \
-                (len(self.NP_BESS_P_MAX_BY_SOC['P_CHARGE_MAX_PU']) !=
-                 len(self.NP_BESS_P_MAX_BY_SOC['SOC_P_CHARGE_MAX'])):
-            raise ValueError("ValueError: Check failed for reactive power curve NP_BESS_SELF_DISCHARGE_SOC, please"
-                             "make sure all four arrays have the same length")
 
 
 
@@ -1752,7 +1684,7 @@ class DERCommonFileFormat:
     @property
     def UV2_TRIP_T(self):
         return self._UV2_TRIP_T
-    
+
     @UV2_TRIP_T.setter
     def UV2_TRIP_T(self, UV2_TRIP_T):
         self._UV2_TRIP_T = UV2_TRIP_T
@@ -1962,101 +1894,6 @@ class DERCommonFileFormat:
         if (self._AP_RT < 0 or self._AP_RT > 30):
             logging.warning("Warning: Active power limit function response time should be greater than or equal to 0,"
                             " and smaller than or equal to 30 seconds, according to IEEE 1547-2018 Clause 4.6.2.")
-
-    @property
-    def NP_BESS_SOC_MAX(self):
-        return self._NP_BESS_SOC_MAX
-
-    @NP_BESS_SOC_MAX.setter
-    def NP_BESS_SOC_MAX(self, NP_BESS_SOC_MAX):
-        self._NP_BESS_SOC_MAX = NP_BESS_SOC_MAX
-        if self._NP_BESS_SOC_MAX > 1 or self._NP_BESS_SOC_MAX < 0:
-            logging.warning("Warning: BESS maximum state of charge should be between 0 an 1")
-
-    @property
-    def NP_BESS_SOC_MIN(self):
-        return self._NP_BESS_SOC_MIN
-
-    @NP_BESS_SOC_MIN.setter
-    def NP_BESS_SOC_MIN(self, NP_BESS_SOC_MIN):
-        self._NP_BESS_SOC_MIN = NP_BESS_SOC_MIN
-        if self._NP_BESS_SOC_MIN > 1 or self._NP_BESS_SOC_MIN < 0:
-            logging.warning("Warning: BESS minimum state of charge should be between 0 an 1")
-
-    @property
-    def NP_BESS_CAPACITY(self):
-        return self._NP_BESS_CAPACITY
-
-    @NP_BESS_CAPACITY.setter
-    def NP_BESS_CAPACITY(self, NP_BESS_CAPACITY):
-        self._NP_BESS_CAPACITY = NP_BESS_CAPACITY
-
-    @property
-    def NP_BESS_SELF_DISCHARGE(self):
-        return self._NP_BESS_SELF_DISCHARGE
-
-    @NP_BESS_SELF_DISCHARGE.setter
-    def NP_BESS_SELF_DISCHARGE(self, NP_BESS_SELF_DISCHARGE):
-        self._NP_BESS_SELF_DISCHARGE = NP_BESS_SELF_DISCHARGE
-
-    @property
-    def NP_BESS_SELF_DISCHARGE_SOC(self):
-        return self._NP_BESS_SELF_DISCHARGE_SOC
-
-    @NP_BESS_SELF_DISCHARGE_SOC.setter
-    def NP_BESS_SELF_DISCHARGE_SOC(self, NP_BESS_SELF_DISCHARGE_SOC):
-        self._NP_BESS_SELF_DISCHARGE_SOC = NP_BESS_SELF_DISCHARGE_SOC
-
-    @property
-    def NP_BESS_P_MAX_BY_SOC(self):
-        return self._NP_BESS_P_MAX_BY_SOC
-
-    @NP_BESS_P_MAX_BY_SOC.setter
-    def NP_BESS_P_MAX_BY_SOC(self, NP_BESS_P_MAX_BY_SOC):
-        self._NP_BESS_P_MAX_BY_SOC = NP_BESS_P_MAX_BY_SOC
-
-    @property
-    def P_DISCHARGE_MAX_PU(self):
-        return self._P_DISCHARGE_MAX_PU
-
-    @P_DISCHARGE_MAX_PU.setter
-    def P_DISCHARGE_MAX_PU(self, P_DISCHARGE_MAX_PU):
-        self._P_DISCHARGE_MAX_PU = P_DISCHARGE_MAX_PU
-
-    @property
-    def SOC_P_DISCHARGE_MAX(self):
-        return self._SOC_P_DISCHARGE_MAX
-
-    @SOC_P_DISCHARGE_MAX.setter
-    def SOC_P_DISCHARGE_MAX(self, SOC_P_DISCHARGE_MAX):
-        self._SOC_P_DISCHARGE_MAX = SOC_P_DISCHARGE_MAX
-
-    @property
-    def P_CHARGE_MAX_PU(self):
-        return self._P_CHARGE_MAX_PU
-
-    @P_CHARGE_MAX_PU.setter
-    def P_CHARGE_MAX_PU(self, P_CHARGE_MAX_PU):
-        self._P_CHARGE_MAX_PU = P_CHARGE_MAX_PU
-
-    @property
-    def SOC_P_CHARGE_MAX(self):
-        return self._SOC_P_CHARGE_MAX
-
-    @SOC_P_CHARGE_MAX.setter
-    def SOC_P_CHARGE_MAX(self, SOC_P_CHARGE_MAX):
-        self._SOC_P_CHARGE_MAX = SOC_P_CHARGE_MAX
-
-    @property
-    def SOC_INIT(self):
-        return self._SOC_INIT
-
-    @SOC_INIT.setter
-    def SOC_INIT(self, SOC_INIT):
-        self._SOC_INIT = SOC_INIT
-        if self._SOC_INIT > 1 or self._SOC_INIT < 0:
-            self._SOC_INIT = 0.5
-            logging.error('SoC initial value not valid, using 0.5 instead')
 
 if __name__ == "__main__":
     import pathlib

@@ -22,7 +22,7 @@ from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
 class ConstantPowerFactor:
     """
     |  Constant Power Factor Function
-    |  EPRI Report Reference: Section 3.8.1 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.9.1 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
     def __init__(self, der_file, exec_delay):
@@ -50,7 +50,7 @@ class ConstantPowerFactor:
         :param q_const_pf_desired_kvar:	Output reactive power from constant power factor function
         """
 
-        # Eq. 3.8.1-1, calculate reactive power reference according to  active power and constant power factor setting
+        # Eq. 3.9.1-1, calculate reactive power reference according to  active power and constant power factor setting
         if self.exec_delay.const_pf_excitation_exec == "INJ":
             q_const_pf_desired_ref_kvar = p_desired_kw * \
                                           (math.sqrt(1 - (self.exec_delay.const_pf_exec ** 2))/self.exec_delay.const_pf_exec)
@@ -61,7 +61,7 @@ class ConstantPowerFactor:
             print(f'CONST_PF_EXCITATION value unexpected:{self.exec_delay.const_pf_excitation_exec}')
             q_const_pf_desired_ref_kvar = 0
 
-        # Eq. 3.8.1-2, apply the low pass filter to the reference reactive power. Note that there can be multiple
+        # Eq. 3.9.1-2, apply the low pass filter to the reference reactive power. Note that there can be multiple
         # different ways to implement this behavior in an actual DER. The model may be updated in a future version,
         # according to the lab test results.
         q_const_pf_desired_kvar = self.pf_lpf.low_pass_filter(q_const_pf_desired_ref_kvar, self.der_file.CONST_PF_RT)

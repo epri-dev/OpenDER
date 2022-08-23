@@ -1,6 +1,7 @@
 from opender.active_power_support_funcs.p_funcs import DesiredActivePower
-from opender.active_power_support_funcs.bess_specifc.soc import StateOfCharge
+from opender.bess_specifc.soc import StateOfCharge
 from opender import DER
+
 
 class DesiredActivePowerBESS(DesiredActivePower):
     def __init__(self, der_file, exec_delay, der_input):
@@ -24,11 +25,40 @@ class DesiredActivePowerBESS(DesiredActivePower):
             # For snapshot analysis
             self.soc_calc.snapshot_limits()
 
-        # Eq. 3.6.3-9 calculate desired active power in kW, considering maximum limits by SOC, DER nameplate active
+        # Eq. 3.7.3-1 calculate desired active power in per unit
+        if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False \
+                and self.pf_uf_active == False and self.pf_of_active == False:
+            self.p_act_supp_pu = min(self.der_input.p_dem_pu, 1)
+
+        if self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == False \
+                and self.pf_uf_active == False and self.pf_of_active == False:
+            self.p_act_supp_pu = min(self.der_input.p_dem_pu, self.ap_limit_rt, 1)
+
+        if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == True \
+                and self.pf_uf_active == False and self.pf_of_active == False:
+            self.p_act_supp_pu = min(self.der_input.p_dem_pu, self.p_pv_limit_pu, 1)
+
+        if self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True \
+                and self.pf_uf_active == False and self.pf_of_active == False:
+            self.p_act_supp_pu = min(self.ap_limit_rt, self.p_pv_limit_pu, 1)
+
+        if self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True:
+            self.p_act_supp_pu = min(self.p_pf_pu, 1)
+
+        if self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True:
+            self.p_act_supp_pu = min(self.der_input.p_dem_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
+
+        if self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True:
+            self.p_act_supp_pu = min(self.p_pf_pu, 1)
+
+        if self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True:
+            self.p_act_supp_pu = min(self.p_pv_limit_pu, self.p_pf_pu, 1)
+
+        # Eq. 3.7.3-2 calculate desired active power in kW, considering maximum limits by SOC, DER nameplate active
         # power charge rating, and active power demand from system operator or higher level grid support functions
         self.p_act_supp_kw = max(-self.soc_calc.p_max_charge_pu * self.der_file.NP_P_MAX,
                                  -self.der_file.NP_P_MAX_CHARGE,
-                                 min(self.p_act_supp_pu, self.der_input.p_dem_pu, self.soc_calc.p_max_discharge_pu)
+                                 min(self.p_act_supp_pu, self.soc_calc.p_max_discharge_pu)
                                  * self.der_file.NP_P_MAX)
 
         return self.p_act_supp_kw

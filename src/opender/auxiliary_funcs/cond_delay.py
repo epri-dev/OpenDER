@@ -18,7 +18,7 @@ class ConditionalDelay:
     """
     Conditional Delayed Enable can also be referred as On Delay.
     Output is true only when input stays true for a time period
-    EPRI Report Reference: Section 3.11.4 in Report #3002021694: IEEE 1547-2018 DER Model
+    EPRI Report Reference: Section 3.12.4 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
     def __init__(self):
@@ -44,14 +44,14 @@ class ConditionalDelay:
         """
 
         if con_del_enable_in == 0:
-            # Eq. 3.11.4-2 If input is False, output is False, and elapsed time does not integrate
+            # Eq. 3.12.4-2 If input is False, output is False, and elapsed time does not integrate
             self.con_del_enable_int = 0
             self.con_del_enable_out = 0
         else:
-            # Eq. 3.11.4-3 If input is True, elapsed time adds simulation time step in each time step
+            # Eq. 3.12.4-3 If input is True, elapsed time adds simulation time step in each time step
             self.con_del_enable_int = min(con_del_enable_time, self.con_del_enable_int + der.DER.t_s)
             if self.con_del_enable_int >= con_del_enable_time:
-                # Eq. 3.11.4-4 If elapsed time passed the conditional delay time, the output turns True
+                # Eq. 3.12.4-4 If elapsed time passed the conditional delay time, the output turns True
                 self.con_del_enable_out = 1
 
         return self.con_del_enable_out

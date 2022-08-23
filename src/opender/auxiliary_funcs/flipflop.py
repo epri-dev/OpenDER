@@ -21,7 +21,7 @@
 class FlipFlop:
     """
     |  Flipflop logic
-    |  EPRI Report Reference: Section 3.11.5 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.12.5 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     def __init__(self, ff_init):
         self.ff_out_prev = ff_init
@@ -38,7 +38,7 @@ class FlipFlop:
         :param ff_out: flipflop logic output
         """
 
-        # Eq. 3.11.5-2 Flipflop logic
+        # Eq. 3.12.5-2 Flipflop logic
         if(ff_set == 0 and ff_reset == 0):
             ff_out = self.ff_out_prev
         elif(ff_set == 1 and ff_reset == 0):

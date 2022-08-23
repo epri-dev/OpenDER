@@ -103,7 +103,7 @@ class DesiredReactivePower:
         :param q_desired_kvar:	Desired output reactive power from reactive power support functions
         """
 
-        # Eq. 3.8.1-18, calculate desired reactive power reference, without smooth mode transition
+        # Eq. 3.9.1-18, calculate desired reactive power reference, without smooth mode transition
         if(der_status == 1 and self.exec_delay.const_pf_mode_enable_exec == 1):
             q_desired_ref_kvar = self.q_const_pf_desired_kvar
         elif(der_status == 1 and self.exec_delay.qv_mode_enable_exec == 1):
@@ -115,7 +115,7 @@ class DesiredReactivePower:
         else:
             q_desired_ref_kvar = 0
 
-        # Eq. 3.8.1-19, the ramp rate limit only applies when there is a mode change.
+        # Eq. 3.9.1-19, the ramp rate limit only applies when there is a mode change.
         if self.exec_delay.const_pf_mode_enable_exec != self.const_pf_mode_enable_exec_prev or \
                 self.exec_delay.qv_mode_enable_exec != self.qv_mode_enable_exec_prev or \
                 self.exec_delay.qp_mode_enable_exec != self.qp_mode_enable_exec_prev or \
@@ -125,28 +125,28 @@ class DesiredReactivePower:
             q_mode_ramp_flag_set = 0
 
         if q_mode_ramp_flag_set or self.q_mode_ramp_flag == 1:
-            # Eq. 3.8.1-20, apply the ramp rate limit
+            # Eq. 3.9.1-20, apply the ramp rate limit
             q_desired_ramp_kvar = self.der_file.NP_VA_MAX * \
                                   self.desired_kvar_ramp.ramp(q_desired_ref_kvar/self.der_file.NP_VA_MAX,
                                                               self.der_file.NP_MODE_TRANSITION_TIME,
                                                               self.der_file.NP_MODE_TRANSITION_TIME)
         else:
-            # Eq. 3.8.1-21, if not in mode transition, ramp time of 0 is used to allow q_desired_ramp_kvar follow the
+            # Eq. 3.9.1-21, if not in mode transition, ramp time of 0 is used to allow q_desired_ramp_kvar follow the
             # desired reactive power
             q_desired_ramp_kvar = self.der_file.NP_VA_MAX * \
                                   self.desired_kvar_ramp.ramp(q_desired_ref_kvar/self.der_file.NP_VA_MAX, 0, 0)
 
-        # Eq. 3.8.1-22, the ramp rate limit stops to apply when the mode transition is completed (value before and
+        # Eq. 3.9.1-22, the ramp rate limit stops to apply when the mode transition is completed (value before and
         # after ramp rate limit is the same
         if q_desired_ref_kvar == q_desired_ramp_kvar or der_status == 0:
             q_mode_ramp_flag_reset = 1
         else:
             q_mode_ramp_flag_reset = 0
 
-        # Eq. 3.8.1-23, apply the flipflop logic to decide if in mode transition
+        # Eq. 3.9.1-23, apply the flipflop logic to decide if in mode transition
         self.q_mode_ramp_flag = self.desired_kvar_ff.flipflop(q_mode_ramp_flag_set, q_mode_ramp_flag_reset)
 
-        # Eq. 3.8.1-24, if in mode transition, pass ramp rate limited value as output. If not, pass original value.
+        # Eq. 3.9.1-24, if in mode transition, pass ramp rate limited value as output. If not, pass original value.
         if self.q_mode_ramp_flag == 1:
             q_desired_kvar = q_desired_ramp_kvar
         else:

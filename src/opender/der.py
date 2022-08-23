@@ -19,7 +19,7 @@
 # @email: janandan@epri.com
 import logging
 
-from . import common_file_format
+from .common_file_format.common_file_format import DERCommonFileFormat
 from .active_power_support_funcs.p_funcs import DesiredActivePower
 from .reactive_power_support_funcs.q_funcs import DesiredReactivePower
 from . import rem_ctrl
@@ -49,7 +49,7 @@ class DER:
         self.bus = None     # Bus which DER is connected to
 
         if der_file_obj is None:
-            der_file_obj = common_file_format.DERCommonFileFormat()
+            der_file_obj = self.get_DERCommonFileFormat()
 
         self.der_file = der_file_obj
         self.der_file.nameplate_value_validity_check()
@@ -186,11 +186,5 @@ class DER:
                f"p_act_supp_kw={self.p_act_supp_kw:.2f}, q_desired_kvar={self.q_desired_kvar:.2f}, " \
                f"p_out_kw={self.p_out_kw:.2f}, q_out_kvar={self.q_out_kvar:.2f}"
 
-    # @property
-    # def name(self):
-    #     return self._name
-    #
-    # @name.setter
-    # def name(self, name):
-    #     self._name = name
-    #     logging.Formatter()
+    def get_DERCommonFileFormat(self):
+        return DERCommonFileFormat()

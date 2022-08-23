@@ -1,3 +1,4 @@
+from . import DERCommonFileFormatBESS
 from .der import DER
 from .active_power_support_funcs.p_funcs_bess import DesiredActivePowerBESS
 from .enter_service_trip.es_trip_bess import EnterServiceTripBESS
@@ -7,8 +8,8 @@ from . import rem_ctrl
 import numpy as np
 
 class DER_BESS(DER):
-    def __init__(self):
-        super(DER_BESS, self).__init__()
+    def __init__(self, der_file_obj=None):
+        super(DER_BESS, self).__init__(der_file_obj)
         self.der_file.NP_Q_CAPABILITY_LOW_P = 'SAME'
         self.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
@@ -67,3 +68,6 @@ class DER_BESS(DER):
             self.der_input.theta_a = theta[0]
             self.der_input.theta_b = theta[1]
             self.der_input.theta_c = theta[2]
+
+    def get_DERCommonFileFormat(self):
+        return DERCommonFileFormatBESS()

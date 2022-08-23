@@ -17,7 +17,7 @@ from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
 class WattVAR:
     """
     |  Active Power – Reactive Power (Watt-var) Function
-    |  EPRI Report Reference: Section 3.8.3 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.9.3 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
     def __init__(self,der_file, exec_delay):
@@ -59,10 +59,10 @@ class WattVAR:
 
         """
 
-        # Eq. 3.8.1-12, Calculate desired active power in per unit
+        # Eq. 3.9.1-12, Calculate desired active power in per unit
         p_desired_pu = p_desired_kw / (self.der_file.NP_P_MAX if p_desired_kw > 0 else self.der_file.NP_P_MAX_CHARGE)
 
-        # Eq. 3.8.1-13, calculate reactive power reference in per unit according to watt-var curve
+        # Eq. 3.9.1-13, calculate reactive power reference in per unit according to watt-var curve
         if p_desired_pu <= self.exec_delay.qp_curve_p3_load_exec:
             q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_load_exec
 
@@ -94,10 +94,10 @@ class WattVAR:
         if p_desired_pu > self.exec_delay.qp_curve_p3_gen_exec:
             q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_gen_exec
 
-        # Eq. 3.8.1-14, calculate actual value of reactive power reference
+        # Eq. 3.9.1-14, calculate actual value of reactive power reference
         q_qp_desired_ref_kvar = q_qp_desired_ref_pu * self.der_file.NP_VA_MAX
 
-        # Eq. 3.8.1-15, apply the low pass filter. Note that there can be multiple different ways to implement this
+        # Eq. 3.9.1-15, apply the low pass filter. Note that there can be multiple different ways to implement this
         # behavior in actual DER. The model may be updated in a future version, according to the lab test results.
         q_qp_desired_kvar = self.qp_lpf.low_pass_filter(q_qp_desired_ref_kvar, self.der_file.QP_RT)
         

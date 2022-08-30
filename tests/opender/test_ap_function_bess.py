@@ -43,7 +43,7 @@ class TestLimitP:
 
         self.si_obj.der_file.AP_LIMIT_ENABLE = "ENABLED"
         self.si_obj.der_file.AP_LIMIT = p_limit
-        self.si_obj.der_file.NP_P_MAX_CHARGE = 80
+        self.si_obj.der_file.NP_P_MAX_CHARGE = 80000
 
         self.si_obj.update_der_input(v_pu=1, p_dem_kw=p_dc)
         self.si_obj.run()
@@ -51,7 +51,7 @@ class TestLimitP:
         # Check inputs
         assert True == self.si_obj.der_file.AP_LIMIT_ENABLE
         assert p_limit == self.si_obj.der_file.AP_LIMIT
-        assert p_dc == self.si_obj.der_input.p_dem_kw
+        assert p_dc * 1e3 == self.si_obj.der_input.p_dem_w
 
         # Check Results
         p_actual = self.si_obj.p_out_kw

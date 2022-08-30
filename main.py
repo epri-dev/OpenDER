@@ -183,8 +183,8 @@ while t < 2500:
 
     # save result
     t_plot.append(t)
-    p_plot.append(der_test.p_limited_kw)
-    q_plot.append(der_test.q_limited_kvar)
+    p_plot.append(der_test.p_limited_w)
+    q_plot.append(der_test.q_limited_var)
     pdc_plot.append(der_test.der_input.p_dc_kw)
     v_plot.append(der_test.der_input.v_meas_pu)
     stat_plot.append(der_test.der_status)

@@ -30,7 +30,7 @@ class FreqDroop:
 
         self.pf_lpf = LowPassFilter()
         self.p_pf_pre_pu_prev = None
-        self.p_out_kw_prev = None
+        self.p_out_w_prev = None
         self.pf_uf_prev = None
         self.pf_of_prev = None
         self.pf_uf = None
@@ -42,7 +42,7 @@ class FreqDroop:
         self.pf_uf_active = 0
         self.pf_of_active = 0
 
-    def calculate_p_pf_pu(self, p_out_kw, ap_limit_rt, p_pv_limit_pu):
+    def calculate_p_pf_pu(self, p_out_w, ap_limit_rt, p_pv_limit_pu):
         
         """
         Calculate power reference according to frequency-droop function
@@ -69,8 +69,8 @@ class FreqDroop:
 
         Internal state variables:
         
-        :param p_pf_pre_pu_prev:	Value of variable p_pf_pre_pu (pre-disturbance active power output) in the previous time step (initialized by the first value of p_dc_kw×NP_EFFICIENCY/NP_P_MAX)
-        :param p_out_kw_prev:	Value of variable p_out_kw (DER model output active power) in the previous time step (initialized by the first value of p_dc_kw×NP_EFFICIENCY)
+        :param p_pf_pre_pu_prev:	Value of variable p_pf_pre_pu (pre-disturbance active power output) in the previous time step (initialized by the first value of p_dc_w×NP_EFFICIENCY/NP_P_MAX)
+        :param p_out_w_prev:	Value of variable p_out_w (DER model output active power) in the previous time step (initialized by the first value of p_dc_w×NP_EFFICIENCY)
         :param pf_of_prev:	Value of variable pf_of (Over-frequency detected) in the previous time step (initialized by 0)
         :param pf_uf_prev:	Value of variable pf_uf (Under-frequency detected) in the previous time step (initialized by 0)
 
@@ -97,19 +97,19 @@ class FreqDroop:
             self.pf_of_prev = self.pf_of
 
         # Initialize internal state variables of DER output in previous time step
-        if(self.p_out_kw_prev is None):
-            self.p_out_kw_prev = min((self.der_input.p_avl_pu * self.der_file.NP_P_MAX),
+        if(self.p_out_w_prev is None):
+            self.p_out_w_prev = min((self.der_input.p_avl_pu * self.der_file.NP_P_MAX),
                                      (ap_limit_rt*self.der_file.NP_P_MAX),
                                      (p_pv_limit_pu*self.der_file.NP_P_MAX))
         else:
-            self.p_out_kw_prev = p_out_kw
+            self.p_out_w_prev = p_out_w
 
         # Initialize internal state variables of pre-disturbance active power output
         if(self.p_pf_pre_pu_prev is None):
             self.p_pf_pre_pu_prev = min(self.der_input.p_avl_pu, ap_limit_rt, p_pv_limit_pu)
 
         # Eq. 3.7.1-8, calculate pre-disturbance active power output
-        p_pf_pre_pu_temp = self.p_out_kw_prev / self.der_file.NP_P_MAX
+        p_pf_pre_pu_temp = self.p_out_w_prev / self.der_file.NP_P_MAX
         if(self.pf_uf == 1 and self.pf_uf_prev ==1):
             p_pf_pre_pu = self.p_pf_pre_pu_prev
         elif(self.pf_of == 1 and self.pf_of_prev == 1):

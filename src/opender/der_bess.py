@@ -17,11 +17,13 @@ class DER_BESS(DER):
         self.activepowerfunc = DesiredActivePowerBESS(self.der_file, self.exec_delay, self.der_input)
         self.enterservicetrip = EnterServiceTripBESS(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
 
-    def update_der_input(self, p_dem_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
-                         f: float = None, v_pu: Union[List[float], float] = None, p_dem_pu: float = None) -> None:
+    def update_der_input(self, p_dem_w: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
+                         f: float = None, v_pu: Union[List[float], float] = None, p_dem_pu: float = None,
+                         p_dem_kw: float = None) -> None:
         """
         Update DER inputs
-        :param p_dem_kw:	Demand AC power in kW
+        :param p_dem_w:     Demand AC power in W
+        :param p_dem_w:	Demand AC power in kW
         :param p_dem_pu:	Demand AC power in per unit
         :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
         :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
@@ -29,11 +31,14 @@ class DER_BESS(DER):
         :param f: DER RPA frequency in Hertz
         """
 
+        if p_dem_w is not None:
+            self.der_input.p_dem_w = p_dem_w
+
         if p_dem_kw is not None:
-            self.der_input.p_dem_kw = p_dem_kw
+            self.der_input.p_dem_w = p_dem_kw * 1000
 
         if p_dem_pu is not None:
-            self.der_input.p_dem_kw = p_dem_pu * self.der_file.NP_P_MAX
+            self.der_input.p_dem_w = p_dem_pu * self.der_file.NP_P_MAX
 
         if f is not None:
             self.der_input.freq_hz = f

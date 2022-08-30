@@ -10,21 +10,21 @@ class StateOfCharge:
         self.p_max_charge_pu = self.p_max_charge_pu_ts = self.p_max_charge_pu_soc = 1
         self.p_max_discharge_pu = self.p_max_discharge_pu_ts = self.p_max_discharge_pu_soc = 1
 
-    def calculate_soc(self, p_out_kw):
+    def calculate_soc(self, p_out_w):
 
         # Eq. 3.6.3-1 assign charging and discharging power to 0
-        p_charge_kw = p_discharge_kw = 0
-        if p_out_kw is not None:
-            if p_out_kw > 0:
+        p_charge_w = p_discharge_w = 0
+        if p_out_w is not None:
+            if p_out_w > 0:
                 # Eq. 3.6.3-2, if discharging, assign output power in previous time step to discharge power
-                p_discharge_kw = p_out_kw
+                p_discharge_w = p_out_w
             else:
                 # Eq. 3.6.3-3, if charging, assign output power in previous time step to charge power
-                p_charge_kw = - p_out_kw
+                p_charge_w = - p_out_w
 
         # Eq. 3.6.3-4, Calculate SOC based on energy capacity, efficiency, discharge rate, and simulation time step
         if self.der_file.NP_BESS_CAPACITY is not None:
-            self.bess_soc = self.bess_soc + (((self.der_file.NP_EFFICIENCY * p_charge_kw - p_discharge_kw)
+            self.bess_soc = self.bess_soc + (((self.der_file.NP_EFFICIENCY * p_charge_w - p_discharge_w)
                                               / self.der_file.NP_BESS_CAPACITY) - self.der_file.NP_BESS_SELF_DISCHARGE
                                              - self.der_file.NP_BESS_SELF_DISCHARGE_SOC * self.bess_soc) * DER.t_s/3600
 
@@ -78,4 +78,4 @@ class StateOfCharge:
             self.bess_soc = soc_reset
 
     def __str__(self):
-        return f"SoC = {self.bess_soc:.3f}, p_max_charge_kw = {self.p_max_charge_pu:.3f}, p_max_discharge_kw = {self.p_max_discharge_pu:.3f}"
+        return f"SoC = {self.bess_soc:.3f}, p_max_charge_w = {self.p_max_charge_pu:.3f}, p_max_discharge_w = {self.p_max_discharge_pu:.3f}"

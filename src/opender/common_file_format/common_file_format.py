@@ -29,7 +29,7 @@ import logging
 class DERCommonFileFormat:
     parameters_list = ['NP_NORMAL_OP_CAT', 'NP_ABNORMAL_OP_CAT', 'NP_P_MAX', 'NP_P_MAX_OVER_PF', 'NP_OVER_PF',
                        'NP_P_MAX_UNDER_PF', 'NP_UNDER_PF', 'NP_VA_MAX', 'NP_Q_MAX_INJ', 'NP_Q_MAX_ABS',
-                       'NP_P_MAX_CHARGE', 'NP_APPARENT_POWER_CHARGE_MAX', 'NP_AC_V_NOM',
+                       'NP_P_MAX_CHARGE', 'NP_APPARENT_POWER_CHARGE_MAX', 'NP_AC_V_NOM', 'NP_REACTIVE_SUSCEPTANCE',
 
                        'AP_LIMIT_ENABLE', 'AP_LIMIT',
 
@@ -107,6 +107,7 @@ class DERCommonFileFormat:
         self._P_Q_ABS_PU = None
         self._Q_MAX_INJ_PU = None
         self._Q_MAX_ABS_PU = None
+        self._NP_REACTIVE_SUSCEPTANCE = None
         self._NP_Q_CAPABILITY_BY_P_CURVE = None
         self._NP_Q_CAPABILITY_LOW_P = 'REDUCED'
         self._NP_P_MAX_CHARGE = 0
@@ -240,6 +241,8 @@ class DERCommonFileFormat:
             self.NP_APPARENT_POWER_CHARGE_MAX = self.param_inputs.NP_APPARENT_POWER_CHARGE_MAX
         if self.isNotNaN(self.param_inputs.NP_AC_V_NOM):
             self.NP_AC_V_NOM = self.param_inputs.NP_AC_V_NOM
+        if self.isNotNaN(self.param_inputs.NP_REACTIVE_SUSCEPTANCE):
+            self.NP_REACTIVE_SUSCEPTANCE = self.param_inputs.NP_REACTIVE_SUSCEPTANCE
 
         self.nameplate_value_validity_check()
 
@@ -834,6 +837,14 @@ class DERCommonFileFormat:
             raise ValueError("ValueError: DER nameplate voltage NP_AC_V_NOM should be greater than 0.")
 
     @property
+    def NP_REACTIVE_SUSCEPTANCE(self):
+        return self._NP_REACTIVE_SUSCEPTANCE
+
+    @NP_REACTIVE_SUSCEPTANCE.setter
+    def NP_REACTIVE_SUSCEPTANCE(self, NP_REACTIVE_SUSCEPTANCE):
+        self._NP_REACTIVE_SUSCEPTANCE = NP_REACTIVE_SUSCEPTANCE
+
+    @property
     def NP_P_MIN_PU(self):
         return self._NP_P_MIN_PU
 
@@ -1022,7 +1033,7 @@ class DERCommonFileFormat:
     def ES_RANDOMIZED_DELAY(self, ES_RANDOMIZED_DELAY):
         self._ES_RANDOMIZED_DELAY = ES_RANDOMIZED_DELAY
         if self._ES_RANDOMIZED_DELAY != 0:
-            if (self._NP_VA_MAX > 500) or (self._ES_RANDOMIZED_DELAY < 0 or self._ES_RANDOMIZED_DELAY > 1000):
+            if (self._NP_VA_MAX > 500e3) or (self._ES_RANDOMIZED_DELAY < 0 or self._ES_RANDOMIZED_DELAY > 1000):
                 logging.warning("Warning: check failed for ES_RANDOMIZED_DELAY. If enabled, maximum time for enter "
                                 "service randomized delay should be greater than or equal to 1, and smaller than or "
                                 "equal to 1000 s, according to IEEE 1547-2018 Clause 4.10.3. "

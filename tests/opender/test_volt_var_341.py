@@ -50,8 +50,8 @@ class TestVoltVar341:
     def test_volt_var_q_priority(self, v_pu, p_dc, p_expected, q_expected):
         p_limit = 0.5
 
-        self.si_obj.der_file.NP_VA_MAX = 100
-        self.si_obj.der_file.NP_P_MAX = 100
+
+
         self.si_obj.der_file.QV_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.QV_CURVE_V1 = 0.92
         self.si_obj.der_file.QV_CURVE_V2 = 0.98
@@ -71,7 +71,7 @@ class TestVoltVar341:
         self.si_obj.run()
 
         # Check inputs
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc * 1000 == self.si_obj.der_input.p_dc_w
  #       assert "Reactive Power" == self.si_obj.der_file.power_priority
         assert True == self.si_obj.der_file.QV_MODE_ENABLE
         assert 0.92 == self.si_obj.der_file.QV_CURVE_V1

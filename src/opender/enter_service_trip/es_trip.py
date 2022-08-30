@@ -141,7 +141,7 @@ class EnterServiceTrip:
         else:
             if self.der_file.ES_RANDOMIZED_DELAY_ACTUAL > 0 and es_crit:
                 self.es_randomized_delay_time = self.der_file.ES_RANDOMIZED_DELAY_ACTUAL
-            elif (self.exec_delay.es_ramp_rate_exec == 0) and (self.exec_delay.es_randomized_delay_exec > 0) and (self.der_file.NP_VA_MAX < 500):
+            elif (self.exec_delay.es_ramp_rate_exec == 0) and (self.exec_delay.es_randomized_delay_exec > 0) and (self.der_file.NP_VA_MAX < 500e3):
                 if self.es_randomized_delay_time == 0:
                     # If no value, create a new randomized delay when enter service criterion made
                     self.es_randomized_delay_time = np.random.random() * self.exec_delay.es_randomized_delay_exec

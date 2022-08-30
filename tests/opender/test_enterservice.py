@@ -60,8 +60,7 @@ class TestEnterService562:
 
         t1=0
         period1=max(60,2*self.si_obj.der_file.ES_DELAY+self.si_obj.der_file.ES_RANDOMIZED_DELAY)
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.update_der_input(v_pu=v_pu)
+        self.si_obj.update_der_input(v_pu=v_pu, p_dc_kw=p_dc)
         self.si_obj.der_input.freq_hz = init_f
 
         while t1+t_s<=period1:

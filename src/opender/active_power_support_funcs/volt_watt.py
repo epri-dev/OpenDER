@@ -30,8 +30,10 @@ class VoltWatt:
         self.exec_delay = exec_delay
         self.der_input = der_input
         self.pv_lpf = LowPassFilter()
+
+        self.p_pv_limit_ref_pu = None
         
-    def calculate_p_pv_limit_pu(self, p_out_kw):
+    def calculate_p_pv_limit_pu(self, p_out_w):
         """
         Calculate active power limits by volt-watt function in per unit
 
@@ -49,9 +51,9 @@ class VoltWatt:
         Internal variable:
         
         :param p_pv_limit_ref_pu:	Volt-watt power limit reference in per-unit before open loop response time
-        :param p_pv_limit_ref_kw:   Volt-watt power limit reference in kW before open loop response time
-        :param pv_curve_p1_kw:  Volt-watt Curve Point P1 Setting in kW
-        :param pv_curve_p2_kw:  Volt-watt Curve Point P2 Setting in kW
+        :param p_pv_limit_ref_w:   Volt-watt power limit reference in kW before open loop response time
+        :param pv_curve_p1_w:  Volt-watt Curve Point P1 Setting in kW
+        :param pv_curve_p2_w:  Volt-watt Curve Point P2 Setting in kW
 
         Output:
         
@@ -59,26 +61,26 @@ class VoltWatt:
         """
 
         # Eq. 3.7.1-1 calculate power references in kW
-        pv_curve_p1_kw = self.exec_delay.pv_curve_p1_exec * self.der_file.NP_P_MAX
-        pv_curve_p2_kw = self.exec_delay.pv_curve_p2_exec * \
+        pv_curve_p1_w = self.exec_delay.pv_curve_p1_exec * self.der_file.NP_P_MAX
+        pv_curve_p2_w = self.exec_delay.pv_curve_p2_exec * \
                     (self.der_file.NP_P_MAX if self.exec_delay.pv_curve_p2_exec > 0 else self.der_file.NP_P_MAX_CHARGE)
 
         # Eq. 3.7.1-2, calculate active power limit in kW according to volt-watt curve
         if self.der_input.v_meas_pu <= self.exec_delay.pv_curve_v1_exec:
-            p_pv_limit_ref_kw = pv_curve_p1_kw
+            p_pv_limit_ref_w = pv_curve_p1_w
         if self.der_input.v_meas_pu >= self.exec_delay.pv_curve_v2_exec:
-            p_pv_limit_ref_kw = pv_curve_p2_kw
+            p_pv_limit_ref_w = pv_curve_p2_w
         if self.exec_delay.pv_curve_v1_exec < self.der_input.v_meas_pu < self.exec_delay.pv_curve_v2_exec:
-            p_pv_limit_ref_kw = pv_curve_p1_kw - (self.der_input.v_meas_pu - self.exec_delay.pv_curve_v1_exec) \
+            p_pv_limit_ref_w = pv_curve_p1_w - (self.der_input.v_meas_pu - self.exec_delay.pv_curve_v1_exec) \
                                 / (self.exec_delay.pv_curve_v2_exec-self.exec_delay.pv_curve_v1_exec) \
-                                * (pv_curve_p1_kw - pv_curve_p2_kw)
+                                * (pv_curve_p1_w - pv_curve_p2_w)
 
         # Eq. 3.7.1-3, convert volt-watt limit to per-unit using NP_P_MAX as base
-        p_pv_limit_ref_pu = p_pv_limit_ref_kw / self.der_file.NP_P_MAX
+        self.p_pv_limit_ref_pu = p_pv_limit_ref_w / self.der_file.NP_P_MAX
 
         # Eq. 3.7.1-4, apply the low pass filter, if function disabled, reset limit to 1 immediately
         if self.exec_delay.pv_mode_enable_exec:
-            p_pv_limit_pu = self.pv_lpf.low_pass_filter(p_pv_limit_ref_pu, self.exec_delay.pv_olrt_exec)
+            p_pv_limit_pu = self.pv_lpf.low_pass_filter(self.p_pv_limit_ref_pu, self.exec_delay.pv_olrt_exec)
         else:
             p_pv_limit_pu = self.pv_lpf.low_pass_filter(1, 0)
 

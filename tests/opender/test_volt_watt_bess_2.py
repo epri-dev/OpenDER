@@ -18,8 +18,8 @@ class TestVWBESS2:
         self.si_obj.der_file.PV_MODE_ENABLE = True
 
         self.si_obj.der_file.PV_CURVE_P2 = -0.5
-        self.si_obj.der_file.NP_P_MAX_CHARGE = 80
-        self.si_obj.der_file.NP_APPARENT_POWER_CHARGE_MAX = 80
+        self.si_obj.der_file.NP_P_MAX_CHARGE = 80000
+        self.si_obj.der_file.NP_APPARENT_POWER_CHARGE_MAX = 80000
 
         self.si_obj.update_der_input(p_dem_kw = p_kw, v_pu=v_pu, f=60)
         self.si_obj.run()

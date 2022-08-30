@@ -42,12 +42,11 @@ class TestTripUnbalanced:
                                   for i in input_list])
     def test_trip_unb(self, v_pu, theta, p_dc, p_expected, q_expected):
 
-        self.si_obj.der_file.NP_P_MAX = 100
+
         # self.si_obj.der_file.QV_MODE_ENABLE = "ENABLED"
 
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
         self.si_obj.update_der_input(v_pu=v_pu, theta=theta, p_dc_kw=p_dc)
         self.si_obj.run()
 

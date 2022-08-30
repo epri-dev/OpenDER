@@ -22,7 +22,7 @@ import logging
 from .common_file_format.common_file_format import DERCommonFileFormat
 from .active_power_support_funcs.p_funcs import DesiredActivePower
 from .reactive_power_support_funcs.q_funcs import DesiredReactivePower
-from . import rem_ctrl
+from .rem_ctrl import rem_ctrl
 from .enter_service_trip.es_trip import EnterServiceTrip
 from .enter_service_trip.es_perf import EnterServicePerformance
 from .capability_and_priority.capability_and_priority import CapabilityPriority
@@ -55,16 +55,20 @@ class DER:
         self.der_file.nameplate_value_validity_check()
 
         # Intermediate variables
-        self.p_act_supp_kw = None
-        self.p_desired_kw = None
-        self.q_desired_kvar = None
-        self.p_limited_kw = None
-        self.q_limited_kvar = None
+        self.p_act_supp_w = None
+        self.p_desired_w = None
+        self.q_desired_var = None
+        self.p_limited_w = None
+        self.q_limited_var = None
+        self.p_out_pu = None
+        self.q_out_pu = None
+        self.p_out_kw = None
+        self.q_out_kvar = None
 
         self.der_status = self.der_file.STATUS_INIT
 
-        self.p_out_kw = None
-        self.q_out_kvar = None
+        self.p_out_w = None
+        self.q_out_var = None
 
         # DER model modules
         self.der_input = DERInputs(self.der_file)
@@ -77,10 +81,12 @@ class DER:
 
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
-                         f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None) -> None:
+                         f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None,
+                         p_dc_w: float = None) -> None:
         """
         Update DER inputs
-        :param p_dc_kw:	Available DC power in kW
+        :param p_dc_w: Available DC power in W
+        :param p_dc_w:	Available DC power in kW
         :param p_dc_pu:	Available DC power in per unit
         :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
         :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
@@ -88,11 +94,14 @@ class DER:
         :param f: DER RPA frequency in Hertz
         """
 
+        if p_dc_w is not None:
+            self.der_input.p_dc_w = p_dc_w
+
         if p_dc_kw is not None:
-            self.der_input.p_dc_kw = p_dc_kw
+            self.der_input.p_dc_w = p_dc_kw * 1000
 
         if p_dc_pu is not None:
-            self.der_input.p_dc_kw = p_dc_pu * self.der_file.NP_P_MAX
+            self.der_input.p_dc_w = p_dc_pu * self.der_file.NP_P_MAX
 
         if f is not None:
             self.der_input.freq_hz = f
@@ -148,21 +157,26 @@ class DER:
         self.der_status = self.enterservicetrip.es_decision()
 
         # Calculate desired active power
-        self.p_act_supp_kw = self.activepowerfunc.calculate_p_funcs(self.p_out_kw)
+        self.p_act_supp_w = self.activepowerfunc.calculate_p_funcs(self.p_out_w)
 
         # Enter service ramp
-        self.p_desired_kw = self.enterserviceperf.es_performance(self.p_act_supp_kw, self.der_status)
+        self.p_desired_w = self.enterserviceperf.es_performance(self.p_act_supp_w, self.der_status)
 
         # Calculate desired reactive power
-        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.p_desired_kw, self.der_status)
+        self.q_desired_var = self.reactivepowerfunc.calculate_reactive_funcs(self.p_desired_w, self.der_status)
 
         # Limit DER output based on kVA rating and DER capability curve
-        self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.p_desired_kw, self.q_desired_kvar)
+        self.p_limited_w, self.q_limited_var = self.limited_p_q.calculate_limited_pq(self.p_desired_w, self.q_desired_var)
 
         # Determine DER model output value
-        self.p_out_kw, self.q_out_kvar = rem_ctrl.RemainingControl(self.p_limited_kw, self.q_limited_kvar)
+        self.p_out_w, self.q_out_var = rem_ctrl.RemainingControl(self.p_limited_w, self.q_limited_var)
 
-        return self.p_out_kw,self.q_out_kvar
+        self.p_out_pu = self.p_out_w / self.der_file.NP_P_MAX
+        self.q_out_pu = self.q_out_var / self.der_file.NP_VA_MAX
+        self.p_out_kw = self.p_out_w * 1e-3
+        self.q_out_kvar = self.q_out_var * 1e-3
+
+        return self.p_out_w,self.q_out_var
 
     def reinitialize(self):
         # only used when need to reset DER model
@@ -176,15 +190,16 @@ class DER:
         self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
         self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
 
-        self.p_out_kw = None
-        self.q_out_kvar = None
+        self.p_out_w = None
+        self.q_out_var = None
 
     def __str__(self):
         # for debug, generate a string
         # E.g. can be used when print(DER_obj)
-        return f"{self.time:.1f}: {self.name} - v_meas_pu={self.der_input.v_meas_pu:.5f}, " \
-               f"p_act_supp_kw={self.p_act_supp_kw:.2f}, q_desired_kvar={self.q_desired_kvar:.2f}, " \
-               f"p_out_kw={self.p_out_kw:.2f}, q_out_kvar={self.q_out_kvar:.2f}"
+        return f"{self.time:.1f}: {self.name} ({'on' if self.der_status else 'off'})- " \
+               f"v_meas_pu={self.der_input.v_meas_pu:.5f}, " \
+               f"p_act_supp_w={self.p_act_supp_w:.2e}, q_desired_var={self.q_desired_var:.2e}, " \
+               f"p_out_w={self.p_out_w:.2e}, q_out_var={self.q_out_var:.2e}"
 
     def get_DERCommonFileFormat(self):
         return DERCommonFileFormat()

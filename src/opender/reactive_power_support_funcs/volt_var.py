@@ -39,7 +39,7 @@ class VoltVAR:
 
         self.v_meas_qv_vref_lpf_pu = LowPassFilter()
         
-    def calculate_q_qv_desired_kvar(self):
+    def calculate_q_qv_desired_var(self):
         
         """
         Calculates and returns output reactive power from Volt-VAR function
@@ -64,7 +64,7 @@ class VoltVAR:
         Internal variables:
 
         :param q_qv_desired_ref_pu: Volt-var function reactive power reference value in per unit
-        :param q_qv_desired_ref_kvar: Volt-var function reactive power reference before response time
+        :param q_qv_desired_ref_var: Volt-var function reactive power reference before response time
         :param qv_vref_appl: Applied VRefsetting to determine the applied voltage settings
         :param qv_curve_v1_appl: Applied V1 setting with volt-var curve shifting when VRefchanges
         :param qv_curve_v2_appl: Applied V2 setting with volt-var curve shifting when VRefchanges
@@ -73,7 +73,7 @@ class VoltVAR:
 
         Output variables:
 
-        :param q_qv_desired_kvar: Output reactive power from volt-var function
+        :param q_qv_desired_var: Output reactive power from volt-var function
         """
 
         # Eq. 3.9.1-3, The applied VRef is determined by either the VRef control setpoint or low pass filtered
@@ -170,10 +170,10 @@ class VoltVAR:
             q_qv_desired_ref_pu = self.exec_delay.qv_curve_q4_exec
         
         # Eq. 3.9.1-10, Volt-VAR Reactive power reference calculation in kvar
-        q_qv_desired_ref_kvar = q_qv_desired_ref_pu * self.der_file.NP_VA_MAX
+        q_qv_desired_ref_var = q_qv_desired_ref_pu * self.der_file.NP_VA_MAX
 
         # Eq. 3.9.1-11, OLRT using LPF
-        q_qv_desired_kvar = self.qv_lpf.low_pass_filter(q_qv_desired_ref_kvar, self.exec_delay.qv_olrt_exec)
+        q_qv_desired_var = self.qv_lpf.low_pass_filter(q_qv_desired_ref_var, self.exec_delay.qv_olrt_exec)
         
         # Resetting internal state variables
         self.qv_curve_v1_exec_prev = self.exec_delay.qv_curve_v1_exec
@@ -188,5 +188,5 @@ class VoltVAR:
         
         self.qv_vref_appl_prev = qv_vref_appl
             
-        return q_qv_desired_kvar
+        return q_qv_desired_var
             

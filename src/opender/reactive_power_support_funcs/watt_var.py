@@ -25,7 +25,7 @@ class WattVAR:
         self.exec_delay = exec_delay
         self.qp_lpf = LowPassFilter()
         
-    def calculate_q_qp_desired_kvar(self, p_desired_kw):
+    def calculate_q_qp_desired_var(self, p_desired_w):
         """
         Calculates and returns output reactive power from Watt-VAR function
 
@@ -44,23 +44,23 @@ class WattVAR:
         :param qp_curve_p3_load_exec:	P-Q Curve Point P'3 Setting (QP_CURVE_P3_LOAD) after execution delay
         :param qp_curve_q3_gen_exec:	P-Q Curve Point Q'3 Setting (QP_CURVE_Q3_LOAD) after execution delay
         :param QP_RT:	Active Power Reactive Power Mode Response Time
-        :param p_desired_kw:	Desired output active power considering DER enter service performance
+        :param p_desired_w:	Desired output active power considering DER enter service performance
         :param NP_P_MAX:	Active power rating at unity power factor
 
         Internal variables:
         
         :param q_qp_desired_ref_pu:	Watt-var function reactive power reference value in per unit.
-        :param q_qp_desired_ref_kvar:	Watt-var function reactive power reference before response time
+        :param q_qp_desired_ref_var:	Watt-var function reactive power reference before response time
         :param p_desired_pu:	Desired output active power in per unit considering DER enter service performance
 
         Output:
         
-        :param q_qp_desired_kvar:	Output reactive power from watt-var function
+        :param q_qp_desired_var:	Output reactive power from watt-var function
 
         """
 
         # Eq. 3.9.1-12, Calculate desired active power in per unit
-        p_desired_pu = p_desired_kw / (self.der_file.NP_P_MAX if p_desired_kw > 0 else self.der_file.NP_P_MAX_CHARGE)
+        p_desired_pu = p_desired_w / (self.der_file.NP_P_MAX if p_desired_w > 0 else self.der_file.NP_P_MAX_CHARGE)
 
         # Eq. 3.9.1-13, calculate reactive power reference in per unit according to watt-var curve
         if p_desired_pu <= self.exec_delay.qp_curve_p3_load_exec:
@@ -95,10 +95,10 @@ class WattVAR:
             q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_gen_exec
 
         # Eq. 3.9.1-14, calculate actual value of reactive power reference
-        q_qp_desired_ref_kvar = q_qp_desired_ref_pu * self.der_file.NP_VA_MAX
+        q_qp_desired_ref_var = q_qp_desired_ref_pu * self.der_file.NP_VA_MAX
 
         # Eq. 3.9.1-15, apply the low pass filter. Note that there can be multiple different ways to implement this
         # behavior in actual DER. The model may be updated in a future version, according to the lab test results.
-        q_qp_desired_kvar = self.qp_lpf.low_pass_filter(q_qp_desired_ref_kvar, self.der_file.QP_RT)
+        q_qp_desired_var = self.qp_lpf.low_pass_filter(q_qp_desired_ref_var, self.der_file.QP_RT)
         
-        return q_qp_desired_kvar
+        return q_qp_desired_var

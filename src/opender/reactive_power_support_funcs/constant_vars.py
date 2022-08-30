@@ -27,7 +27,7 @@ class ConstantVARs:
 
         self.const_q_lpf = LowPassFilter()
 
-    def calculate_const_q_desired_kvar(self):
+    def calculate_const_q_desired_var(self):
         """
         Calculates and returns output reactive power from Constant Power Factor function
 
@@ -39,19 +39,19 @@ class ConstantVARs:
 
         Internal variable:
         
-        :param q_const_q_desired_ref_kvar:	Constant reactive power reactive power reference before response time
+        :param q_const_q_desired_ref_var:	Constant reactive power reactive power reference before response time
 
         Output:
         
-        :param q_const_q_desired_kvar"	Output reactive power from constant reactive power function
+        :param q_const_q_desired_var"	Output reactive power from constant reactive power function
         """
 
         # Eq. 3.9.1-16, calculate desired reactive power in unit of kvar
-        const_q_desired_ref_kvar = self.exec_delay.const_q_exec * self.der_file.NP_VA_MAX
+        const_q_desired_ref_var = self.exec_delay.const_q_exec * self.der_file.NP_VA_MAX
 
         # Eq. 3.9.1-17, apply the low pass filter to the reference reactive power. Note that there can be multiple
         # different ways to implement this behavior in an actual DER. The model may be updated in a future version,
         # according to the lab test results.
-        const_q_desired_kvar = self.const_q_lpf.low_pass_filter(const_q_desired_ref_kvar, self.der_file.CONST_Q_RT)
+        const_q_desired_var = self.const_q_lpf.low_pass_filter(const_q_desired_ref_var, self.der_file.CONST_Q_RT)
 
-        return const_q_desired_kvar
+        return const_q_desired_var

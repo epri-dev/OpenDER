@@ -67,44 +67,44 @@ class EnterServicePerformance:
             up_edge=True,
             )
         self.es_flag = None
-        self.p_desired_kw = None
+        self.p_desired_w = None
 
-    def es_performance(self, p_act_supp_kw, der_status):
+    def es_performance(self, p_act_supp_w, der_status):
         """
         Variable used in this function:
         
         :param der_status:	Status of DER (on or off)
         :param es_ramp_rate_exec:	Enter service soft-start duration (ES_RAMP_RATE) signal after execution delay
-        :param p_act_supp_kw:	Desired output active power from active power support functions in kW
+        :param p_act_supp_w:	Desired output active power from active power support functions in kW
         :param NP_P_MAX:	Active power rating at unity power factor
 
         Internal Variable:
         
         :param es_flag:	Flag to indicate whether DER is in start-up process
-        :param p_es_kw:	Desired output active power considering DER status
-        :param p_es_ramp_kw:	Desired output active power during enter service ramp
+        :param p_es_w:	Desired output active power considering DER status
+        :param p_es_ramp_w:	Desired output active power during enter service ramp
         :param es_flag_set:	Set value for es_flag flipflop logic
         :param es_flag_reset:	Reset value for es_flag flipflop logic
 
         Output:
         
-        :param p_desired_kw:	Desired output active power considering DER enter service performance
+        :param p_desired_w:	Desired output active power considering DER enter service performance
         """
 
         # Eq. 3.7.1-1, input available power
         if der_status:
-            p_es_kw = p_act_supp_kw
+            p_es_w = p_act_supp_w
         else:
-            p_es_kw = 0
+            p_es_w = 0
 
         # Eq. 3.7.1-2, ramp rate limiter
-        p_es_ramp_kw = self.der_file.NP_P_MAX * self.rrl.ramp(p_es_kw/self.der_file.NP_P_MAX, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
+        p_es_ramp_w = self.der_file.NP_P_MAX * self.rrl.ramp(p_es_w/self.der_file.NP_P_MAX, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
 
         # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
         es_flag_set = self.edge.run(der_status)
 
         # Eq. 3.7.1-4 Enter service ramp complete
-        es_flag_reset = (p_es_ramp_kw == p_es_kw) or not der_status
+        es_flag_reset = (p_es_ramp_w == p_es_w) or not der_status
 
         # Eq. 3.7.1-5, flip-flop logic to determine if in enter service ramp
         if es_flag_reset:
@@ -114,8 +114,8 @@ class EnterServicePerformance:
 
         # Eq. 3.7.1-6, output selector
         if self.es_flag:
-            self.p_desired_kw = p_es_ramp_kw
+            self.p_desired_w = p_es_ramp_w
         else:
-            self.p_desired_kw = p_es_kw
+            self.p_desired_w = p_es_w
 
-        return self.p_desired_kw
+        return self.p_desired_w

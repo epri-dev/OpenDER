@@ -37,10 +37,10 @@ class DERInputs:
         self.v = None
 
         # Available DC power for PV
-        self.p_dc_kw = None
+        self.p_dc_w = None
 
         # P demand for BESS
-        self.p_dem_kw = None
+        self.p_dem_w = None
 
         # Processed variables
         self.v_meas_pu = None
@@ -64,8 +64,8 @@ class DERInputs:
         :param NP_PHASE:	Single or Three-phase DER
         :param NP_AC_V_NOM: AC voltage base-nominal voltage rating
         :param NP_P_MAX:	Active power rating at unity power factor
-        :param p_dc_kw: Available DC power
-        :param p_dem_kw: Active Power Demand for BESS DER
+        :param p_dc_w: Available DC power
+        :param p_dem_w: Active Power Demand for BESS DER
 
         Internal variable:
         
@@ -119,13 +119,13 @@ class DERInputs:
             self.v_meas_pu = self.v_high_pu = self.v_low_pu = (self.v / self.der_file.NP_AC_V_NOM)
 
         # Eq. 3.3.2-1, For PV DER: available power in per unit considering efficiency
-        if self.p_dc_kw is not None:
-            self.p_avl_pu = self.p_dc_kw / self.der_file.NP_P_MAX * self.der_file.NP_EFFICIENCY
+        if self.p_dc_w is not None:
+            self.p_avl_pu = self.p_dc_w / self.der_file.NP_P_MAX * self.der_file.NP_EFFICIENCY
 
         # For BESS DER
-        if self.p_dem_kw is not None:
+        if self.p_dem_w is not None:
             # Eq. 3.3.3-1, DER active power demand in per unit
-            self.p_dem_pu = self.p_dem_kw / self.der_file.NP_P_MAX
+            self.p_dem_pu = self.p_dem_w / self.der_file.NP_P_MAX
             # Eq. 3.3.3-2, DER available power is max
             self.p_avl_pu = 1
 
@@ -162,10 +162,10 @@ class DERInputs:
             logging.error("Error: F is not defined! Assuming 60Hz")
             self.freq_hz = 60
 
-        if self.p_dc_kw is None:
+        if self.p_dc_w is None:
             if self.der_file.NP_TYPE == 'PV':
-                logging.error("ValueError: p_dc_kw is not defined! Assuming 0")
-            self.p_dc_kw = 0
+                logging.error("ValueError: p_dc_w is not defined! Assuming 0")
+            self.p_dc_w = 0
 
 
     def __str__(self):

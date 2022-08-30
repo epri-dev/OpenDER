@@ -54,30 +54,30 @@ class TestConstantPowerFactor342:
         const_pf = 0.95
 
 
-        self.si_obj.der_file.NP_VA_MAX = 100
-        self.si_obj.der_file.NP_P_MAX = 100
+
+
         self.si_obj.der_file.CONST_PF_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.CONST_PF = const_pf
         self.si_obj.der_file.CONST_PF_EXCITATION = "INJ"
         self.si_obj.der_file.AP_LIMIT_ENABLE = "ENABLED"
         self.si_obj.der_file.AP_LIMIT = p_limit
-        self.si_obj.der_file.NP_Q_MAX_INJ = 44
-        self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_MAX_INJ = 44e3
+        self.si_obj.der_file.NP_Q_MAX_ABS = 44e3
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
         self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu)
         self.si_obj.run()
 
         # Check inputs
-        assert 100 == self.si_obj.der_file.NP_VA_MAX
+        assert 100 * 1000 == self.si_obj.der_file.NP_VA_MAX
         assert self.si_obj.der_file.CONST_PF_MODE_ENABLE
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc * 1000 == self.si_obj.der_input.p_dc_w
         assert const_pf == self.si_obj.der_file.CONST_PF
         assert "INJ" == self.si_obj.der_file.CONST_PF_EXCITATION
         assert self.si_obj.der_file.AP_LIMIT_ENABLE
         assert p_limit == self.si_obj.der_file.AP_LIMIT
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_INJ
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_ABS
+        assert 44 * 1000 == self.si_obj.der_file.NP_Q_MAX_INJ
+        assert 44 * 1000  == self.si_obj.der_file.NP_Q_MAX_ABS
 
         # Check Results
         p_actual = round(self.si_obj.p_out_kw, 1)

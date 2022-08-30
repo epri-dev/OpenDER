@@ -61,7 +61,7 @@ class TestConstantPowerFactor:
 
         # Check inputs
         assert True == self.si_obj.der_file.CONST_PF_MODE_ENABLE
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc * 1e3 == self.si_obj.der_input.p_dc_w
         assert abs(pf) == self.si_obj.der_file.CONST_PF
         assert "INJ" if pf >= 0 else "ABS" == self.si_obj.der_file.CONST_PF_EXCITATION
 
@@ -85,7 +85,6 @@ class TestConstantPowerFactor:
 
         p_limit = 0.5
 
-        self.si_obj.der_file.NP_P_MAX = 100
         self.si_obj.der_file.CONST_PF_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.CONST_PF = abs(pf)
         self.si_obj.der_file.CONST_PF_EXCITATION = "INJ" if pf >= 0 else "ABS"
@@ -98,7 +97,7 @@ class TestConstantPowerFactor:
 
         # Check inputs
         assert True == self.si_obj.der_file.CONST_PF_MODE_ENABLE
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc * 1e3 == self.si_obj.der_input.p_dc_w
         assert abs(pf) == self.si_obj.der_file.CONST_PF
         assert "INJ" if pf >= 0 else "ABS" == self.si_obj.der_file.CONST_PF_EXCITATION
         assert True == self.si_obj.der_file.AP_LIMIT_ENABLE

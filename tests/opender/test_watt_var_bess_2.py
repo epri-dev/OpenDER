@@ -28,8 +28,8 @@ class TestWVBESS2:
         self.si_obj = opender.DER_BESS()
         self.si_obj.der_file.QP_MODE_ENABLE = True
 
-        self.si_obj.der_file.NP_P_MAX_CHARGE = 80
-        self.si_obj.der_file.NP_APPARENT_POWER_CHARGE_MAX = 80
+        self.si_obj.der_file.NP_P_MAX_CHARGE = 80000
+        self.si_obj.der_file.NP_APPARENT_POWER_CHARGE_MAX = 80000
 
         self.si_obj.update_der_input(p_dem_kw=p_dc, v_pu=1, f=60)
         self.si_obj.run()

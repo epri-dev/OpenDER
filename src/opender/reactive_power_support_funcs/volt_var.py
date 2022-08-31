@@ -168,12 +168,9 @@ class VoltVAR:
         
         if self.der_input.v_meas_pu > qv_curve_v4_appl:
             q_qv_desired_ref_pu = self.exec_delay.qv_curve_q4_exec
-        
-        # Eq. 3.9.1-10, Volt-VAR Reactive power reference calculation in kvar
-        q_qv_desired_ref_var = q_qv_desired_ref_pu * self.der_file.NP_VA_MAX
 
         # Eq. 3.9.1-11, OLRT using LPF
-        q_qv_desired_var = self.qv_lpf.low_pass_filter(q_qv_desired_ref_var, self.exec_delay.qv_olrt_exec)
+        q_qv_desired_pu = self.qv_lpf.low_pass_filter(q_qv_desired_ref_pu, self.exec_delay.qv_olrt_exec)
         
         # Resetting internal state variables
         self.qv_curve_v1_exec_prev = self.exec_delay.qv_curve_v1_exec
@@ -188,5 +185,5 @@ class VoltVAR:
         
         self.qv_vref_appl_prev = qv_vref_appl
             
-        return q_qv_desired_var
+        return q_qv_desired_pu
             

@@ -2,9 +2,9 @@ import pytest
 
 # volt-var+volt-watt (if reduced reactive power capability at low power)
 input_list = [  # p_dc, p_expected, q_expected
-    (10, 10, 0),
-    (30, 30, 0),
-    (50, 50, 0),
+    # (10, 10, 0),
+    # (30, 30, 0),
+    # (50, 50, 0),
     (70, 70, -17.6),
     (90, 90, -35.2),
     (100, 92.68, -37.56)

@@ -55,11 +55,13 @@ class DER:
         self.der_file.nameplate_value_validity_check()
 
         # Intermediate variables
-        self.p_act_supp_w = None
-        self.p_desired_w = None
-        self.q_desired_var = None
+        self.p_act_supp_pu = None
+        self.p_desired_pu = None
+        self.q_desired_pu = None
         self.p_limited_w = None
         self.q_limited_var = None
+        self.p_out_w = None
+        self.q_out_var = None
         self.p_out_pu = None
         self.q_out_pu = None
         self.p_out_kw = None
@@ -157,16 +159,16 @@ class DER:
         self.der_status = self.enterservicetrip.es_decision()
 
         # Calculate desired active power
-        self.p_act_supp_w = self.activepowerfunc.calculate_p_funcs(self.p_out_w)
+        self.p_act_supp_pu = self.activepowerfunc.calculate_p_funcs(self.p_out_w)
 
         # Enter service ramp
-        self.p_desired_w = self.enterserviceperf.es_performance(self.p_act_supp_w, self.der_status)
+        self.p_desired_pu = self.enterserviceperf.es_performance(self.p_act_supp_pu, self.der_status)
 
         # Calculate desired reactive power
-        self.q_desired_var = self.reactivepowerfunc.calculate_reactive_funcs(self.p_desired_w, self.der_status)
+        self.q_desired_pu = self.reactivepowerfunc.calculate_reactive_funcs(self.p_desired_pu, self.der_status)
 
         # Limit DER output based on kVA rating and DER capability curve
-        self.p_limited_w, self.q_limited_var = self.limited_p_q.calculate_limited_pq(self.p_desired_w, self.q_desired_var)
+        self.p_limited_w, self.q_limited_var = self.limited_p_q.calculate_limited_pq(self.p_desired_pu, self.q_desired_pu)
 
         # Determine DER model output value
         self.p_out_w, self.q_out_var = rem_ctrl.RemainingControl(self.p_limited_w, self.q_limited_var)

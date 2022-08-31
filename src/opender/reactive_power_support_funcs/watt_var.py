@@ -25,7 +25,7 @@ class WattVAR:
         self.exec_delay = exec_delay
         self.qp_lpf = LowPassFilter()
         
-    def calculate_q_qp_desired_var(self, p_desired_w):
+    def calculate_q_qp_desired_var(self, p_desired_pu):
         """
         Calculates and returns output reactive power from Watt-VAR function
 
@@ -51,7 +51,7 @@ class WattVAR:
         
         :param q_qp_desired_ref_pu:	Watt-var function reactive power reference value in per unit.
         :param q_qp_desired_ref_var:	Watt-var function reactive power reference before response time
-        :param p_desired_pu:	Desired output active power in per unit considering DER enter service performance
+        :param p_desired_qp_pu:	Desired output active power in per unit considering DER enter service performance
 
         Output:
         
@@ -60,45 +60,42 @@ class WattVAR:
         """
 
         # Eq. 3.9.1-12, Calculate desired active power in per unit
-        p_desired_pu = p_desired_w / (self.der_file.NP_P_MAX if p_desired_w > 0 else self.der_file.NP_P_MAX_CHARGE)
+        p_desired_qp_pu = p_desired_pu * (1 if p_desired_pu > 0 else self.der_file.NP_P_MAX/self.der_file.NP_P_MAX_CHARGE)
 
         # Eq. 3.9.1-13, calculate reactive power reference in per unit according to watt-var curve
-        if p_desired_pu <= self.exec_delay.qp_curve_p3_load_exec:
+        if p_desired_qp_pu <= self.exec_delay.qp_curve_p3_load_exec:
             q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_load_exec
 
-        if (p_desired_pu <= self.exec_delay.qp_curve_p2_load_exec) and (p_desired_pu > self.exec_delay.qp_curve_p3_load_exec):
-            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_load_exec - ((p_desired_pu - self.exec_delay.qp_curve_p3_load_exec)
+        if (p_desired_qp_pu <= self.exec_delay.qp_curve_p2_load_exec) and (p_desired_qp_pu > self.exec_delay.qp_curve_p3_load_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_load_exec - ((p_desired_qp_pu - self.exec_delay.qp_curve_p3_load_exec)
                                   / (self.exec_delay.qp_curve_p2_load_exec - self.exec_delay.qp_curve_p3_load_exec)) \
                                   * (self.exec_delay.qp_curve_q3_load_exec - self.exec_delay.qp_curve_q2_load_exec)
 
-        if (p_desired_pu <= self.exec_delay.qp_curve_p1_load_exec) and (p_desired_pu > self.exec_delay.qp_curve_p2_load_exec):
-            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q2_load_exec - ((p_desired_pu - self.exec_delay.qp_curve_p2_load_exec)
+        if (p_desired_qp_pu <= self.exec_delay.qp_curve_p1_load_exec) and (p_desired_qp_pu > self.exec_delay.qp_curve_p2_load_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q2_load_exec - ((p_desired_qp_pu - self.exec_delay.qp_curve_p2_load_exec)
                                   / (self.exec_delay.qp_curve_p1_load_exec - self.exec_delay.qp_curve_p2_load_exec)) \
                                   * (self.exec_delay.qp_curve_q2_load_exec - self.exec_delay.qp_curve_q1_load_exec)
 
-        if (p_desired_pu <= self.exec_delay.qp_curve_p1_gen_exec) and (p_desired_pu > self.exec_delay.qp_curve_p1_load_exec):
-            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q1_load_exec - ((p_desired_pu - self.exec_delay.qp_curve_p1_load_exec)
+        if (p_desired_qp_pu <= self.exec_delay.qp_curve_p1_gen_exec) and (p_desired_qp_pu > self.exec_delay.qp_curve_p1_load_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q1_load_exec - ((p_desired_qp_pu - self.exec_delay.qp_curve_p1_load_exec)
                                   / (self.exec_delay.qp_curve_p1_gen_exec - self.exec_delay.qp_curve_p1_load_exec)) \
                                   * (self.exec_delay.qp_curve_q1_load_exec - self.exec_delay.qp_curve_q1_gen_exec)
 
-        if (p_desired_pu <= self.exec_delay.qp_curve_p2_gen_exec) and (p_desired_pu > self.exec_delay.qp_curve_p1_gen_exec):
-            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q1_gen_exec - ((p_desired_pu - self.exec_delay.qp_curve_p1_gen_exec)
+        if (p_desired_qp_pu <= self.exec_delay.qp_curve_p2_gen_exec) and (p_desired_qp_pu > self.exec_delay.qp_curve_p1_gen_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q1_gen_exec - ((p_desired_qp_pu - self.exec_delay.qp_curve_p1_gen_exec)
                                   / (self.exec_delay.qp_curve_p2_gen_exec - self.exec_delay.qp_curve_p1_gen_exec)) \
                                   * (self.exec_delay.qp_curve_q1_gen_exec - self.exec_delay.qp_curve_q2_gen_exec)
             
-        if (p_desired_pu <= self.exec_delay.qp_curve_p3_gen_exec) and (p_desired_pu > self.exec_delay.qp_curve_p2_gen_exec):
-            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q2_gen_exec - ((p_desired_pu - self.exec_delay.qp_curve_p2_gen_exec)
+        if (p_desired_qp_pu <= self.exec_delay.qp_curve_p3_gen_exec) and (p_desired_qp_pu > self.exec_delay.qp_curve_p2_gen_exec):
+            q_qp_desired_ref_pu = self.exec_delay.qp_curve_q2_gen_exec - ((p_desired_qp_pu - self.exec_delay.qp_curve_p2_gen_exec)
                                   / (self.exec_delay.qp_curve_p3_gen_exec - self.exec_delay.qp_curve_p2_gen_exec)) \
                                   * (self.exec_delay.qp_curve_q2_gen_exec - self.exec_delay.qp_curve_q3_gen_exec)
             
-        if p_desired_pu > self.exec_delay.qp_curve_p3_gen_exec:
+        if p_desired_qp_pu > self.exec_delay.qp_curve_p3_gen_exec:
             q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_gen_exec
-
-        # Eq. 3.9.1-14, calculate actual value of reactive power reference
-        q_qp_desired_ref_var = q_qp_desired_ref_pu * self.der_file.NP_VA_MAX
 
         # Eq. 3.9.1-15, apply the low pass filter. Note that there can be multiple different ways to implement this
         # behavior in actual DER. The model may be updated in a future version, according to the lab test results.
-        q_qp_desired_var = self.qp_lpf.low_pass_filter(q_qp_desired_ref_var, self.der_file.QP_RT)
+        q_qp_desired_pu = self.qp_lpf.low_pass_filter(q_qp_desired_ref_pu, self.der_file.QP_RT)
         
-        return q_qp_desired_var
+        return q_qp_desired_pu

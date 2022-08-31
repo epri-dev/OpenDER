@@ -72,11 +72,11 @@ class DesiredActivePower:
         self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqwatt.calculate_p_pf_pu(p_out_w, self.ap_limit_rt,
                                                                                              self.p_pv_limit_pu)
 
-        self.calculate_p_act_supp_w(p_out_w)
+        self.calculate_p_act_supp_pu(p_out_w)
 
-        return self.p_act_supp_w
+        return self.p_act_supp_pu
 
-    def calculate_p_act_supp_w(self, p_out_w):
+    def calculate_p_act_supp_pu(self, p_out_w):
         """
         Calculate desired active power according to volt-watt, frequency-droop, and active power limit functions
         EPRI Report Reference: Section 3.6.4 in Report #3002021694: IEEE 1547-2018 DER Model
@@ -112,9 +112,7 @@ class DesiredActivePower:
         if self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True:
             self.p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
-        # Eq. 3.7.1-15 calculate desired active power in kW
-        self.p_act_supp_w = self.p_act_supp_pu * self.der_file.NP_P_MAX
-        return self.p_act_supp_w
+        return self.p_act_supp_pu
 
     def __str__(self):
-        return f"ap_limit_rt = {self.ap_limit_rt}, p_pv_limit_pu = {self.p_pv_limit_pu}, p_pf_pu = {self.p_pf_pu}, p_act_supp_w = {self.p_act_supp_w}"
+        return f"ap_limit_rt = {self.ap_limit_rt}, p_pv_limit_pu = {self.p_pv_limit_pu}, p_pf_pu = {self.p_pf_pu}, p_act_supp_pu = {self.p_act_supp_pu}"

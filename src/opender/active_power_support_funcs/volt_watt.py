@@ -60,7 +60,7 @@ class VoltWatt:
         :param p_pv_limit_pu:	Volt-watt power limit
         """
 
-        # Eq. 3.7.1-1 calculate power references in kW
+        # Eq. 3.7.1-1 calculate power references in W
         pv_curve_p1_w = self.exec_delay.pv_curve_p1_exec * self.der_file.NP_P_MAX
         pv_curve_p2_w = self.exec_delay.pv_curve_p2_exec * \
                     (self.der_file.NP_P_MAX if self.exec_delay.pv_curve_p2_exec > 0 else self.der_file.NP_P_MAX_CHARGE)

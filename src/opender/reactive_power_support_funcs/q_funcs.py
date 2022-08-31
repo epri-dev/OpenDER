@@ -38,10 +38,10 @@ class DesiredReactivePower:
         self.const_q_mode_enable_exec_prev = None       # Value of variable const_q_mode_enable_exec in the previous time step (initialized by the first value of CONST_Q_MODE_ENABLE)
 
         # Intermediate variables (Reactive power)
-        self.q_qp_desired_var = None           # Output reactive power from watt-var function
-        self.q_qv_desired_var = None           # Output reactive power from volt-var function
-        self.q_const_q_desired_var = None      # Output reactive power from constant reactive power function
-        self.q_const_pf_desired_var = None     # Output reactive power from constant power factor function
+        self.q_qp_desired_pu = None           # Output reactive power from watt-var function
+        self.q_qv_desired_pu = None           # Output reactive power from volt-var function
+        self.q_const_q_desired_pu = None      # Output reactive power from constant reactive power function
+        self.q_const_pf_desired_pu = None     # Output reactive power from constant power factor function
 
         self.q_mode_ramp_flag = 0
 
@@ -53,22 +53,22 @@ class DesiredReactivePower:
         self.desired_var_ff = FlipFlop(0)
 
 
-    def calculate_reactive_funcs(self, p_desired_w, der_status):
+    def calculate_reactive_funcs(self, p_desired_pu, der_status):
         """
         Calculate desired reactive power for all 4 reactive power control modes defined in IEEE 1547-2018
         """
 
         # Constant power factor function
-        self.q_const_pf_desired_var = self.constpf.calculate_q_const_pf_desired_var(p_desired_w)
+        self.q_const_pf_desired_pu = self.constpf.calculate_q_const_pf_desired_var(p_desired_pu)
 
         # Constant reactive power function
-        self.q_const_q_desired_var = self.constq.calculate_const_q_desired_var()
+        self.q_const_q_desired_pu = self.constq.calculate_const_q_desired_var()
 
         # Volt-var function
-        self.q_qv_desired_var = self.voltvar.calculate_q_qv_desired_var()
+        self.q_qv_desired_pu = self.voltvar.calculate_q_qv_desired_var()
 
         # Watt-var function
-        self.q_qp_desired_var = self.wattvar.calculate_q_qp_desired_var(p_desired_w)
+        self.q_qp_desired_pu = self.wattvar.calculate_q_qp_desired_var(p_desired_pu)
 
         # Calculate reactive power based on grid-support functions
         self.q_desired_var = self.calculate_desired_var(der_status)
@@ -105,15 +105,15 @@ class DesiredReactivePower:
 
         # Eq. 3.9.1-18, calculate desired reactive power reference, without smooth mode transition
         if(der_status == 1 and self.exec_delay.const_pf_mode_enable_exec == 1):
-            q_desired_ref_var = self.q_const_pf_desired_var
+            q_desired_ref_pu = self.q_const_pf_desired_pu
         elif(der_status == 1 and self.exec_delay.qv_mode_enable_exec == 1):
-            q_desired_ref_var = self.q_qv_desired_var
+            q_desired_ref_pu = self.q_qv_desired_pu
         elif(der_status == 1 and self.exec_delay.qp_mode_enable_exec == 1):
-            q_desired_ref_var = self.q_qp_desired_var
+            q_desired_ref_pu = self.q_qp_desired_pu
         elif(der_status == 1 and self.exec_delay.const_q_mode_enable_exec == 1):
-            q_desired_ref_var = self.q_const_q_desired_var
+            q_desired_ref_pu = self.q_const_q_desired_pu
         else:
-            q_desired_ref_var = 0
+            q_desired_ref_pu = 0
 
         # Eq. 3.9.1-19, the ramp rate limit only applies when there is a mode change.
         if self.exec_delay.const_pf_mode_enable_exec != self.const_pf_mode_enable_exec_prev or \
@@ -126,19 +126,17 @@ class DesiredReactivePower:
 
         if q_mode_ramp_flag_set or self.q_mode_ramp_flag == 1:
             # Eq. 3.9.1-20, apply the ramp rate limit
-            q_desired_ramp_var = self.der_file.NP_VA_MAX * \
-                                  self.desired_var_ramp.ramp(q_desired_ref_var/self.der_file.NP_VA_MAX,
+            q_desired_ramp_pu = self.desired_var_ramp.ramp(q_desired_ref_pu,
                                                               self.der_file.NP_MODE_TRANSITION_TIME,
                                                               self.der_file.NP_MODE_TRANSITION_TIME)
         else:
             # Eq. 3.9.1-21, if not in mode transition, ramp time of 0 is used to allow q_desired_ramp_var follow the
             # desired reactive power
-            q_desired_ramp_var = self.der_file.NP_VA_MAX * \
-                                  self.desired_var_ramp.ramp(q_desired_ref_var/self.der_file.NP_VA_MAX, 0, 0)
+            q_desired_ramp_pu = self.desired_var_ramp.ramp(q_desired_ref_pu/self.der_file.NP_VA_MAX, 0, 0)
 
         # Eq. 3.9.1-22, the ramp rate limit stops to apply when the mode transition is completed (value before and
         # after ramp rate limit is the same
-        if q_desired_ref_var == q_desired_ramp_var or der_status == 0:
+        if q_desired_ref_pu == q_desired_ramp_pu or der_status == 0:
             q_mode_ramp_flag_reset = 1
         else:
             q_mode_ramp_flag_reset = 0
@@ -148,9 +146,9 @@ class DesiredReactivePower:
 
         # Eq. 3.9.1-24, if in mode transition, pass ramp rate limited value as output. If not, pass original value.
         if self.q_mode_ramp_flag == 1:
-            q_desired_var = q_desired_ramp_var
+            q_desired_pu = q_desired_ramp_pu
         else:
-            q_desired_var = q_desired_ref_var
+            q_desired_pu = q_desired_ref_pu
 
         # Save the values in for calculation in next time step
         self.const_pf_mode_enable_exec_prev = self.exec_delay.const_pf_mode_enable_exec
@@ -158,11 +156,11 @@ class DesiredReactivePower:
         self.qp_mode_enable_exec_prev = self.exec_delay.qp_mode_enable_exec
         self.const_q_mode_enable_exec_prev = self.exec_delay.const_q_mode_enable_exec
 
-        return q_desired_var
+        return q_desired_pu
 
     def __str__(self):
-        return f"q_qv = {self.q_qv_desired_var}, q_const_pf = {self.q_const_pf_desired_var}, " \
-               f"q_qp = {self.q_qp_desired_var}, q_const_q = {self.q_const_q_desired_var}"
+        return f"q_qv = {self.q_qv_desired_pu}, q_const_pf = {self.q_const_pf_desired_pu}, " \
+               f"q_qp = {self.q_qp_desired_pu}, q_const_q = {self.q_const_q_desired_pu}"
 
 
 

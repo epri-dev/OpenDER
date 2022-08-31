@@ -93,7 +93,7 @@ class CapabilityPriority:
         self.q_requirement_abs = (0.25 if self.der_file.NP_NORMAL_OP_CAT == 'CAT_A' else 0.44) * self.der_file.NP_VA_MAX
         self.q_requirement_inj = 0.44 * self.der_file.NP_VA_MAX
 
-    def calculate_limited_pq(self,  p_desired_w, q_desired_var):
+    def calculate_limited_pq(self, p_desired_pu, q_desired_pu):
         """
         Calculate limited DER output P and Q based on DER ratings and priority of responses.
 
@@ -127,16 +127,18 @@ class CapabilityPriority:
         :param q_limited_var:	DER output reactive power after considering DER apparent power limits
         """
 
+        p_desired_w = p_desired_pu * self.der_file.NP_P_MAX
+        q_desired_var = q_desired_pu * self.der_file.NP_VA_MAX
         # Eq. 3.10.1-2 Calculate applicable apparent power rating
         np_va_max_appl = self.der_file.NP_VA_MAX if p_desired_w > 0 else self.der_file.NP_APPARENT_POWER_CHARGE_MAX #TODO update in spec
 
         if self.exec_delay.const_q_mode_enable_exec or self.exec_delay.qv_mode_enable_exec:
             # Constant-Q or Volt-Var
             # Eq. 3.10.1-3, find the range of DER output Q with given desired P
-            q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_desired_w/self.der_file.NP_P_MAX,
+            q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_desired_pu,
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'],
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
-            q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_desired_w/self.der_file.NP_P_MAX,
+            q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_desired_pu,
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'],
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
 

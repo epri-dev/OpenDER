@@ -37,7 +37,7 @@ class TestSoC:
 
         opender.der.DER.t_s = t_s
         der_obj = DER_BESS()
-        der_obj.der_file.NP_BESS_CAPACITY = 25
+        der_obj.der_file.NP_BESS_CAPACITY = 25000
         if NP_BESS_P_MAX_BY_SOC is not None:
             der_obj.der_file.NP_BESS_P_MAX_BY_SOC = NP_BESS_P_MAX_BY_SOC
         der_obj.der_file.NP_BESS_SELF_DISCHARGE = NP_BESS_SELF_DISCHARGE

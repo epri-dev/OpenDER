@@ -69,7 +69,7 @@ class EnterServicePerformance:
         self.es_flag = None
         self.p_desired_w = None
 
-    def es_performance(self, p_act_supp_w, der_status):
+    def es_performance(self, p_act_supp_pu, der_status):
         """
         Variable used in this function:
         
@@ -93,18 +93,18 @@ class EnterServicePerformance:
 
         # Eq. 3.7.1-1, input available power
         if der_status:
-            p_es_w = p_act_supp_w
+            p_es_pu = p_act_supp_pu
         else:
-            p_es_w = 0
+            p_es_pu = 0
 
         # Eq. 3.7.1-2, ramp rate limiter
-        p_es_ramp_w = self.der_file.NP_P_MAX * self.rrl.ramp(p_es_w/self.der_file.NP_P_MAX, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
+        p_es_ramp_pu = self.rrl.ramp(p_es_pu, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
 
         # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
         es_flag_set = self.edge.run(der_status)
 
         # Eq. 3.7.1-4 Enter service ramp complete
-        es_flag_reset = (p_es_ramp_w == p_es_w) or not der_status
+        es_flag_reset = (p_es_ramp_pu == p_es_pu) or not der_status
 
         # Eq. 3.7.1-5, flip-flop logic to determine if in enter service ramp
         if es_flag_reset:
@@ -114,8 +114,8 @@ class EnterServicePerformance:
 
         # Eq. 3.7.1-6, output selector
         if self.es_flag:
-            self.p_desired_w = p_es_ramp_w
+            self.p_es_ramp_pu = p_es_ramp_pu
         else:
-            self.p_desired_w = p_es_w
+            self.p_es_ramp_pu = p_es_pu
 
-        return self.p_desired_w
+        return self.p_es_ramp_pu

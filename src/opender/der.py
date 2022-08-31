@@ -200,8 +200,8 @@ class DER:
         # E.g. can be used when print(DER_obj)
         return f"{self.time:.1f}: {self.name} ({'on' if self.der_status else 'off'})- " \
                f"v_meas_pu={self.der_input.v_meas_pu:.5f}, " \
-               f"p_act_supp_w={self.p_act_supp_w:.2e}, q_desired_var={self.q_desired_var:.2e}, " \
-               f"p_out_w={self.p_out_w:.2e}, q_out_var={self.q_out_var:.2e}"
+               f"p_act_supp_pu={self.p_act_supp_pu:.2f}, q_desired_pu={self.q_desired_pu:.2f}, " \
+               f"p_out_kw={self.p_out_kw:.2f}, q_out_kvar={self.q_out_kvar:.2f}"
 
     def get_DERCommonFileFormat(self):
         return DERCommonFileFormat()

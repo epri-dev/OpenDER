@@ -186,16 +186,24 @@ class RemainingControl:
         return self.p_out_w, self.q_out_var
 
     def calculate_i_output(self, p_limited_pu, q_limited_pu):
-        if self.rt_status in ['Continuous Operation', 'Mandatory Operation',
-                              'Permissive Operation', 'Not Defined']:
+        if self.rt_status == 'Continuous Operation':
             self.i_pos_ref_pu = ((p_limited_pu + 1j * q_limited_pu) / self.der_input.v_pos_pu).conjugate()
-            self.i_neg_ref_pu = self.der_input.v_neg_pu * 1j / 1
+            self.i_neg_ref_pu = 0
+
+        if self.rt_status in ['Mandatory Operation','Permissive Operation', 'Not Defined']:
+            if self.der_file.DVS_MODE_ENABLE:
+                self.i_pos_ref_pu = ((p_limited_pu + 1j * q_limited_pu) / self.der_input.v_pos_pu).conjugate() \
+                                    + (self.der_input.v_pos_pu - 1) * -1j * self.der_file.DVS_K
+                self.i_neg_ref_pu = self.der_input.v_neg_pu * 1j * self.der_file.DVS_K
+            else:
+                self.i_pos_ref_pu = ((p_limited_pu + 1j * q_limited_pu) / self.der_input.v_pos_pu).conjugate()
+                self.i_neg_ref_pu = 0
 
         if self.rt_status == 'Momentary Cessation':
-            self.i_pos_ref_pu = 1j * self.der_input.v_pos_pu * self.der_file.NP_AC_V_NOM * \
+            self.i_pos_ref_pu = -1j * self.der_input.v_pos_pu * self.der_file.NP_AC_V_NOM * \
                       self.der_file.NP_REACTIVE_SUSCEPTANCE / (self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
 
-            self.i_neg_ref_pu = 1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
+            self.i_neg_ref_pu = -1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
                       self.der_file.NP_REACTIVE_SUSCEPTANCE / (self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
 
         self.i_pos_limited_ref_pu, self.i_neg_limited_ref_pu = self.limit_pos_neg(self.i_pos_ref_pu, self.i_neg_ref_pu, self.der_file.NP_CURENT_PU)

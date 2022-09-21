@@ -17,7 +17,6 @@
 
 # @author: Jithendar Anandan
 # @email: janandan@epri.com
-import logging
 
 from .common_file_format.common_file_format import DERCommonFileFormat
 from .active_power_support_funcs.p_funcs import DesiredActivePower
@@ -30,7 +29,7 @@ from opender.input_processing.op_cond_proc import DERInputs
 from . import setting_execution_delay
 from typing import Union, List, Tuple
 import numpy as np
-import logging
+from .rem_ctrl import rem_ctrl
 
 
 
@@ -81,6 +80,7 @@ class DER:
         self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
         self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
 
+        self.remctrl = rem_ctrl.RemainingControl(self.der_file, self.exec_delay, self.der_input)
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
                          f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None,
@@ -171,12 +171,13 @@ class DER:
         self.p_limited_w, self.q_limited_var = self.limited_p_q.calculate_limited_pq(self.p_desired_pu, self.q_desired_pu)
 
         # Determine DER model output value
-        self.p_out_w, self.q_out_var = rem_ctrl.RemainingControl(self.p_limited_w, self.q_limited_var)
+        self.p_out_w, self.q_out_var = self.remctrl.der_rem_operation(self.p_limited_w, self.q_limited_var)
+        self.p_out_kw = self.remctrl.p_out_kw
+        self.q_out_kvar = self.remctrl.q_out_kvar
+        self.p_out_pu = self.remctrl.p_out_pu
+        self.q_out_pu = self.remctrl.q_out_pu
 
-        self.p_out_pu = self.p_out_w / self.der_file.NP_P_MAX
-        self.q_out_pu = self.q_out_var / self.der_file.NP_VA_MAX
-        self.p_out_kw = self.p_out_w * 1e-3
-        self.q_out_kvar = self.q_out_var * 1e-3
+
 
         return self.p_out_w,self.q_out_var
 
@@ -194,6 +195,26 @@ class DER:
 
         self.p_out_w = None
         self.q_out_var = None
+
+    def get_der_output(self, type='PQ'):
+        if type == 'PQ_VA':
+            return self.p_out_w, self.q_out_var
+        elif type == 'PQ_kVA':
+            return self.p_out_kw, self.q_out_kvar
+        elif type == 'PQ_pu':
+            return self.p_out_pu, self.q_out_pu
+        elif type == 'I_A':
+            return [i*self.der_file.NP_VA_MAX/self.der_file.NP_AC_V_NOM*0.5773502691896258 for i in self.remctrl.i_mag_pu], self.remctrl.i_theta
+        elif type == 'I_pu':
+            return self.remctrl.i_mag_pu, self.remctrl.i_theta
+        elif type == 'Ipn_pu':
+            return self.remctrl.i_pos_pu, self.remctrl.i_neg_pu
+        elif type == 'V_pu':
+            self.remctrl.calculate_v_output()
+            return self.remctrl.v_out_mag_pu, self.remctrl.v_out_theta
+        else:
+            print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu")
+
 
     def __str__(self):
         # for debug, generate a string

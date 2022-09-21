@@ -144,7 +144,7 @@ der_test.der_file.QV_MODE_ENABLE = True
 
 
 der_test.der_input.freq_hz=60
-der_test.der_input.p_dc_kw=100
+der_test.der_input.p_dc_w=100000
 while t < 2500:
     if (t < 5)or(100<t<700)or(800<t<1400)or(1500<t<2100):
         der_test.der_input.v_a = 1*240/1.732
@@ -185,7 +185,7 @@ while t < 2500:
     t_plot.append(t)
     p_plot.append(der_test.p_limited_w)
     q_plot.append(der_test.q_limited_var)
-    pdc_plot.append(der_test.der_input.p_dc_kw)
+    pdc_plot.append(der_test.der_input.p_dc_w)
     v_plot.append(der_test.der_input.v_meas_pu)
     stat_plot.append(der_test.der_status)
     debug_plot.append(der_test.enterservicetrip.es_flag)
@@ -202,8 +202,8 @@ plt.plot(t_plot, v_plot, label = 'Voltage (pu)')
 plt.grid()
 plt.legend()
 plt.subplot(4, 1, 2, sharex=ax1)
-plt.plot(t_plot, pdc_plot, label='P_dc (kW)')
-plt.plot(t_plot, p_plot, label='P_out (kW)')
+plt.plot(t_plot, pdc_plot, label='P_dc (W)')
+plt.plot(t_plot, p_plot, label='P_out (W)')
 plt.grid()
 plt.legend()
 plt.subplot(4, 1, 3, sharex=ax1)

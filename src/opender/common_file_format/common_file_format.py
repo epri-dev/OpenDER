@@ -60,7 +60,12 @@ class DERCommonFileFormat:
                        'NP_PRIO_OUTSIDE_MIN_Q_REQ', 'NP_V_MEAS_UNBALANCE', 'NP_PHASE', 'NP_P_MIN_PU', 'AP_RT',
                        'CONST_PF_RT', 'CONST_Q_RT', 'QP_RT', 'NP_SET_EXE_TIME', 'NP_MODE_TRANSITION_TIME',
                        'STATUS_INIT', 'ES_RANDOMIZED_DELAY_ACTUAL', 'NP_Q_CAPABILITY_BY_P_CURVE',
-                       'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE',
+                       'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE', 'NP_RESISTANCE', 'NP_INDUCTANCE', 'NP_CTRL_LOOP_DELAY',
+                       'NP_CURENT_PU',
+
+                       'DVS_MODE_ENABLE', 'DVS_K',
+
+
 
                        ]
 
@@ -126,6 +131,13 @@ class DERCommonFileFormat:
         self._NP_PRIO_OUTSIDE_MIN_Q_REQ = 'REACTIVE'
         self._NP_PHASE = 'THREE'
         self._NP_TYPE = None
+        self._NP_V_DC = None
+        self._NP_RESISTANCE = 0.001
+        self._NP_INDUCTANCE = 0.2
+        self._NP_CTRL_LOOP_DELAY = 0.02
+        self._DVS_MODE_ENABLE = False
+        self._NP_CURENT_PU = 1.1
+        self._DVS_K = 2
 
         # Function settings with default values
         self._AP_LIMIT_ENABLE = False
@@ -240,7 +252,9 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.NP_APPARENT_POWER_CHARGE_MAX):
             self.NP_APPARENT_POWER_CHARGE_MAX = self.param_inputs.NP_APPARENT_POWER_CHARGE_MAX
         if self.isNotNaN(self.param_inputs.NP_AC_V_NOM):
+            self.NP_V_DC = self.param_inputs.NP_AC_V_NOM * 1.5
             self.NP_AC_V_NOM = self.param_inputs.NP_AC_V_NOM
+
         if self.isNotNaN(self.param_inputs.NP_REACTIVE_SUSCEPTANCE):
             self.NP_REACTIVE_SUSCEPTANCE = self.param_inputs.NP_REACTIVE_SUSCEPTANCE
 
@@ -301,6 +315,27 @@ class DERCommonFileFormat:
 
         if self.isNotNaN(self.param_inputs.STATUS_INIT):
             self.STATUS_INIT = self.param_inputs.STATUS_INIT
+
+        if self.isNotNaN(self.param_inputs.NP_RESISTANCE):
+            self.NP_RESISTANCE = self.param_inputs.NP_RESISTANCE
+
+        if self.isNotNaN(self.param_inputs.NP_INDUCTANCE):
+            self.NP_INDUCTANCE = self.param_inputs.NP_INDUCTANCE
+
+        if self.isNotNaN(self.param_inputs.NP_CTRL_LOOP_DELAY):
+            self.NP_CTRL_LOOP_DELAY = self.param_inputs.NP_CTRL_LOOP_DELAY
+
+        if self.isNotNaN(self.param_inputs.NP_CURENT_PU):
+            self.NP_CURENT_PU = self.param_inputs.NP_CURENT_PU
+
+        if self.isNotNaN(self.param_inputs.DVS_MODE_ENABLE):
+            self.DVS_MODE_ENABLE = self.param_inputs.DVS_MODE_ENABLE
+
+        if self.isNotNaN(self.param_inputs.DVS_K):
+            self.DVS_K = self.param_inputs.DVS_K
+
+
+
 
         if self.isNotNaN(self.param_inputs.AP_LIMIT_ENABLE):
             self.AP_LIMIT_ENABLE = self.param_inputs.AP_LIMIT_ENABLE
@@ -835,6 +870,9 @@ class DERCommonFileFormat:
         self._NP_AC_V_NOM = NP_AC_V_NOM
         if self._NP_AC_V_NOM < 0:
             raise ValueError("ValueError: DER nameplate voltage NP_AC_V_NOM should be greater than 0.")
+        if self._NP_AC_V_NOM * 1.414 > self._NP_V_DC:
+            self._NP_V_DC = self._NP_AC_V_NOM * 1.5
+            logging.warning("DER inverter DC voltage should be greater than system line to line voltage peak")
 
     @property
     def NP_REACTIVE_SUSCEPTANCE(self):
@@ -1602,6 +1640,7 @@ class DERCommonFileFormat:
     @NP_Q_CAPABILITY_LOW_P.setter
     def NP_Q_CAPABILITY_LOW_P(self, NP_Q_CAPABILITY_LOW_P):
         self._NP_Q_CAPABILITY_LOW_P = NP_Q_CAPABILITY_LOW_P
+        self.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
     @property
     def NP_EFFICIENCY(self):
@@ -1904,6 +1943,62 @@ class DERCommonFileFormat:
         if (self._AP_RT < 0 or self._AP_RT > 30):
             logging.warning("Warning: Active power limit function response time should be greater than or equal to 0,"
                             " and smaller than or equal to 30 seconds, according to IEEE 1547-2018 Clause 4.6.2.")
+
+    @property
+    def NP_RESISTANCE(self):
+        return self._NP_RESISTANCE
+
+    @NP_RESISTANCE.setter
+    def NP_RESISTANCE(self, NP_RESISTANCE):
+        self._NP_RESISTANCE = NP_RESISTANCE
+
+    @property
+    def NP_INDUCTANCE(self):
+        return self._NP_INDUCTANCE
+
+    @NP_INDUCTANCE.setter
+    def NP_INDUCTANCE(self, NP_INDUCTANCE):
+        self._NP_INDUCTANCE = NP_INDUCTANCE
+
+    @property
+    def NP_CTRL_LOOP_DELAY(self):
+        return self._NP_CTRL_LOOP_DELAY
+
+    @NP_CTRL_LOOP_DELAY.setter
+    def NP_CTRL_LOOP_DELAY(self, NP_CTRL_LOOP_DELAY):
+        self._NP_CTRL_LOOP_DELAY = NP_CTRL_LOOP_DELAY
+
+    @property
+    def DVS_MODE_ENABLE(self):
+        return self._DVS_MODE_ENABLE
+
+    @DVS_MODE_ENABLE.setter
+    def DVS_MODE_ENABLE(self, DVS_MODE_ENABLE):
+        self._DVS_MODE_ENABLE = self.check_enabled(DVS_MODE_ENABLE)
+
+    @property
+    def DVS_K(self):
+        return self._DVS_K
+
+    @DVS_K.setter
+    def DVS_K(self, DVS_K):
+        self._DVS_K = DVS_K
+        if DVS_K > 6 or DVS_K < 2:
+            logging.warning('Dynamic voltage support gain is expected to be between 2 and 6')
+
+    @property
+    def NP_CURENT_PU(self):
+        return self._NP_CURENT_PU
+
+    @NP_CURENT_PU.setter
+    def NP_CURENT_PU(self, NP_CURENT_PU):
+        self._NP_CURENT_PU = NP_CURENT_PU
+        if NP_CURENT_PU < 1:
+            logging.warning('Inverter nameplate current should be greater than 1 per unit')
+
+
+
+
 
 if __name__ == "__main__":
     import pathlib

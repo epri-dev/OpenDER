@@ -43,6 +43,10 @@ class DERInputs:
         self.p_dem_w = None
 
         # Processed variables
+        self.v_pos_pu = None
+        self.v_neg_pu = None
+        self.v_zero_pu = None
+
         self.v_meas_pu = None
         self.v_high_pu = None
         self.v_low_pu = None
@@ -95,14 +99,19 @@ class DERInputs:
             v_b_pu = (math.sqrt(3) * self.v_b) / (self.der_file.NP_AC_V_NOM)
             v_c_pu = (math.sqrt(3) * self.v_c) / (self.der_file.NP_AC_V_NOM)
 
+            self.v_neg_pu = (v_a_pu + v_b_pu + v_c_pu)/3
+            self.v_pos_pu = (v_a_pu + (v_b_pu * cmath.exp(1j * ((2 / 3) * math.pi + self.theta_b - self.theta_a)))
+                             + (v_c_pu * cmath.exp(1j * ((-2 / 3) * math.pi + self.theta_c - self.theta_a)))) / 3
+            self.v_neg_pu = (v_a_pu + (v_b_pu * cmath.exp(1j * ((-2 / 3) * math.pi + self.theta_b - self.theta_a)))
+                             + (v_c_pu * cmath.exp(1j * ((2 / 3) * math.pi + self.theta_c - self.theta_a)))) / 3
+
             # Eq. 3.3.1-2, if DER responds to the average of three phase RMS value
             if self.der_file.NP_V_MEAS_UNBALANCE == "AVG":
                 self.v_meas_pu = (v_a_pu + v_b_pu + v_c_pu)/3
 
             # Eq. 3.3.1-3, if DER responds to positive sequence component of voltage.
             if self.der_file.NP_V_MEAS_UNBALANCE == "POS":
-                self.v_meas_pu = abs(v_a_pu + (v_b_pu * cmath.exp(1j*((2/3)*math.pi + self.theta_b - self.theta_a)))
-                                     + (v_c_pu * cmath.exp(1j*((-2/3)*math.pi + self.theta_c - self.theta_a))))/3
+                self.v_meas_pu = abs(self.v_pos_pu)
 
             # Eq. 3.3.1-4, calculate phase-to-phase voltages
             v_ab_pu = abs((v_a_pu - v_b_pu * cmath.exp((self.theta_b - self.theta_a)*1j)) / math.sqrt(3))
@@ -167,6 +176,11 @@ class DERInputs:
                 logging.error("ValueError: p_dc_w is not defined! Assuming 0")
             self.p_dc_w = 0
 
+        if self.p_dc_w < 0:
+            logging.warning("ValueError: p_dc_w is negative. By definition, available DC power should be positive")
+            self.p_dc_w = 0
+
 
     def __str__(self):
-        return f"v_meas_pu = {self.v_meas_pu}, v_high_pu = {self.v_high_pu}, v_low_pu = {self.v_low_pu}, freq_hz = {self.freq_hz}, p_avl_pu = {self.p_avl_pu}"
+        return f"v_meas_pu = {self.v_meas_pu}, v_high_pu = {self.v_high_pu}, v_low_pu = {self.v_low_pu}, " \
+               f"freq_hz = {self.freq_hz}, p_avl_pu = {self.p_avl_pu}, p_dem_pu = {self.p_dem_pu}"

@@ -61,6 +61,7 @@ class TestVoltWatt332:
         self.si_obj.der_file.AP_LIMIT_ENABLE = "DISABLED"
         self.si_obj.der_file.OV1_TRIP_V = 1.2
         self.si_obj.der_file.OV2_TRIP_V = 1.2
+        self.si_obj.der_file.NP_ABNORMAL_OP_CAT = 'CAT_II'
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
         self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu[0:3], theta=v_pu[3:6])

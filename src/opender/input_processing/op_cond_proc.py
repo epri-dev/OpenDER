@@ -46,6 +46,7 @@ class DERInputs:
         self.v_pos_pu = None
         self.v_neg_pu = None
         self.v_zero_pu = None
+        self.v_angle = None
 
         self.v_meas_pu = None
         self.v_high_pu = None
@@ -99,11 +100,14 @@ class DERInputs:
             v_b_pu = (math.sqrt(3) * self.v_b) / (self.der_file.NP_AC_V_NOM)
             v_c_pu = (math.sqrt(3) * self.v_c) / (self.der_file.NP_AC_V_NOM)
 
-            self.v_neg_pu = (v_a_pu + v_b_pu + v_c_pu)/3
-            self.v_pos_pu = (v_a_pu + (v_b_pu * cmath.exp(1j * ((2 / 3) * math.pi + self.theta_b - self.theta_a)))
-                             + (v_c_pu * cmath.exp(1j * ((-2 / 3) * math.pi + self.theta_c - self.theta_a)))) / 3
-            self.v_neg_pu = (v_a_pu + (v_b_pu * cmath.exp(1j * ((-2 / 3) * math.pi + self.theta_b - self.theta_a)))
-                             + (v_c_pu * cmath.exp(1j * ((2 / 3) * math.pi + self.theta_c - self.theta_a)))) / 3
+            self.v_zero_pu = (v_a_pu * cmath.exp(1j * self.theta_a) + (v_b_pu * cmath.exp(1j * self.theta_b))
+                             + (v_c_pu * cmath.exp(1j * self.theta_c))) / 3
+            self.v_pos_pu = (v_a_pu * cmath.exp(1j * self.theta_a) + (v_b_pu * cmath.exp(1j * ((2 / 3) * math.pi + self.theta_b)))
+                             + (v_c_pu * cmath.exp(1j * ((-2 / 3) * math.pi + self.theta_c)))) / 3
+            self.v_neg_pu = (v_a_pu * cmath.exp(1j * self.theta_a) + (v_b_pu * cmath.exp(1j * ((-2 / 3) * math.pi + self.theta_b)))
+                             + (v_c_pu * cmath.exp(1j * ((2 / 3) * math.pi + self.theta_c)))) / 3
+            self.v_angle = cmath.phase(self.v_pos_pu)
+
 
             # Eq. 3.3.1-2, if DER responds to the average of three phase RMS value
             if self.der_file.NP_V_MEAS_UNBALANCE == "AVG":
@@ -125,7 +129,9 @@ class DERInputs:
         elif(self.der_file.NP_PHASE == "SINGLE"):
 
             # Eq. 3.3.1-6, single phase applicable voltage
-            self.v_meas_pu = self.v_high_pu = self.v_low_pu = (self.v / self.der_file.NP_AC_V_NOM)
+            self.v_pos_pu = self.v_meas_pu = self.v_high_pu = self.v_low_pu = (self.v / self.der_file.NP_AC_V_NOM)
+            self.v_neg_pu = self.v_zero_pu = 0
+            self.v_angle = cmath.phase(self.v_pos_pu)
 
         # Eq. 3.3.2-1, For PV DER: available power in per unit considering efficiency
         if self.p_dc_w is not None:

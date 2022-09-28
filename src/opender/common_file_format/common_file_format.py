@@ -60,12 +60,10 @@ class DERCommonFileFormat:
                        'NP_PRIO_OUTSIDE_MIN_Q_REQ', 'NP_V_MEAS_UNBALANCE', 'NP_PHASE', 'NP_P_MIN_PU', 'AP_RT',
                        'CONST_PF_RT', 'CONST_Q_RT', 'QP_RT', 'NP_SET_EXE_TIME', 'NP_MODE_TRANSITION_TIME',
                        'STATUS_INIT', 'ES_RANDOMIZED_DELAY_ACTUAL', 'NP_Q_CAPABILITY_BY_P_CURVE',
-                       'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE', 'NP_RESISTANCE', 'NP_INDUCTANCE', 'NP_CTRL_LOOP_DELAY',
-                       'NP_CURENT_PU',
+                       'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE', 'NP_RESISTANCE', 'NP_INDUCTANCE', 'NP_INV_DELAY',
+                       'NP_CURENT_PU', 'NP_RT_RAMP_UP_TIME','MC_RESP_T', 'NP_CTE_RESP_T',
 
                        'DVS_MODE_ENABLE', 'DVS_K',
-
-
 
                        ]
 
@@ -134,9 +132,13 @@ class DERCommonFileFormat:
         self._NP_V_DC = None
         self._NP_RESISTANCE = 0.001
         self._NP_INDUCTANCE = 0.2
-        self._NP_CTRL_LOOP_DELAY = 0.02
+        self._NP_INV_DELAY = 0.02
+        self._NP_CURENT_PU = 1.2
+        self._NP_RT_RAMP_UP_TIME = 0
+        self._MC_RESP_T = 0
+        self._NP_CTE_RESP_T = 0.16
+
         self._DVS_MODE_ENABLE = False
-        self._NP_CURENT_PU = 1.1
         self._DVS_K = 2
 
         # Function settings with default values
@@ -322,11 +324,17 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.NP_INDUCTANCE):
             self.NP_INDUCTANCE = self.param_inputs.NP_INDUCTANCE
 
-        if self.isNotNaN(self.param_inputs.NP_CTRL_LOOP_DELAY):
-            self.NP_CTRL_LOOP_DELAY = self.param_inputs.NP_CTRL_LOOP_DELAY
+        if self.isNotNaN(self.param_inputs.NP_INV_DELAY):
+            self.NP_INV_DELAY = self.param_inputs.NP_INV_DELAY
 
         if self.isNotNaN(self.param_inputs.NP_CURENT_PU):
             self.NP_CURENT_PU = self.param_inputs.NP_CURENT_PU
+
+        if self.isNotNaN(self.param_inputs.NP_CTE_RESP_T):
+            self.NP_CTE_RESP_T = self.param_inputs.NP_CTE_RESP_T
+
+        if self.isNotNaN(self.param_inputs.MC_RESP_T):
+            self.MC_RESP_T = self.param_inputs.MC_RESP_T
 
         if self.isNotNaN(self.param_inputs.DVS_MODE_ENABLE):
             self.DVS_MODE_ENABLE = self.param_inputs.DVS_MODE_ENABLE
@@ -334,7 +342,8 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.DVS_K):
             self.DVS_K = self.param_inputs.DVS_K
 
-
+        if self.isNotNaN(self.param_inputs.NP_RT_RAMP_UP_TIME):
+            self.NP_RT_RAMP_UP_TIME = self.param_inputs.NP_RT_RAMP_UP_TIME
 
 
         if self.isNotNaN(self.param_inputs.AP_LIMIT_ENABLE):
@@ -1961,12 +1970,12 @@ class DERCommonFileFormat:
         self._NP_INDUCTANCE = NP_INDUCTANCE
 
     @property
-    def NP_CTRL_LOOP_DELAY(self):
-        return self._NP_CTRL_LOOP_DELAY
+    def NP_INV_DELAY(self):
+        return self._NP_INV_DELAY
 
-    @NP_CTRL_LOOP_DELAY.setter
-    def NP_CTRL_LOOP_DELAY(self, NP_CTRL_LOOP_DELAY):
-        self._NP_CTRL_LOOP_DELAY = NP_CTRL_LOOP_DELAY
+    @NP_INV_DELAY.setter
+    def NP_INV_DELAY(self, NP_INV_DELAY):
+        self._NP_INV_DELAY = NP_INV_DELAY
 
     @property
     def DVS_MODE_ENABLE(self):
@@ -1985,6 +1994,47 @@ class DERCommonFileFormat:
         self._DVS_K = DVS_K
         if DVS_K > 6 or DVS_K < 2:
             logging.warning('Dynamic voltage support gain is expected to be between 2 and 6')
+
+    @property
+    def NP_RT_RAMP_UP_TIME(self):
+        return self._NP_RT_RAMP_UP_TIME
+
+    @NP_RT_RAMP_UP_TIME.setter
+    def NP_RT_RAMP_UP_TIME(self, NP_RT_RAMP_UP_TIME):
+        self._NP_RT_RAMP_UP_TIME = NP_RT_RAMP_UP_TIME
+        if NP_RT_RAMP_UP_TIME < 0:
+            logging.error('DER ride-through ramp up time should be greater than 0')
+            self._NP_RT_RAMP_UP_TIME = 0
+        if NP_RT_RAMP_UP_TIME > 0.5:
+            logging.warning('DER ride-through ramp up time should be smaller than 0.5 s')
+
+
+    @property
+    def MC_RESP_T(self):
+        return self._MC_RESP_T
+
+    @MC_RESP_T.setter
+    def MC_RESP_T(self, MC_RESP_T):
+        self._MC_RESP_T = MC_RESP_T
+        if MC_RESP_T < 0:
+            logging.error('Momentary cessation response time should be greater than 0')
+            self._MC_RESP_T = 0
+        if MC_RESP_T > 0.083:
+            logging.warning('Momentary cessation response time should be less than 0.083')
+
+    @property
+    def NP_CTE_RESP_T(self):
+        return self._NP_CTE_RESP_T
+
+    @NP_CTE_RESP_T.setter
+    def NP_CTE_RESP_T(self, NP_CTE_RESP_T):
+        self._NP_CTE_RESP_T = NP_CTE_RESP_T
+        if NP_CTE_RESP_T < 0:
+            logging.error('Cease to energize response time should be greater than 0')
+            self._NP_CTE_RESP_T = 0
+        if NP_CTE_RESP_T > 0.16:
+            logging.warning('Cease to energize response time should be less than 0.16')
+
 
     @property
     def NP_CURENT_PU(self):

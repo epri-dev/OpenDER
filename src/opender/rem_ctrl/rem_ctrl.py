@@ -97,17 +97,17 @@ class RemainingControl:
                 self.rt_time_lv = self.rt_time_lv + opender.DER.t_s
 
                 if 0.7 <= self.der_input.v_low_pu < 0.88:
-                    self.rt_mode = 'Mandatory Operation'
+                    self.rt_mode_v = 'Mandatory Operation'
                     if self.rt_time_lv > 0.7 + 4 * (self.der_input.v_low_pu - 0.7):
                         self.rt_pass_time_req = True
 
                 if 0.5 <= self.der_input.v_low_pu < 0.7:
-                    self.rt_mode = 'Permissive Operation'
+                    self.rt_mode_v = 'Permissive Operation'
                     if self.rt_time_lv > 0.16:
                         self.rt_pass_time_req = True
 
                 if self.der_input.v_low_pu < 0.5:
-                    self.rt_mode = 'Cease to Energize'
+                    self.rt_mode_v = 'Cease to Energize'
 
         if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_II':
 
@@ -115,9 +115,9 @@ class RemainingControl:
                 self.rt_time_hv = self.rt_time_hv + opender.DER.t_s
 
                 if self.der_input.v_high_pu <= 1.2:
-                    self.rt_mode = 'Permissive Operation'
+                    self.rt_mode_v = 'Permissive Operation'
                 else:
-                    self.rt_mode = 'Cease to Energize'
+                    self.rt_mode_v = 'Cease to Energize'
 
                 if (self.rt_time_hv <= 1) and (1.1 < self.der_input.v_high_pu <= 1.15) or \
                         (self.rt_time_hv <= 0.5) and (1.15 < self.der_input.v_high_pu <= 1.175) or \
@@ -128,22 +128,22 @@ class RemainingControl:
                 self.rt_time_lv = self.rt_time_lv + opender.DER.t_s
 
                 if 0.65 <= self.der_input.v_low_pu < 0.88:
-                    self.rt_mode = 'Mandatory Operation'
+                    self.rt_mode_v = 'Mandatory Operation'
                     if self.rt_time_lv > 3 + 8.7 * (self.der_input.v_low_pu - 0.65):
                         self.rt_pass_time_req = True
 
                 if 0.45 <= self.der_input.v_low_pu < 0.65:
-                    self.rt_mode = 'Permissive Operation'
+                    self.rt_mode_v = 'Permissive Operation'
                     if self.rt_time_lv > 0.32:
                         self.rt_pass_time_req = True
 
                 if 0.3 <= self.der_input.v_low_pu < 0.45:
-                    self.rt_mode = 'Permissive Operation'
+                    self.rt_mode_v = 'Permissive Operation'
                     if self.rt_time_lv > 0.16:
                         self.rt_pass_time_req = True
 
                 if self.der_input.v_low_pu < 0.3:
-                    self.rt_mode = 'Cease to Energize'
+                    self.rt_mode_v = 'Cease to Energize'
 
 
         if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_III':
@@ -152,9 +152,9 @@ class RemainingControl:
                 self.rt_time_hv = self.rt_time_hv + opender.DER.t_s
 
                 if self.der_input.v_high_pu <= 1.2:
-                    self.rt_mode = 'Momentary Cessation'
+                    self.rt_mode_v = 'Momentary Cessation'
                 else:
-                    self.rt_mode = 'Cease to Energize'
+                    self.rt_mode_v = 'Cease to Energize'
 
                 if self.rt_time_hv <= 12:
                     self.rt_pass_time_req = True
@@ -163,21 +163,22 @@ class RemainingControl:
                 self.rt_time_lv = self.rt_time_lv + opender.DER.t_s
 
                 if 0.7 <= self.der_input.v_low_pu < 0.88:
-                    self.rt_mode = 'Mandatory Operation'
+                    self.rt_mode_v = 'Mandatory Operation'
                     if self.rt_time_lv > 20:
                         self.rt_pass_time_req = True
 
                 if 0.5 <= self.der_input.v_low_pu < 0.7:
-                    self.rt_mode = 'Mandatory Operation'
+                    self.rt_mode_v = 'Mandatory Operation'
                     if self.rt_time_lv > 10:
                         self.rt_pass_time_req = True
 
                 if self.der_input.v_low_pu < 0.5:
-                    self.rt_mode = 'Momentary Cessation'
+                    self.rt_mode_v = 'Momentary Cessation'
                     if self.rt_time_lv > 1:
                         self.rt_pass_time_req = True
 
         if 58.5 <= self.der_input.freq_hz <= 61.2:
+            self.rt_mode_f = 'Continuous Operation'
             self.rt_time_hf = 0
             self.rt_time_lf = 0
 

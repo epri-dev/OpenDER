@@ -214,33 +214,29 @@ class RemainingControl:
             self.rt_mode = 'Continuous Operation'
             self.rt_pass_time_req = False
 
-        if self.rt_mode == 'Continuous Operation':
+        if self.rt_mode == 'Continuous Operation' or self.rt_mode == 'Not Defined':
             self.rt_status = 'Normal Operation'
 
-        if self.rt_mode in ['Mandatory Operation', 'Not Defined']:
+        if self.rt_mode == 'Mandatory Operation':
             if self.der_file.DVS_MODE_ENABLE:
                 self.rt_status = 'Dynamic Voltage Support'
             else:
                 self.rt_status = 'Normal Operation'
 
         if self.rt_mode == 'Permissive Operation':
-            pass
-
-        if self.rt_mode == 'Cease to Energize':
-            if self.rt_cte_cond_delay.con_del_enable(True, self.der_file.NP_CTE_RESP_T):
-                self.rt_status = 'Cease to Energize'
+            if self.der_file.DVS_MODE_ENABLE:
+                self.rt_status = 'Dynamic Voltage Support'
             else:
-                pass
-        else:
-            self.rt_cte_cond_delay.con_del_enable(False, self.der_file.NP_CTE_RESP_T)
+                self.rt_status = 'Normal Operation'
 
-        if self.rt_mode == 'Momentary Cessation':
-            if self.rt_mc_cond_delay.con_del_enable(True, self.der_file.MC_RESP_T):
-                self.rt_status = 'Cease to Energize'
-            else:
-                pass
-        else:
-            self.rt_mc_cond_delay.con_del_enable(False, self.der_file.MC_RESP_T)
+        if self.rt_cte_cond_delay.con_del_enable(self.rt_mode == 'Cease to Energize', self.der_file.NP_CTE_RESP_T):
+            self.rt_status = 'Cease to Energize'
+
+        if self.rt_mc_cond_delay.con_del_enable(self.rt_mode == 'Momentary Cessation', self.der_file.MC_RESP_T):
+            self.rt_status = 'Cease to Energize'
+
+        if self.rt_status is None:
+            self.rt_status = 'Cease to Energize'
 
     def der_rem_operation(self, p_limited_w, q_limited_var):
 
@@ -276,8 +272,8 @@ class RemainingControl:
         else:
             self.i_pos_limited_ref_pu = (self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, 0, self.der_file.NP_RT_RAMP_UP_TIME) + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
 
-        self.i_pos_pu = self.i_pos_lpf.low_pass_filter(self.i_pos_limited_ref_pu, self.der_file.NP_INV_DELAY)
-        self.i_neg_pu = self.i_neg_lpf.low_pass_filter(self.i_neg_limited_ref_pu, self.der_file.NP_INV_DELAY)
+        self.i_pos_pu = self.i_pos_lpf.low_pass_filter(self.i_pos_limited_ref_pu, self.der_file.NP_INV_CTRL_DELAY)
+        self.i_neg_pu = self.i_neg_lpf.low_pass_filter(self.i_neg_limited_ref_pu, self.der_file.NP_INV_CTRL_DELAY)
 
         self.i_a_pu, self.i_b_pu, self.i_c_pu = self.convert_symm_to_abc(self.i_pos_pu, self.i_neg_pu)
 
@@ -289,7 +285,7 @@ class RemainingControl:
         self.i_pos_q_ref_pu = - q_limited_pu / abs(self.der_input.v_pos_pu)
         self.i_neg_ref_pu = 0
 
-        self.i_pos_d_limited_ref_pu, self.i_pos_q_limited_ref_pu, self.i_neg_limited_ref_pu = self.i_limit(self.i_pos_d_ref_pu, self.i_pos_q_ref_pu, self.i_neg_ref_pu, self.der_input.v_pos_pu, self.der_file.NP_CURENT_PU)
+        self.i_pos_d_limited_ref_pu, self.i_pos_q_limited_ref_pu, self.i_neg_limited_ref_pu = self.i_limit(self.i_pos_d_ref_pu, self.i_pos_q_ref_pu, self.i_neg_ref_pu, self.der_input.v_pos_pu, self.der_file.NP_CURRENT_PU)
 
     def calculate_i_DVS(self, p_limited_pu, q_limited_pu):
         self.i_pos_d_ref_pu = p_limited_pu / abs(self.der_input.v_pos_pu)
@@ -297,26 +293,27 @@ class RemainingControl:
                     abs(self.der_input.v_pos_pu) - 1) * self.der_file.DVS_K
         self.i_neg_ref_pu = self.der_input.v_neg_pu * 1j * self.der_file.DVS_K
 
-        self.i_pos_d_limited_ref_pu, self.i_pos_q_limited_ref_pu, self.i_neg_limited_ref_pu = self.i_limit(self.i_pos_d_ref_pu, self.i_pos_q_ref_pu, self.i_neg_ref_pu, self.der_input.v_pos_pu, self.der_file.NP_CURENT_PU)
+        self.i_pos_d_limited_ref_pu, self.i_pos_q_limited_ref_pu, self.i_neg_limited_ref_pu = self.i_limit(self.i_pos_d_ref_pu, self.i_pos_q_ref_pu, self.i_neg_ref_pu, self.der_input.v_pos_pu, self.der_file.NP_CURRENT_PU)
 
     def calculate_i_block(self):
-        self.i_pos_limited_ref_pu = -1j * self.der_input.v_pos_pu * self.der_file.NP_AC_V_NOM * \
+        self.i_pos_d_limited_ref_pu = 0
+        self.i_pos_q_limited_ref_pu = self.der_input.v_pos_pu * self.der_file.NP_AC_V_NOM * \
                                     self.der_file.NP_REACTIVE_SUSCEPTANCE / (
                                             self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
 
-        self.i_neg_limited_ref_pu = -1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
+        self.i_neg_limited_ref_pu = 1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
                                     self.der_file.NP_REACTIVE_SUSCEPTANCE / (
                                             self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
 
 
     def calculate_v_output(self):
 
-        self.v_pos_out_cmd_pu = self.der_input.v_pos_pu + self.i_pos_pu * (self.der_file.NP_RESISTANCE + 1j * self.der_file.NP_INDUCTANCE)
-        self.v_neg_out_cmd_pu = self.der_input.v_neg_pu + self.i_neg_pu * (self.der_file.NP_RESISTANCE + 1j * self.der_file.NP_INDUCTANCE)
+        self.v_pos_out_cmd_pu = self.der_input.v_pos_pu + self.i_pos_pu * (self.der_file.NP_RESISTANCE + 1j * self.der_file.NP_REACTANCE)
+        self.v_neg_out_cmd_pu = self.der_input.v_neg_pu + self.i_neg_pu * (self.der_file.NP_RESISTANCE + 1j * self.der_file.NP_REACTANCE)
 
         self.v_pos_out_pu, self.v_neg_out_pu = self.v_limit(self.v_pos_out_cmd_pu, self.v_neg_out_cmd_pu, self.der_file.NP_V_DC / self.der_file.NP_AC_V_NOM)
 
-        self.v_a_out_pu, self.v_b_out_pu, self.v_c_out_pu = self.convert_symm_to_abc(self.v_pos_out_pu, self.v_neg_out_pu)
+        self.v_a_out_pu, self.v_b_out_pu, self.v_c_out_pu = self.convert_symm_to_fabc(self.v_pos_out_pu, self.v_neg_out_pu)
         self.v_out_mag_pu = (abs(self.v_a_out_pu), abs(self.v_b_out_pu), abs(self.v_c_out_pu))
 
         self.v_out_theta = (cmath.phase(self.v_a_out_pu), cmath.phase(self.v_b_out_pu), cmath.phase(self.v_c_out_pu))

@@ -60,8 +60,8 @@ class DERCommonFileFormat:
                        'NP_PRIO_OUTSIDE_MIN_Q_REQ', 'NP_V_MEAS_UNBALANCE', 'NP_PHASE', 'NP_P_MIN_PU', 'AP_RT',
                        'CONST_PF_RT', 'CONST_Q_RT', 'QP_RT', 'NP_SET_EXE_TIME', 'NP_MODE_TRANSITION_TIME',
                        'STATUS_INIT', 'ES_RANDOMIZED_DELAY_ACTUAL', 'NP_Q_CAPABILITY_BY_P_CURVE',
-                       'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE', 'NP_RESISTANCE', 'NP_INDUCTANCE', 'NP_INV_DELAY',
-                       'NP_CURENT_PU', 'NP_RT_RAMP_UP_TIME','MC_RESP_T', 'NP_CTE_RESP_T',
+                       'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE', 'NP_RESISTANCE', 'NP_REACTANCE', 'NP_INV_CTRL_DELAY',
+                       'NP_CURRENT_PU', 'NP_RT_RAMP_UP_TIME','MC_RESP_T', 'NP_CTE_RESP_T',
 
                        'DVS_MODE_ENABLE', 'DVS_K',
 
@@ -131,9 +131,9 @@ class DERCommonFileFormat:
         self._NP_TYPE = None
         self._NP_V_DC = None
         self._NP_RESISTANCE = 0.001
-        self._NP_INDUCTANCE = 0.2
-        self._NP_INV_DELAY = 0.02
-        self._NP_CURENT_PU = 1.2
+        self._NP_REACTANCE = 0.2
+        self._NP_INV_CTRL_DELAY = 0.02
+        self._NP_CURRENT_PU = 1.2
         self._NP_RT_RAMP_UP_TIME = 0
         self._MC_RESP_T = 0
         self._NP_CTE_RESP_T = 0.16
@@ -321,14 +321,14 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.NP_RESISTANCE):
             self.NP_RESISTANCE = self.param_inputs.NP_RESISTANCE
 
-        if self.isNotNaN(self.param_inputs.NP_INDUCTANCE):
-            self.NP_INDUCTANCE = self.param_inputs.NP_INDUCTANCE
+        if self.isNotNaN(self.param_inputs.NP_REACTANCE):
+            self.NP_REACTANCE = self.param_inputs.NP_REACTANCE
 
-        if self.isNotNaN(self.param_inputs.NP_INV_DELAY):
-            self.NP_INV_DELAY = self.param_inputs.NP_INV_DELAY
+        if self.isNotNaN(self.param_inputs.NP_INV_CTRL_DELAY):
+            self.NP_INV_CTRL_DELAY = self.param_inputs.NP_INV_CTRL_DELAY
 
-        if self.isNotNaN(self.param_inputs.NP_CURENT_PU):
-            self.NP_CURENT_PU = self.param_inputs.NP_CURENT_PU
+        if self.isNotNaN(self.param_inputs.NP_CURRENT_PU):
+            self.NP_CURRENT_PU = self.param_inputs.NP_CURRENT_PU
 
         if self.isNotNaN(self.param_inputs.NP_CTE_RESP_T):
             self.NP_CTE_RESP_T = self.param_inputs.NP_CTE_RESP_T
@@ -1962,20 +1962,20 @@ class DERCommonFileFormat:
         self._NP_RESISTANCE = NP_RESISTANCE
 
     @property
-    def NP_INDUCTANCE(self):
-        return self._NP_INDUCTANCE
+    def NP_REACTANCE(self):
+        return self._NP_REACTANCE
 
-    @NP_INDUCTANCE.setter
-    def NP_INDUCTANCE(self, NP_INDUCTANCE):
-        self._NP_INDUCTANCE = NP_INDUCTANCE
+    @NP_REACTANCE.setter
+    def NP_REACTANCE(self, NP_REACTANCE):
+        self._NP_REACTANCE = NP_REACTANCE
 
     @property
-    def NP_INV_DELAY(self):
-        return self._NP_INV_DELAY
+    def NP_INV_CTRL_DELAY(self):
+        return self._NP_INV_CTRL_DELAY
 
-    @NP_INV_DELAY.setter
-    def NP_INV_DELAY(self, NP_INV_DELAY):
-        self._NP_INV_DELAY = NP_INV_DELAY
+    @NP_INV_CTRL_DELAY.setter
+    def NP_INV_CTRL_DELAY(self, NP_INV_CTRL_DELAY):
+        self._NP_INV_CTRL_DELAY = NP_INV_CTRL_DELAY
 
     @property
     def DVS_MODE_ENABLE(self):
@@ -2037,13 +2037,13 @@ class DERCommonFileFormat:
 
 
     @property
-    def NP_CURENT_PU(self):
-        return self._NP_CURENT_PU
+    def NP_CURRENT_PU(self):
+        return self._NP_CURRENT_PU
 
-    @NP_CURENT_PU.setter
-    def NP_CURENT_PU(self, NP_CURENT_PU):
-        self._NP_CURENT_PU = NP_CURENT_PU
-        if NP_CURENT_PU < 1:
+    @NP_CURRENT_PU.setter
+    def NP_CURRENT_PU(self, NP_CURRENT_PU):
+        self._NP_CURRENT_PU = NP_CURRENT_PU
+        if NP_CURRENT_PU < 1:
             logging.warning('Inverter nameplate current should be greater than 1 per unit')
 
 

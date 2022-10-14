@@ -12,8 +12,9 @@
 #   prior written permission.
 
 
-from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs import low_pass_filter
 from opender.auxiliary_funcs.flipflop import FlipFlop
+from opender.auxiliary_funcs.time_delay import TimeDelay
 
 
 class FreqDroop:
@@ -28,8 +29,10 @@ class FreqDroop:
         self.exec_delay = exec_delay
         self.der_input = der_input
 
-        self.pf_lpf = LowPassFilter()
+        self.pf_lpf = low_pass_filter.LowPassFilter()
+        self.pf_delay = TimeDelay()
         self.p_pf_pre_pu_prev = None
+        self.p_pf_lpf_pu = None
         self.p_out_w_prev = None
         self.pf_uf_prev = None
         self.pf_of_prev = None
@@ -91,13 +94,13 @@ class FreqDroop:
             self.pf_of = 0
 
         # Initialize internal state variables for under- and over-frequency condition detection
-        if(self.pf_uf_prev is None):
+        if self.pf_uf_prev is None:
             self.pf_uf_prev = self.pf_uf
-        if(self.pf_of_prev is None):
+        if self.pf_of_prev is None:
             self.pf_of_prev = self.pf_of
 
         # Initialize internal state variables of DER output in previous time step
-        if(self.p_out_w_prev is None):
+        if self.p_out_w_prev is None:
             self.p_out_w_prev = min((self.der_input.p_avl_pu * self.der_file.NP_P_MAX),
                                      (ap_limit_rt*self.der_file.NP_P_MAX),
                                      (p_pv_limit_pu*self.der_file.NP_P_MAX))
@@ -105,14 +108,14 @@ class FreqDroop:
             self.p_out_w_prev = p_out_w
 
         # Initialize internal state variables of pre-disturbance active power output
-        if(self.p_pf_pre_pu_prev is None):
+        if self.p_pf_pre_pu_prev is None:
             self.p_pf_pre_pu_prev = min(self.der_input.p_avl_pu, ap_limit_rt, p_pv_limit_pu)
 
         # Eq. 3.7.1-8, calculate pre-disturbance active power output
         p_pf_pre_pu_temp = self.p_out_w_prev / self.der_file.NP_P_MAX
-        if(self.pf_uf == 1 and self.pf_uf_prev ==1):
+        if self.pf_uf == 1 and self.pf_uf_prev == 1:
             p_pf_pre_pu = self.p_pf_pre_pu_prev
-        elif(self.pf_of == 1 and self.pf_of_prev == 1):
+        elif self.pf_of == 1 and self.pf_of_prev == 1:
             p_pf_pre_pu = self.p_pf_pre_pu_prev
         else:
             p_pf_pre_pu = p_pf_pre_pu_temp
@@ -126,16 +129,17 @@ class FreqDroop:
         p_pf_uf_pu = min(p_pf_uf_pu, self.der_input.p_avl_pu)
 
         # Eq. 3.7.1-11, calculate active power reference according to frequency-droop
-        if(self.pf_of == 1):
+        if self.pf_of == 1:
             p_pf_ref_pu = p_pf_of_pu
-        elif(self.pf_uf == 1):
+        elif self.pf_uf == 1:
             p_pf_ref_pu = p_pf_uf_pu
         else:
             p_pf_ref_pu = min(self.der_input.p_avl_pu, ap_limit_rt, p_pv_limit_pu)
 
         # Eq. 3.7.1-12, apply the low pass filter
         pf_olrt_appl = self.exec_delay.pf_olrt_exec if self.pf_uf or self.pf_of or self.pf_uf_active or self.pf_of_active else 0
-        self.p_pf_pu = self.pf_lpf.low_pass_filter(p_pf_ref_pu, pf_olrt_appl)
+        self.p_pf_lpf_pu = self.pf_lpf.low_pass_filter(p_pf_ref_pu, pf_olrt_appl)
+        self.p_pf_pu = self.pf_delay.tdelay(self.p_pf_lpf_pu, self.der_file.NP_REACT_TIME)
 
         # Initialize internal state variable for the first time step of simulation
         if self.p_pf_pu_prev is None:

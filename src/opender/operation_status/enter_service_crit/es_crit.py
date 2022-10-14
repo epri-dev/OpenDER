@@ -23,11 +23,11 @@ import logging
 
 
 #%%
-class EnterServiceTrip:
+class EnterServiceCrit:
     """
     Enter Service and Trip related behaviors
     """
-    def __init__(self, der_file, exec_delay, der_input, STATUS_INIT):
+    def __init__(self, der_obj):
         """
         :NP_P_MIN_PU:	DER minimum active power output
         :ES_RANDOMIZED_DELAY_ACTUAL:	Specified value for enter service randomized delay for simulation purpose
@@ -36,28 +36,17 @@ class EnterServiceTrip:
         :STATUS_INIT:   Initial DER Status
         """
 
-        self.der_file = der_file
-        self.exec_delay = exec_delay
-        self.der_input = der_input
+        self.der_obj = der_obj
+        self.der_file = der_obj.der_file
+        self.exec_delay = der_obj.exec_delay
+        self.der_input = der_obj.der_input
 
         # initialize object parameters
         self.es_flag = 0
         self.es_randomized_delay_time = 0
 
-        self.vft_delay = ConditionalDelay()
-        self.uv1_delay = ConditionalDelay()
-        self.uv2_delay = ConditionalDelay()
-        self.ov1_delay = ConditionalDelay()
-        self.ov2_delay = ConditionalDelay()
-        self.uf1_delay = ConditionalDelay()
-        self.uf2_delay = ConditionalDelay()
-        self.of1_delay = ConditionalDelay()
-        self.of2_delay = ConditionalDelay()
-
         self.rand_delay = TimeDelay()
-        self.der_status_flipflop = FlipFlop(STATUS_INIT)
-        self.der_status = STATUS_INIT
-        self.debug = None
+        self.vft_delay = ConditionalDelay()
 
 
     def es_decision(self):
@@ -105,7 +94,7 @@ class EnterServiceTrip:
         :param es_p_crit:	DER output power is greater than the minimum output power
         :param es_other_crit: Other enter service criteria
 
-        :param es_crit:	Enter service criteria met
+        :param es_cfto_crit:	Enter service criteria met
         :param es_randomized_delay_time:	Enter service randomized delay time (initiated by 0)
         :param uv1_trip:	DER trip criteria met due to under voltage must trip setting 1 (UV1)
         :param uv2_trip:	DER trip criteria met due to under voltage must trip setting 2 (UV2)
@@ -132,14 +121,14 @@ class EnterServiceTrip:
         es_vft_crit = self.vft_delay.con_del_enable(es_vf_crit, self.exec_delay.es_delay_exec)
 
         # Eq 3.5.1-3,
-        es_crit = es_vft_crit and self.es_other_crit()
+        es_vfto_crit = es_vft_crit and self.es_other_crit()
 
         # Eq 3.5.1-4, generate the enter service randomized delay. The value is 0 if enter service ramp is used.
-        if self.der_status:
+        if self.der_obj.der_status:
             # if DER is on, reset randomized delay to 0 for next time use.
             self.es_randomized_delay_time = 0
         else:
-            if self.der_file.ES_RANDOMIZED_DELAY_ACTUAL > 0 and es_crit:
+            if self.der_file.ES_RANDOMIZED_DELAY_ACTUAL > 0 and es_vfto_crit:
                 self.es_randomized_delay_time = self.der_file.ES_RANDOMIZED_DELAY_ACTUAL
             elif (self.exec_delay.es_ramp_rate_exec == 0) and (self.exec_delay.es_randomized_delay_exec > 0) and (self.der_file.NP_VA_MAX < 500e3):
                 if self.es_randomized_delay_time == 0:
@@ -151,37 +140,10 @@ class EnterServiceTrip:
                 self.es_randomized_delay_time = 0
 
         # Eq 3.5.1-5, apply the randomized delay
-        der_status_es = self.rand_delay.tdelay(es_crit,self.es_randomized_delay_time)
+        es_crit = self.rand_delay.tdelay(es_vfto_crit,self.es_randomized_delay_time)
 
-        # Eq 3.5.1-6, under- and over-voltage, under- and over-frequency trip criterion using conditional delayed enable
-        uv1_trip = self.uv1_delay.con_del_enable(self.der_input.v_low_pu < self.exec_delay.uv1_trip_v_exec, self.exec_delay.uv1_trip_t_exec)
-        ov1_trip = self.ov1_delay.con_del_enable(self.der_input.v_high_pu > self.exec_delay.ov1_trip_v_exec, self.exec_delay.ov1_trip_t_exec)
-        uv2_trip = self.uv2_delay.con_del_enable(self.der_input.v_low_pu < self.exec_delay.uv2_trip_v_exec, self.exec_delay.uv2_trip_t_exec)
-        ov2_trip = self.ov2_delay.con_del_enable(self.der_input.v_high_pu > self.exec_delay.ov2_trip_v_exec, self.exec_delay.ov2_trip_t_exec)
-        uf1_trip = self.uf1_delay.con_del_enable(self.der_input.freq_hz < self.exec_delay.uf1_trip_f_exec, self.exec_delay.uf1_trip_t_exec)
-        of1_trip = self.of1_delay.con_del_enable(self.der_input.freq_hz > self.exec_delay.of1_trip_f_exec, self.exec_delay.of1_trip_t_exec)
-        uf2_trip = self.uf2_delay.con_del_enable(self.der_input.freq_hz < self.exec_delay.uf2_trip_f_exec, self.exec_delay.uf2_trip_t_exec)
-        of2_trip = self.of2_delay.con_del_enable(self.der_input.freq_hz > self.exec_delay.of2_trip_f_exec, self.exec_delay.of2_trip_t_exec)
-
-        # Eq 3.5.1-7, final trip decision based on all trip conditions
-        der_status_trip = uv1_trip or ov1_trip or uv2_trip or ov2_trip \
-                          or uf1_trip or of1_trip or uf2_trip or of2_trip or self.other_trip() \
-                          or not self.exec_delay.es_permit_service_exec
-        der_status_trip = der_status_trip
-
-        # if der_status_es and not self.der_status_flipflop.ff_out_prev:
-        #     logging.info('Entering Service')
-        # if der_status_trip and not self.der_status_flipflop.ff_out_prev:
-        #     logging.info('Trip')
-
-        # Eq 3.5.1-8 generate DER ON/OFF status based on flip-flop logic
-        self.der_status = self.der_status_flipflop.flipflop(int(der_status_es), int(der_status_trip))
-
-        # return der_status output
-        return self.der_status
+        return  es_crit
 
     def es_other_crit(self):
         return True
 
-    def other_trip(self):
-        return False

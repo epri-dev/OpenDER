@@ -21,15 +21,15 @@
 from .common_file_format.common_file_format import DERCommonFileFormat
 from .active_power_support_funcs.p_funcs import DesiredActivePower
 from .reactive_power_support_funcs.q_funcs import DesiredReactivePower
-from .rem_ctrl import rem_ctrl
-from .enter_service_trip.es_trip import EnterServiceTrip
-from .enter_service_trip.es_perf import EnterServicePerformance
+from .operation_status import OperatingStatus
+from opender.operation_status.enter_service_crit.es_crit import EnterServiceCrit
+from opender.es_perf import EnterServicePerformance
 from .capability_and_priority.capability_and_priority import CapabilityPriority
 from opender.input_processing.op_cond_proc import DERInputs
 from . import setting_execution_delay
 from typing import Union, List, Tuple
 import numpy as np
-from .rem_ctrl import rem_ctrl
+from .rt_perf import rt_perf
 
 
 
@@ -66,7 +66,12 @@ class DER:
         self.p_out_kw = None
         self.q_out_kvar = None
 
-        self.der_status = self.der_file.STATUS_INIT
+        if self.der_file.STATUS_INIT:
+            self.der_status = 'Continuous Operation'
+        else:
+            self.der_status = 'Trip'
+
+        self.es_crit = None
 
         self.p_out_w = None
         self.q_out_var = None
@@ -74,13 +79,12 @@ class DER:
         # DER model modules
         self.der_input = DERInputs(self.der_file)
         self.exec_delay = setting_execution_delay.SettingExecutionDelay(self.der_file)
-        self.enterservicetrip = EnterServiceTrip(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
+        self.opstatus = OperatingStatus(self)
         self.activepowerfunc = DesiredActivePower(self.der_file, self.exec_delay, self.der_input)
         self.enterserviceperf = EnterServicePerformance(self.der_file, self.exec_delay)
         self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
         self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
-
-        self.remctrl = rem_ctrl.RemainingControl(self.der_file, self.exec_delay, self.der_input)
+        self.ridethroughperf = rt_perf.RideThroughPerf(self.der_file, self.exec_delay, self.der_input)
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
                          f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None,
@@ -155,8 +159,8 @@ class DER:
         # Execution delay
         self.exec_delay.mode_and_execution_delay()
 
-        # Enter service and trip decision making
-        self.der_status = self.enterservicetrip.es_decision()
+        # Determine DER operating status
+        self.der_status = self.opstatus.determine_der_status()
 
         # Calculate desired active power
         self.p_act_supp_pu = self.activepowerfunc.calculate_p_funcs(self.p_out_w)
@@ -171,11 +175,11 @@ class DER:
         self.p_limited_w, self.q_limited_var = self.limited_p_q.calculate_limited_pq(self.p_desired_pu, self.q_desired_pu)
 
         # Determine DER model output value
-        self.p_out_w, self.q_out_var = self.remctrl.der_rem_operation(self.p_limited_w, self.q_limited_var)
-        self.p_out_kw = self.remctrl.p_out_kw
-        self.q_out_kvar = self.remctrl.q_out_kvar
-        self.p_out_pu = self.remctrl.p_out_pu
-        self.q_out_pu = self.remctrl.q_out_pu
+        self.p_out_w, self.q_out_var = self.ridethroughperf.der_rem_operation(self.p_limited_w, self.q_limited_var, self.der_status)
+        self.p_out_kw = self.ridethroughperf.p_out_kw
+        self.q_out_kvar = self.ridethroughperf.q_out_kvar
+        self.p_out_pu = self.ridethroughperf.p_out_pu
+        self.q_out_pu = self.ridethroughperf.q_out_pu
 
 
 
@@ -187,11 +191,13 @@ class DER:
         self.time = 0
         # self.der_input = DERInputs(self.der_file)
         self.exec_delay = setting_execution_delay.SettingExecutionDelay(self.der_file)
-        self.enterservicetrip = EnterServiceTrip(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
+        self.enterservicecrit = EnterServiceCrit(self)
+        self.opstatus = OperatingStatus(self)
         self.activepowerfunc = DesiredActivePower(self.der_file, self.exec_delay, self.der_input)
         self.enterserviceperf = EnterServicePerformance(self.der_file, self.exec_delay)
         self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
         self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
+        self.ridethroughperf = rt_perf.RideThroughPerf(self.der_file, self.exec_delay, self.der_input)
 
         self.p_out_w = None
         self.q_out_var = None
@@ -204,14 +210,14 @@ class DER:
         elif type == 'PQ_pu':
             return self.p_out_pu, self.q_out_pu
         elif type == 'I_A':
-            return [i*self.der_file.NP_VA_MAX/self.der_file.NP_AC_V_NOM*0.5773502691896258 for i in self.remctrl.i_mag_pu], self.remctrl.i_theta
+            return [i * self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM * 0.5773502691896258 for i in self.ridethroughperf.i_mag_pu], self.ridethroughperf.i_theta
         elif type == 'I_pu':
-            return self.remctrl.i_mag_pu, self.remctrl.i_theta
+            return self.ridethroughperf.i_mag_pu, self.ridethroughperf.i_theta
         elif type == 'Ipn_pu':
-            return self.remctrl.i_pos_pu, self.remctrl.i_neg_pu
+            return self.ridethroughperf.i_pos_pu, self.ridethroughperf.i_neg_pu
         elif type == 'V_pu':
-            self.remctrl.calculate_v_output()
-            return self.remctrl.v_out_mag_pu, self.remctrl.v_out_theta
+            self.ridethroughperf.calculate_v_output()
+            return self.ridethroughperf.v_out_mag_pu, self.ridethroughperf.v_out_theta
         else:
             print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu")
 

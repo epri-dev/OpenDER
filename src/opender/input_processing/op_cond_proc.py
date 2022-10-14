@@ -21,6 +21,7 @@ import math
 import cmath #For complex number operations
 import logging
 from opender import DERCommonFileFormat
+from opender import auxiliary_funcs
 
 class DERInputs:
     def __init__(self, der_file: DERCommonFileFormat):
@@ -54,6 +55,8 @@ class DERInputs:
 
         self.p_avl_pu = None
         self.p_dem_pu = None
+
+        self.v_lpf = auxiliary_funcs.low_pass_filter.LowPassFilter()
 
     def operating_condition_input_processing(self):
         """
@@ -111,11 +114,11 @@ class DERInputs:
 
             # Eq. 3.3.1-2, if DER responds to the average of three phase RMS value
             if self.der_file.NP_V_MEAS_UNBALANCE == "AVG":
-                self.v_meas_pu = (v_a_pu + v_b_pu + v_c_pu)/3
+                self.v_meas_pu = self.v_lpf.low_pass_filter((v_a_pu + v_b_pu + v_c_pu)/3, self.der_file.NP_MEAS_TIME)
 
             # Eq. 3.3.1-3, if DER responds to positive sequence component of voltage.
             if self.der_file.NP_V_MEAS_UNBALANCE == "POS":
-                self.v_meas_pu = abs(self.v_pos_pu)
+                self.v_meas_pu = self.v_lpf.low_pass_filter(abs(self.v_pos_pu), self.der_file.NP_MEAS_TIME)
 
             # Eq. 3.3.1-4, calculate phase-to-phase voltages
             v_ab_pu = abs((v_a_pu - v_b_pu * cmath.exp((self.theta_b - self.theta_a)*1j)) / math.sqrt(3))

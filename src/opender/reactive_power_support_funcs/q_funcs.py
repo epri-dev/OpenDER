@@ -104,16 +104,20 @@ class DesiredReactivePower:
         """
 
         # Eq. 3.9.1-18, calculate desired reactive power reference, without smooth mode transition
-        if(der_status == 1 and self.exec_delay.const_pf_mode_enable_exec == 1):
-            q_desired_ref_pu = self.q_const_pf_desired_pu
-        elif(der_status == 1 and self.exec_delay.qv_mode_enable_exec == 1):
-            q_desired_ref_pu = self.q_qv_desired_pu
-        elif(der_status == 1 and self.exec_delay.qp_mode_enable_exec == 1):
-            q_desired_ref_pu = self.q_qp_desired_pu
-        elif(der_status == 1 and self.exec_delay.const_q_mode_enable_exec == 1):
-            q_desired_ref_pu = self.q_const_q_desired_pu
+        if der_status != 'Trip':
+            if self.exec_delay.const_pf_mode_enable_exec == 1:
+                q_desired_ref_pu = self.q_const_pf_desired_pu
+            elif self.exec_delay.qv_mode_enable_exec == 1:
+                q_desired_ref_pu = self.q_qv_desired_pu
+            elif self.exec_delay.qp_mode_enable_exec == 1:
+                q_desired_ref_pu = self.q_qp_desired_pu
+            elif self.exec_delay.const_q_mode_enable_exec == 1:
+                q_desired_ref_pu = self.q_const_q_desired_pu
+            else:
+                q_desired_ref_pu = 0
         else:
             q_desired_ref_pu = 0
+
 
         # Eq. 3.9.1-19, the ramp rate limit only applies when there is a mode change.
         if self.exec_delay.const_pf_mode_enable_exec != self.const_pf_mode_enable_exec_prev or \

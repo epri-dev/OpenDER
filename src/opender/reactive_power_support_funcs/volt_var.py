@@ -13,6 +13,7 @@
 
 
 from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs.time_delay import TimeDelay
 
 
 class VoltVAR:
@@ -27,6 +28,7 @@ class VoltVAR:
         self.der_input = der_input
 
         self.qv_lpf = LowPassFilter()
+        self.qv_delay = TimeDelay()
         self.qv_curve_v1_exec_prev = None   # Value of variable qv_curve_v1_exec in the previous time step (initialized by the first value of QV_CURVE_V1)
         self.qv_curve_v2_exec_prev = None   # Value of variable qv_curve_v2_exec in the previous time step (initialized by the first value of QV_CURVE_V2)
         self.qv_curve_v3_exec_prev = None   # Value of variable qv_curve_v3_exec in the previous time step (initialized by the first value of QV_CURVE_V3)
@@ -170,14 +172,15 @@ class VoltVAR:
             q_qv_desired_ref_pu = self.exec_delay.qv_curve_q4_exec
 
         # Eq. 3.9.1-11, OLRT using LPF
-        q_qv_desired_pu = self.qv_lpf.low_pass_filter(q_qv_desired_ref_pu, self.exec_delay.qv_olrt_exec)
+        q_qv_lpf_pu = self.qv_lpf.low_pass_filter(q_qv_desired_ref_pu, self.exec_delay.qv_olrt_exec - self.der_file.NP_REACT_TIME)
+        q_qv_desired_pu = self.qv_delay.tdelay(q_qv_lpf_pu, self.der_file.NP_REACT_TIME)
         
         # Resetting internal state variables
         self.qv_curve_v1_exec_prev = self.exec_delay.qv_curve_v1_exec
         self.qv_curve_v2_exec_prev = self.exec_delay.qv_curve_v2_exec
         self.qv_curve_v3_exec_prev = self.exec_delay.qv_curve_v3_exec
         self.qv_curve_v4_exec_prev = self.exec_delay.qv_curve_v4_exec
-        
+
         self.qv_curve_v1_appl_prev = qv_curve_v1_appl
         self.qv_curve_v2_appl_prev = qv_curve_v2_appl
         self.qv_curve_v3_appl_prev = qv_curve_v3_appl

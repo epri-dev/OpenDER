@@ -17,6 +17,7 @@
 
 import math
 from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs.time_delay import TimeDelay
 
 
 class ConstantPowerFactor:
@@ -29,6 +30,7 @@ class ConstantPowerFactor:
         self.der_file = der_file
         self.exec_delay = exec_delay
         self.pf_lpf = LowPassFilter()
+        self.pf_delay = TimeDelay()
 
     def calculate_q_const_pf_desired_var(self, p_desired_pu):
         """
@@ -66,6 +68,8 @@ class ConstantPowerFactor:
         # Eq. 3.9.1-2, apply the low pass filter to the reference reactive power. Note that there can be multiple
         # different ways to implement this behavior in an actual DER. The model may be updated in a future version,
         # according to the lab test results.
-        q_const_pf_desired_pu = self.pf_lpf.low_pass_filter(q_const_pf_desired_ref_pu, self.der_file.CONST_PF_RT)
+        q_const_pf_lpf_pu = self.pf_lpf.low_pass_filter(q_const_pf_desired_ref_pu, self.der_file.CONST_PF_RT - self.der_file.NP_REACT_TIME)
+
+        q_const_pf_desired_pu = self.pf_delay.tdelay(q_const_pf_lpf_pu, self.der_file.NP_REACT_TIME)
 
         return q_const_pf_desired_pu

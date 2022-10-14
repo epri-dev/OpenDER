@@ -12,6 +12,7 @@
 #   prior written permission.
 
 from opender.auxiliary_funcs.ramping import Ramping
+from opender.auxiliary_funcs.time_delay import TimeDelay
 
 
 class ActivePowerLimit:
@@ -25,6 +26,7 @@ class ActivePowerLimit:
         self.der_file = der_file
         self.exec_delay = exec_delay
         self.ap_limit_ramp = Ramping()
+        self.ap_limit_delay = TimeDelay()
 
     def calculate_ap_limit_rt(self):
         """
@@ -48,9 +50,11 @@ class ActivePowerLimit:
         # is applied. Note that there can be multiple different ways to implement this behavior in an actual DER.
         # The model may be updated in a future version according to the lab test results.
         if self.exec_delay.ap_limit_enable_exec:
-            ap_limit_rt = self.ap_limit_ramp.ramp(ap_limit_pu, self.der_file.AP_RT, self.der_file.AP_RT)
+            ap_limit_ramp = self.ap_limit_ramp.ramp(ap_limit_pu, self.der_file.AP_RT - self.der_file.NP_REACT_TIME, self.der_file.AP_RT - self.der_file.NP_REACT_TIME)
         else:
             # If active power limit function is not enabled, the "limited active power" value is set to 1
-            ap_limit_rt = self.ap_limit_ramp.ramp(1, 0, 0)
+            ap_limit_ramp = self.ap_limit_ramp.ramp(1, 0, 0)
+
+        ap_limit_rt = self.ap_limit_delay.tdelay(ap_limit_ramp, self.der_file.NP_REACT_TIME)
 
         return ap_limit_rt

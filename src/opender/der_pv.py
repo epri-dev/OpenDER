@@ -1,5 +1,5 @@
 from .der import DER
-from .enter_service_trip import EnterServiceTripPV
+from .operation_status.enter_service_crit import EnterServiceCritPV
 from .active_power_support_funcs.p_funcs_pv import DesiredActivePowerPV
 
 
@@ -8,7 +8,7 @@ class DER_PV(DER):
         super(DER_PV, self).__init__(der_file_obj)
         # Replace enter service module to include cut-in and cut-out behavior
 
-        self.enterservicetrip = EnterServiceTripPV(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
+        self.enterservicetrip = EnterServiceCritPV(self)
         self.activepowerfunc = DesiredActivePowerPV(self.der_file, self.exec_delay, self.der_input)
 
 

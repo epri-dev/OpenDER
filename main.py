@@ -188,7 +188,7 @@ while t < 2500:
     pdc_plot.append(der_test.der_input.p_dc_w)
     v_plot.append(der_test.der_input.v_meas_pu)
     stat_plot.append(der_test.der_status)
-    debug_plot.append(der_test.enterservicetrip.es_flag)
+    debug_plot.append(der_test.enterservicecrit.es_flag)
 
     # increase t
     t = t + t_s

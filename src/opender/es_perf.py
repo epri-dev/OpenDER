@@ -92,7 +92,7 @@ class EnterServicePerformance:
         """
 
         # Eq. 3.7.1-1, input available power
-        if der_status:
+        if der_status != 'Trip':
             p_es_pu = p_act_supp_pu
         else:
             p_es_pu = 0
@@ -101,7 +101,7 @@ class EnterServicePerformance:
         p_es_ramp_pu = self.rrl.ramp(p_es_pu, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
 
         # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
-        es_flag_set = self.edge.run(der_status)
+        es_flag_set = self.edge.run(True if der_status != 'Trip' else False)
 
         # Eq. 3.7.1-4 Enter service ramp complete
         es_flag_reset = (p_es_ramp_pu == p_es_pu) or not der_status

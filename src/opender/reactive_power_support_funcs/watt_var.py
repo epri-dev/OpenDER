@@ -12,6 +12,7 @@
 #   prior written permission.
 
 from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs.time_delay import TimeDelay
 
 
 class WattVAR:
@@ -24,6 +25,7 @@ class WattVAR:
         self.der_file = der_file
         self.exec_delay = exec_delay
         self.qp_lpf = LowPassFilter()
+        self.qp_delay = TimeDelay()
         
     def calculate_q_qp_desired_var(self, p_desired_pu):
         """
@@ -96,6 +98,7 @@ class WattVAR:
 
         # Eq. 3.9.1-15, apply the low pass filter. Note that there can be multiple different ways to implement this
         # behavior in actual DER. The model may be updated in a future version, according to the lab test results.
-        q_qp_desired_pu = self.qp_lpf.low_pass_filter(q_qp_desired_ref_pu, self.der_file.QP_RT)
-        
+        q_qp_lpf_pu = self.qp_lpf.low_pass_filter(q_qp_desired_ref_pu, self.der_file.QP_RT - self.der_file.NP_REACT_TIME)
+
+        q_qp_desired_pu = self.qp_delay.tdelay(q_qp_lpf_pu, self.der_file.NP_REACT_TIME)
         return q_qp_desired_pu

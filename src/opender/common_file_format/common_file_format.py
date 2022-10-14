@@ -61,7 +61,8 @@ class DERCommonFileFormat:
                        'CONST_PF_RT', 'CONST_Q_RT', 'QP_RT', 'NP_SET_EXE_TIME', 'NP_MODE_TRANSITION_TIME',
                        'STATUS_INIT', 'ES_RANDOMIZED_DELAY_ACTUAL', 'NP_Q_CAPABILITY_BY_P_CURVE',
                        'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE', 'NP_RESISTANCE', 'NP_REACTANCE', 'NP_INV_CTRL_DELAY',
-                       'NP_CURRENT_PU', 'NP_RT_RAMP_UP_TIME','MC_RESP_T', 'NP_CTE_RESP_T',
+                       'NP_CURRENT_PU', 'NP_RT_RAMP_UP_TIME','MC_RESP_T', 'NP_CTE_RESP_T', 'NP_REACT_TIME',
+                       'NP_MEAS_TIME',
 
                        'DVS_MODE_ENABLE', 'DVS_K',
 
@@ -137,6 +138,8 @@ class DERCommonFileFormat:
         self._NP_RT_RAMP_UP_TIME = 0
         self._MC_RESP_T = 0
         self._NP_CTE_RESP_T = 0.16
+        self._NP_REACT_TIME = 0
+        self._NP_MEAS_TIME = 0
 
         self._DVS_MODE_ENABLE = False
         self._DVS_K = 2
@@ -345,6 +348,11 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.NP_RT_RAMP_UP_TIME):
             self.NP_RT_RAMP_UP_TIME = self.param_inputs.NP_RT_RAMP_UP_TIME
 
+        if self.isNotNaN(self.param_inputs.NP_REACT_TIME):
+            self.NP_REACT_TIME = self.param_inputs.NP_REACT_TIME
+
+        if self.isNotNaN(self.param_inputs.NP_MEAS_TIME):
+            self.NP_MEAS_TIME = self.param_inputs.NP_MEAS_TIME
 
         if self.isNotNaN(self.param_inputs.AP_LIMIT_ENABLE):
             self.AP_LIMIT_ENABLE = self.param_inputs.AP_LIMIT_ENABLE
@@ -1933,7 +1941,7 @@ class DERCommonFileFormat:
         if type(STATUS_INIT) is str:
             if (STATUS_INIT.upper() == "ON") or (STATUS_INIT.upper() == "ENABLED"):
                 self._STATUS_INIT = True
-            elif (STATUS_INIT.upper() == "OFF") or (STATUS_INIT.upper() == "DISABLED"):
+            elif (STATUS_INIT.upper() == "OFF") or (STATUS_INIT.upper() == "DISABLED") or (STATUS_INIT.upper() == "TRIP"):
                 self._STATUS_INIT = False
             else:
                 raise ValueError('STATUS_INIT value not valid')
@@ -2045,6 +2053,28 @@ class DERCommonFileFormat:
         self._NP_CURRENT_PU = NP_CURRENT_PU
         if NP_CURRENT_PU < 1:
             logging.warning('Inverter nameplate current should be greater than 1 per unit')
+
+    @property
+    def NP_REACT_TIME(self):
+        return self._NP_REACT_TIME
+
+    @NP_REACT_TIME.setter
+    def NP_REACT_TIME(self, NP_REACT_TIME):
+        self._NP_REACT_TIME = NP_REACT_TIME
+        if NP_REACT_TIME < 0:
+            self._NP_REACT_TIME = 0
+            logging.error('DER grid support functions reaction time should be greater than 0')
+
+    @property
+    def NP_MEAS_TIME(self):
+        return self._NP_MEAS_TIME
+
+    @NP_MEAS_TIME.setter
+    def NP_MEAS_TIME(self, NP_MEAS_TIME):
+        self._NP_MEAS_TIME = NP_MEAS_TIME
+        if NP_MEAS_TIME < 0:
+            self._NP_MEAS_TIME = 0
+            logging.error('DER voltage measurement time should be greater than 0')
 
 
 

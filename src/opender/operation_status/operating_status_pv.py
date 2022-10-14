@@ -11,5 +11,21 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-from .es_trip_bess import EnterServiceTripBESS
-from .es_trip_pv import EnterServiceTripPV
+
+# -*- coding: utf-8 -*-
+
+from opender.auxiliary_funcs.cond_delay import ConditionalDelay
+import opender
+from opender.operation_status.rt_status import RideThroughStatus
+from opender.operation_status.enter_service_crit import EnterServiceCritPV
+from opender.operation_status.trip_crit import TripCritPV
+from .operating_status import OperatingStatus
+
+
+
+class OperatingStatusPV(OperatingStatus):
+    def __init__(self, der_obj: opender):
+        super(OperatingStatusPV, self).__init__(der_obj)
+
+        self.enterservicecrit = EnterServiceCritPV(der_obj)
+        self.tripcrit = TripCritPV(der_obj)

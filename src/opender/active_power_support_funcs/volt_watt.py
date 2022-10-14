@@ -16,7 +16,8 @@
 @author: Jithendar Anandan
 @email: janandan@epri.com
 """
-from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
+from opender.auxiliary_funcs import low_pass_filter
+from opender.auxiliary_funcs.time_delay import TimeDelay
 
 
 class VoltWatt:
@@ -29,7 +30,8 @@ class VoltWatt:
         self.der_file = der_file
         self.exec_delay = exec_delay
         self.der_input = der_input
-        self.pv_lpf = LowPassFilter()
+        self.pv_lpf = low_pass_filter.LowPassFilter()
+        self.pv_delay = TimeDelay()
 
         self.p_pv_limit_ref_pu = None
         
@@ -80,8 +82,10 @@ class VoltWatt:
 
         # Eq. 3.7.1-4, apply the low pass filter, if function disabled, reset limit to 1 immediately
         if self.exec_delay.pv_mode_enable_exec:
-            p_pv_limit_pu = self.pv_lpf.low_pass_filter(self.p_pv_limit_ref_pu, self.exec_delay.pv_olrt_exec)
+            p_pv_limit_lpf_pu = self.pv_lpf.low_pass_filter(self.p_pv_limit_ref_pu, self.exec_delay.pv_olrt_exec - self.der_file.NP_REACT_TIME)
         else:
-            p_pv_limit_pu = self.pv_lpf.low_pass_filter(1, 0)
+            p_pv_limit_lpf_pu = self.pv_lpf.low_pass_filter(1, 0)
+
+        p_pv_limit_pu = self.pv_delay.tdelay(p_pv_limit_lpf_pu, self.der_file.NP_REACT_TIME)
 
         return p_pv_limit_pu

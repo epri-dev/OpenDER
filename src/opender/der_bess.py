@@ -1,10 +1,8 @@
 from . import DERCommonFileFormatBESS
 from .der import DER
 from .active_power_support_funcs.p_funcs_bess import DesiredActivePowerBESS
-from .enter_service_trip.es_trip_bess import EnterServiceTripBESS
-from .capability_and_priority.capability_and_priority import CapabilityPriority
-from typing import Tuple, Union, List
-from . import rem_ctrl
+# from opender.operation_status.enter_service_crit.es_crit_bess import EnterServiceCritBESS
+from typing import Union, List
 import numpy as np
 
 class DER_BESS(DER):
@@ -15,7 +13,7 @@ class DER_BESS(DER):
 
         # replace active power support functions and enter service
         self.activepowerfunc = DesiredActivePowerBESS(self.der_file, self.exec_delay, self.der_input)
-        self.enterservicetrip = EnterServiceTripBESS(self.der_file, self.exec_delay, self.der_input, self.der_file.STATUS_INIT)
+        # self.enterservicetrip = EnterServiceCritBESS(self)
 
     def update_der_input(self, p_dem_w: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
                          f: float = None, v_pu: Union[List[float], float] = None, p_dem_pu: float = None,

@@ -7,7 +7,7 @@ from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
 from opender.auxiliary_funcs.ramping import Ramping
 from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 
-class RemainingControl:
+class RideThroughPerf:
 
     def __init__(self, der_file: DERCommonFileFormat, exec_delay, der_input: DERInputs):
 
@@ -15,16 +15,7 @@ class RemainingControl:
         self.exec_delay = exec_delay
         self.der_input = der_input
 
-        self._rt_mode = None
-        self._rt_mode_v = None
-        self._rt_mode_f = None
-        self.rt_pass_time_req = False
         self.rt_status = None
-
-        self.rt_time_lv = 0
-        self.rt_time_hv = 0
-        self.rt_time_hf = 0
-        self.rt_time_lf = 0
 
         self.i_pos_pu = 0
         self.i_neg_pu = 0
@@ -71,176 +62,38 @@ class RemainingControl:
         self.rt_mc_cond_delay = ConditionalDelay()
         self.rt_cte_cond_delay = ConditionalDelay()
 
-    def determine_rt_mode(self):
+    def determine_rt_mode(self, der_status):
 
-        if self.der_input.v_low_pu >= 0.88 and self.der_input.v_high_pu <= 1.1:
-            self.rt_mode_v = 'Continuous Operation'
-            self.rt_time_lv = 0
-            self.rt_time_hv = 0
-
-
-        if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_I':
-            if 1.1 < self.der_input.v_high_pu:
-                self.rt_time_hv = self.rt_time_hv + opender.DER.t_s
-
-                if self.der_input.v_high_pu <= 1.2:
-                    self.rt_mode_v = 'Permissive Operation'
-                else:
-                    self.rt_mode_v = 'Cease to Energize'
-
-                if (self.rt_time_hv <= 1) and (1.1 < self.der_input.v_high_pu <= 1.15) or \
-                   (self.rt_time_hv <= 0.5) and (1.15 < self.der_input.v_high_pu <= 1.175) or \
-                   (self.rt_time_hv <= 0.2) and (1.175 < self.der_input.v_high_pu <= 1.2):
-                    self.rt_pass_time_req = True
-
-            if self.der_input.v_low_pu < 0.88:
-                self.rt_time_lv = self.rt_time_lv + opender.DER.t_s
-
-                if 0.7 <= self.der_input.v_low_pu < 0.88:
-                    self.rt_mode_v = 'Mandatory Operation'
-                    if self.rt_time_lv > 0.7 + 4 * (self.der_input.v_low_pu - 0.7):
-                        self.rt_pass_time_req = True
-
-                if 0.5 <= self.der_input.v_low_pu < 0.7:
-                    self.rt_mode_v = 'Permissive Operation'
-                    if self.rt_time_lv > 0.16:
-                        self.rt_pass_time_req = True
-
-                if self.der_input.v_low_pu < 0.5:
-                    self.rt_mode_v = 'Cease to Energize'
-
-        if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_II':
-
-            if 1.1 < self.der_input.v_high_pu:
-                self.rt_time_hv = self.rt_time_hv + opender.DER.t_s
-
-                if self.der_input.v_high_pu <= 1.2:
-                    self.rt_mode_v = 'Permissive Operation'
-                else:
-                    self.rt_mode_v = 'Cease to Energize'
-
-                if (self.rt_time_hv <= 1) and (1.1 < self.der_input.v_high_pu <= 1.15) or \
-                        (self.rt_time_hv <= 0.5) and (1.15 < self.der_input.v_high_pu <= 1.175) or \
-                        (self.rt_time_hv <= 0.2) and (1.15 < self.der_input.v_high_pu <= 1.2):
-                    self.rt_pass_time_req = True
-
-            if self.der_input.v_low_pu < 0.88:
-                self.rt_time_lv = self.rt_time_lv + opender.DER.t_s
-
-                if 0.65 <= self.der_input.v_low_pu < 0.88:
-                    self.rt_mode_v = 'Mandatory Operation'
-                    if self.rt_time_lv > 3 + 8.7 * (self.der_input.v_low_pu - 0.65):
-                        self.rt_pass_time_req = True
-
-                if 0.45 <= self.der_input.v_low_pu < 0.65:
-                    self.rt_mode_v = 'Permissive Operation'
-                    if self.rt_time_lv > 0.32:
-                        self.rt_pass_time_req = True
-
-                if 0.3 <= self.der_input.v_low_pu < 0.45:
-                    self.rt_mode_v = 'Permissive Operation'
-                    if self.rt_time_lv > 0.16:
-                        self.rt_pass_time_req = True
-
-                if self.der_input.v_low_pu < 0.3:
-                    self.rt_mode_v = 'Cease to Energize'
-
-
-        if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_III':
-
-            if 1.1 < self.der_input.v_high_pu:
-                self.rt_time_hv = self.rt_time_hv + opender.DER.t_s
-
-                if self.der_input.v_high_pu <= 1.2:
-                    self.rt_mode_v = 'Momentary Cessation'
-                else:
-                    self.rt_mode_v = 'Cease to Energize'
-
-                if self.rt_time_hv <= 12:
-                    self.rt_pass_time_req = True
-
-            if self.der_input.v_low_pu < 0.88:
-                self.rt_time_lv = self.rt_time_lv + opender.DER.t_s
-
-                if 0.7 <= self.der_input.v_low_pu < 0.88:
-                    self.rt_mode_v = 'Mandatory Operation'
-                    if self.rt_time_lv > 20:
-                        self.rt_pass_time_req = True
-
-                if 0.5 <= self.der_input.v_low_pu < 0.7:
-                    self.rt_mode_v = 'Mandatory Operation'
-                    if self.rt_time_lv > 10:
-                        self.rt_pass_time_req = True
-
-                if self.der_input.v_low_pu < 0.5:
-                    self.rt_mode_v = 'Momentary Cessation'
-                    if self.rt_time_lv > 1:
-                        self.rt_pass_time_req = True
-
-        if 58.5 <= self.der_input.freq_hz <= 61.2:
-            self.rt_mode_f = 'Continuous Operation'
-            self.rt_time_hf = 0
-            self.rt_time_lf = 0
-
-        if 61.2 <= self.der_input.freq_hz:
-            self.rt_time_hf = self.rt_time_hf + opender.DER.t_s
-            if self.der_input.freq_hz <= 61.8:
-                self.rt_mode_f = 'Mandatory Operation'
-            else:
-                self.rt_mode_f = 'Not Defined'
-
-            if self.rt_time_hf > 299:
-                self.rt_pass_time_req = True
-
-        if self.der_input.freq_hz <= 58.8:
-            self.rt_time_lf = self.rt_time_lf + opender.DER.t_s
-            if 57.0 <= self.der_input.freq_hz:
-                self.rt_mode_f = 'Mandatory Operation'
-            else:
-                self.rt_mode_f = 'Not Defined'
-
-            if self.rt_time_lf > 299:
-                self.rt_pass_time_req = True
-
-
-        if self.rt_mode_f == 'Not Defined':
-            self.rt_mode = 'Not Defined'
-        elif self.rt_mode_v in ['Cease to Energize', 'Permissive Operation', 'Momentary Cessation']:
-            self.rt_mode = self.rt_mode_v
-
-        elif self.rt_mode_v == 'Mandatory Operation' or self.rt_mode_f == 'Mandatory Operation':
-            self.rt_mode = 'Mandatory Operation'
-        else:
-            self.rt_mode = 'Continuous Operation'
-            self.rt_pass_time_req = False
-
-        if self.rt_mode == 'Continuous Operation' or self.rt_mode == 'Not Defined':
+        if der_status == 'Continuous Operation' or der_status == 'Not Defined':
             self.rt_status = 'Normal Operation'
 
-        if self.rt_mode == 'Mandatory Operation':
+        if der_status == 'Mandatory Operation':
             if self.der_file.DVS_MODE_ENABLE:
                 self.rt_status = 'Dynamic Voltage Support'
             else:
                 self.rt_status = 'Normal Operation'
 
-        if self.rt_mode == 'Permissive Operation':
+        if der_status== 'Permissive Operation':
             if self.der_file.DVS_MODE_ENABLE:
                 self.rt_status = 'Dynamic Voltage Support'
             else:
                 self.rt_status = 'Normal Operation'
 
-        if self.rt_cte_cond_delay.con_del_enable(self.rt_mode == 'Cease to Energize', self.der_file.NP_CTE_RESP_T):
+        if der_status == 'Trip':
+            self.rt_status = 'Trip'
+
+        if self.rt_cte_cond_delay.con_del_enable(der_status == 'Cease to Energize', self.der_file.NP_CTE_RESP_T):
             self.rt_status = 'Cease to Energize'
 
-        if self.rt_mc_cond_delay.con_del_enable(self.rt_mode == 'Momentary Cessation', self.der_file.MC_RESP_T):
+        if self.rt_mc_cond_delay.con_del_enable(der_status == 'Momentary Cessation', self.der_file.MC_RESP_T):
             self.rt_status = 'Cease to Energize'
 
         if self.rt_status is None:
             self.rt_status = 'Cease to Energize'
 
-    def der_rem_operation(self, p_limited_w, q_limited_var):
+    def der_rem_operation(self, p_limited_w, q_limited_var, der_status):
 
-        self.determine_rt_mode()
+        self.determine_rt_mode(der_status)
 
         self.p_limited_pu = p_limited_w / self.der_file.NP_VA_MAX
         self.q_limited_pu = q_limited_var / self.der_file.NP_VA_MAX
@@ -370,40 +223,40 @@ class RemainingControl:
         return i_pos_out_d_pu, i_pos_out_q_pu, i_neg_out_pu
 
 
-    @property
-    def rt_mode(self):
-        return self._rt_mode
-
-    @rt_mode.setter
-    def rt_mode(self, rt_mode):
-        if rt_mode in ['Continuous Operation', 'Mandatory Operation', 'Cease to Energize',
-                         'Permissive Operation', 'Momentary Cessation', 'Not Defined', None]:
-            self._rt_mode = rt_mode
-        else:
-            print('error in ride-through status, code incorrect')
-
-    @property
-    def rt_mode_v(self):
-        return self._rt_mode_v
-
-    @rt_mode_v.setter
-    def rt_mode_v(self, rt_mode_v):
-        if rt_mode_v in ['Continuous Operation', 'Mandatory Operation', 'Cease to Energize',
-                           'Permissive Operation', 'Momentary Cessation', None]:
-            self._rt_mode_v = rt_mode_v
-        else:
-            print('error in ride-through status, code incorrect')
-
-    @property
-    def rt_mode_f(self):
-        return self._rt_mode_f
-
-    @rt_mode_f.setter
-    def rt_mode_f(self, rt_mode_f):
-        if rt_mode_f in ['Continuous Operation', 'Mandatory Operation', 'Not Defined', None]:
-            self._rt_mode_f = rt_mode_f
-        else:
-            print('error in ride-through status, code incorrect')
+    # @property
+    # def rt_mode(self):
+    #     return self._rt_mode
+    #
+    # @rt_mode.setter
+    # def rt_mode(self, rt_mode):
+    #     if rt_mode in ['Continuous Operation', 'Mandatory Operation', 'Cease to Energize',
+    #                      'Permissive Operation', 'Momentary Cessation', 'Not Defined', None]:
+    #         self._rt_mode = rt_mode
+    #     else:
+    #         print('error in ride-through status, code incorrect')
+    #
+    # @property
+    # def rt_mode_v(self):
+    #     return self._rt_mode_v
+    #
+    # @rt_mode_v.setter
+    # def rt_mode_v(self, rt_mode_v):
+    #     if rt_mode_v in ['Continuous Operation', 'Mandatory Operation', 'Cease to Energize',
+    #                      'Permissive Operation', 'Momentary Cessation', None]:
+    #         self._rt_mode_v = rt_mode_v
+    #     else:
+    #         print('error in ride-through status, code incorrect')
+    #
+    # @property
+    # def rt_mode_f(self):
+    #     return self._rt_mode_f
+    #
+    # @rt_mode_f.setter
+    # def rt_mode_f(self, rt_mode_f):
+    #     if rt_mode_f in ['Continuous Operation', 'Mandatory Operation', 'Not Defined', None]:
+    #         self._rt_mode_f = rt_mode_f
+    #     else:
+    #         print('error in ride-through status, code incorrect')
 
 
     def __str__(self):

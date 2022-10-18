@@ -22,9 +22,9 @@ class DesiredActivePowerPV(DesiredActivePower):
     EPRI Report Reference: Section 3.6 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
-    def __init__(self, der_file, exec_delay, der_input):
+    def __init__(self, der_obj):
 
-        super(DesiredActivePowerPV, self).__init__(der_file, exec_delay, der_input)
+        super(DesiredActivePowerPV, self).__init__(der_obj)
 
-        self.aplimit = active_power_limit.ActivePowerLimit(der_file, exec_delay)
-        self.voltwatt = vw.VoltWatt(der_file, exec_delay, der_input)
+        # self.aplimit = active_power_limit.ActivePowerLimit(self.der_file, self.exec_delay)
+        # self.voltwatt = vw.VoltWatt(self.der_file, self.exec_delay, self.der_input)

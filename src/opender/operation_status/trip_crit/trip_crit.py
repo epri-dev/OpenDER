@@ -2,10 +2,10 @@ from opender.auxiliary_funcs.time_delay import TimeDelay
 from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 import numpy as np
 import logging
-import opender
+
 
 class TripCrit:
-    def __init__(self, der_obj: opender):
+    def __init__(self, der_obj):
         """
         :NP_P_MIN_PU:	DER minimum active power output
         :ES_RANDOMIZED_DELAY_ACTUAL:	Specified value for enter service randomized delay for simulation purpose

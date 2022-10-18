@@ -45,8 +45,8 @@ class ConstantVARs:
         # Eq. 3.9.1-17, apply the low pass filter to the reference reactive power. Note that there can be multiple
         # different ways to implement this behavior in an actual DER. The model may be updated in a future version,
         # according to the lab test results.
-        const_q_lpf_pu = self.const_q_lpf.low_pass_filter(self.exec_delay.const_q_exec, self.der_file.CONST_Q_RT - self.der_file.NP_REACT_TIME)
-        const_q_desired_pu = self.const_q_delay.tdelay(const_q_lpf_pu, self.der_file.NP_REACT_TIME)
+        q_const_q_lpf_pu = self.const_q_lpf.low_pass_filter(self.exec_delay.const_q_exec, self.der_file.CONST_Q_RT - self.der_file.NP_REACT_TIME)
+        q_const_q_desired_pu = self.const_q_delay.tdelay(q_const_q_lpf_pu, self.der_file.NP_REACT_TIME)
 
 
-        return const_q_desired_pu
+        return q_const_q_desired_pu

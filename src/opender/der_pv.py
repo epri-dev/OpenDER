@@ -9,6 +9,6 @@ class DER_PV(DER):
         # Replace enter service module to include cut-in and cut-out behavior
 
         self.enterservicetrip = EnterServiceCritPV(self)
-        self.activepowerfunc = DesiredActivePowerPV(self.der_file, self.exec_delay, self.der_input)
+        self.activepowerfunc = DesiredActivePowerPV(self)
 
 

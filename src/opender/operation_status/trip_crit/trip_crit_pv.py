@@ -6,7 +6,7 @@ import opender
 from .trip_crit import TripCrit
 
 class TripCritPV(TripCrit):
-    def __init__(self, der_obj: opender):
+    def __init__(self, der_obj):
         super(TripCritPV, self).__init__(der_obj)
 
     def other_trip(self):

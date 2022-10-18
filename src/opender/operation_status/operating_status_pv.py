@@ -24,7 +24,7 @@ from .operating_status import OperatingStatus
 
 
 class OperatingStatusPV(OperatingStatus):
-    def __init__(self, der_obj: opender):
+    def __init__(self, der_obj: opender.DER):
         super(OperatingStatusPV, self).__init__(der_obj)
 
         self.enterservicecrit = EnterServiceCritPV(der_obj)

@@ -12,7 +12,7 @@ class DER_BESS(DER):
         self.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
         # replace active power support functions and enter service
-        self.activepowerfunc = DesiredActivePowerBESS(self.der_file, self.exec_delay, self.der_input)
+        self.activepowerfunc = DesiredActivePowerBESS(self)
         # self.enterservicetrip = EnterServiceCritBESS(self)
 
     def update_der_input(self, p_dem_w: float = None, v: Union[List[float], float] = None, theta: List[float] = None,

@@ -114,11 +114,11 @@ class DERInputs:
 
             # Eq. 3.3.1-2, if DER responds to the average of three phase RMS value
             if self.der_file.NP_V_MEAS_UNBALANCE == "AVG":
-                self.v_meas_pu = self.v_lpf.low_pass_filter((v_a_pu + v_b_pu + v_c_pu)/3, self.der_file.NP_MEAS_TIME)
+                self.v_meas_pu = self.v_lpf.low_pass_filter((v_a_pu + v_b_pu + v_c_pu)/3, self.der_file.NP_V_MEAS_DELAY)
 
             # Eq. 3.3.1-3, if DER responds to positive sequence component of voltage.
             if self.der_file.NP_V_MEAS_UNBALANCE == "POS":
-                self.v_meas_pu = self.v_lpf.low_pass_filter(abs(self.v_pos_pu), self.der_file.NP_MEAS_TIME)
+                self.v_meas_pu = self.v_lpf.low_pass_filter(abs(self.v_pos_pu), self.der_file.NP_V_MEAS_DELAY)
 
             # Eq. 3.3.1-4, calculate phase-to-phase voltages
             v_ab_pu = abs((v_a_pu - v_b_pu * cmath.exp((self.theta_b - self.theta_a)*1j)) / math.sqrt(3))

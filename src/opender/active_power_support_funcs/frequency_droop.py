@@ -23,11 +23,12 @@ class FreqDroop:
     EPRI Report Reference: Section 3.6.3 in Report #3002021694: IEEE 1547-2018 DER Model
     """
     
-    def __init__(self, der_file, exec_delay, der_input):
+    def __init__(self, der_obj):
 
-        self.der_file = der_file
-        self.exec_delay = exec_delay
-        self.der_input = der_input
+        self.der_obj = der_obj
+        self.der_file = der_obj.der_file
+        self.exec_delay = der_obj.exec_delay
+        self.der_input = der_obj.der_input
 
         self.pf_lpf = low_pass_filter.LowPassFilter()
         self.pf_delay = TimeDelay()
@@ -134,11 +135,11 @@ class FreqDroop:
         elif self.pf_uf == 1:
             p_pf_ref_pu = p_pf_uf_pu
         else:
-            p_pf_ref_pu = min(self.der_input.p_avl_pu, ap_limit_rt, p_pv_limit_pu)
+            p_pf_ref_pu = min(self.active_power_without_droop(), ap_limit_rt, p_pv_limit_pu)
 
         # Eq. 3.7.1-12, apply the low pass filter
         pf_olrt_appl = self.exec_delay.pf_olrt_exec if self.pf_uf or self.pf_of or self.pf_uf_active or self.pf_of_active else 0
-        self.p_pf_lpf_pu = self.pf_lpf.low_pass_filter(p_pf_ref_pu, pf_olrt_appl)
+        self.p_pf_lpf_pu = self.pf_lpf.low_pass_filter(p_pf_ref_pu, pf_olrt_appl - self.der_file.NP_REACT_TIME)
         self.p_pf_pu = self.pf_delay.tdelay(self.p_pf_lpf_pu, self.der_file.NP_REACT_TIME)
 
         # Initialize internal state variable for the first time step of simulation
@@ -161,3 +162,6 @@ class FreqDroop:
         self.p_pf_pu_prev = self.p_pf_pu
 
         return self.p_pf_pu, self.pf_uf_active, self.pf_of_active
+
+    def active_power_without_droop(self):
+        return self.der_input.p_avl_pu

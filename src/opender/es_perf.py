@@ -91,20 +91,15 @@ class EnterServicePerformance:
         :param p_desired_w:	Desired output active power considering DER enter service performance
         """
 
-        # Eq. 3.7.1-1, input available power
-        if der_status != 'Trip':
-            p_es_pu = p_act_supp_pu
-        else:
-            p_es_pu = 0
 
         # Eq. 3.7.1-2, ramp rate limiter
-        p_es_ramp_pu = self.rrl.ramp(p_es_pu, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
+        p_es_ramp_pu = self.rrl.ramp(p_act_supp_pu, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
 
         # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
         es_flag_set = self.edge.run(True if der_status != 'Trip' else False)
 
         # Eq. 3.7.1-4 Enter service ramp complete
-        es_flag_reset = (p_es_ramp_pu == p_es_pu) or not der_status
+        es_flag_reset = (p_es_ramp_pu == p_act_supp_pu) or not der_status
 
         # Eq. 3.7.1-5, flip-flop logic to determine if in enter service ramp
         if es_flag_reset:
@@ -116,6 +111,6 @@ class EnterServicePerformance:
         if self.es_flag:
             self.p_es_ramp_pu = p_es_ramp_pu
         else:
-            self.p_es_ramp_pu = p_es_pu
+            self.p_es_ramp_pu = p_act_supp_pu
 
         return self.p_es_ramp_pu

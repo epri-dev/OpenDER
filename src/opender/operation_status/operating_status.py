@@ -24,7 +24,7 @@ from opender.operation_status.trip_crit.trip_crit import TripCrit
 
 class OperatingStatus:
 
-    def __init__(self, der_obj: opender):
+    def __init__(self, der_obj):
         """
         :NP_P_MIN_PU:	DER minimum active power output
         :ES_RANDOMIZED_DELAY_ACTUAL:	Specified value for enter service randomized delay for simulation purpose
@@ -53,7 +53,7 @@ class OperatingStatus:
 
         if self.der_status == 'Trip':
             if es_crit:
-                self.der_status = 'Normal Operation'
+                self.der_status = 'Continuous Operation'
 
         if self.der_status != 'Trip':
 

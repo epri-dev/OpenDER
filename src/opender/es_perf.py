@@ -93,7 +93,10 @@ class EnterServicePerformance:
 
 
         # Eq. 3.7.1-2, ramp rate limiter
-        p_es_ramp_pu = self.rrl.ramp(p_act_supp_pu, self.exec_delay.es_ramp_rate_exec, self.exec_delay.es_ramp_rate_exec)
+        if p_act_supp_pu > 0:
+            p_es_ramp_pu = self.rrl.ramp(p_act_supp_pu, self.exec_delay.es_ramp_rate_exec, 0)
+        else:
+            p_es_ramp_pu = self.rrl.ramp(p_act_supp_pu, 0, self.exec_delay.es_ramp_rate_exec)
 
         # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
         es_flag_set = self.edge.run(True if der_status != 'Trip' else False)

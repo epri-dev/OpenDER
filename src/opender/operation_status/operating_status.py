@@ -16,7 +16,7 @@
 
 from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 import opender
-from opender.operation_status.rt_status import RideThroughStatus
+from opender.operation_status.rt_crit import RideThroughCrit
 from opender.operation_status.enter_service_crit.es_crit import EnterServiceCrit
 from opender.operation_status.trip_crit.trip_crit import TripCrit
 
@@ -39,7 +39,7 @@ class OperatingStatus:
 
         self.der_status = der_obj.der_file.STATUS_INIT
 
-        self.rt_status = RideThroughStatus(der_obj)
+        self.ridethroughcrit = RideThroughCrit(der_obj)
         self.enterservicecrit = EnterServiceCrit(der_obj)
         self.tripcrit = TripCrit(der_obj)
 
@@ -49,7 +49,7 @@ class OperatingStatus:
 
         trip_crit = self.tripcrit.trip_decision()
 
-        self.rt_status.determine_ride_through_mode()
+        self.ridethroughcrit.determine_ride_through_mode()
 
         if self.der_status == 'Trip':
             if es_crit:
@@ -57,12 +57,12 @@ class OperatingStatus:
 
         if self.der_status != 'Trip':
 
-            if self.rt_status.rt_mode_f == 'Not Defined':
+            if self.ridethroughcrit.rt_mode_f == 'Not Defined':
                 self.der_status = 'Not Defined'
-            elif self.rt_status.rt_mode_v in ['Cease to Energize', 'Permissive Operation', 'Momentary Cessation']:
-                self.der_status = self.rt_status.rt_mode_v
+            elif self.ridethroughcrit.rt_mode_v in ['Cease to Energize', 'Permissive Operation', 'Momentary Cessation']:
+                self.der_status = self.ridethroughcrit.rt_mode_v
 
-            elif self.rt_status.rt_mode_v == 'Mandatory Operation' or self.rt_status.rt_mode_f == 'Mandatory Operation':
+            elif self.ridethroughcrit.rt_mode_v == 'Mandatory Operation' or self.ridethroughcrit.rt_mode_f == 'Mandatory Operation':
                 self.der_status = 'Mandatory Operation'
             else:
                 self.der_status = 'Continuous Operation'

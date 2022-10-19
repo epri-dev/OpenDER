@@ -16,7 +16,6 @@
 
 from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 import opender
-from opender.operation_status.rt_status import RideThroughStatus
 from opender.operation_status.enter_service_crit import EnterServiceCritPV
 from opender.operation_status.trip_crit import TripCritPV
 from .operating_status import OperatingStatus

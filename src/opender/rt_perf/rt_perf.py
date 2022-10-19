@@ -15,7 +15,7 @@ class RideThroughPerf:
         self.exec_delay = exec_delay
         self.der_input = der_input
 
-        self.rt_status = None
+        self.rt_ctrl = None
 
         self.i_pos_pu = 0
         self.i_neg_pu = 0
@@ -62,38 +62,38 @@ class RideThroughPerf:
         self.rt_mc_cond_delay = ConditionalDelay()
         self.rt_cte_cond_delay = ConditionalDelay()
 
-    def determine_rt_mode(self, der_status):
+    def determine_rt_ctrl(self, der_status):
 
         if der_status == 'Continuous Operation' or der_status == 'Not Defined':
-            self.rt_status = 'Normal Operation'
+            self.rt_ctrl = 'Normal Operation'
 
         if der_status == 'Mandatory Operation':
             if self.der_file.DVS_MODE_ENABLE:
-                self.rt_status = 'Dynamic Voltage Support'
+                self.rt_ctrl = 'Dynamic Voltage Support'
             else:
-                self.rt_status = 'Normal Operation'
+                self.rt_ctrl = 'Normal Operation'
 
         if der_status== 'Permissive Operation':
             if self.der_file.DVS_MODE_ENABLE:
-                self.rt_status = 'Dynamic Voltage Support'
+                self.rt_ctrl = 'Dynamic Voltage Support'
             else:
-                self.rt_status = 'Normal Operation'
+                self.rt_ctrl = 'Normal Operation'
 
         if der_status == 'Trip':
-            self.rt_status = 'Trip'
+            self.rt_ctrl = 'Trip'
 
         if self.rt_cte_cond_delay.con_del_enable(der_status == 'Cease to Energize', self.der_file.NP_CTE_RESP_T):
-            self.rt_status = 'Cease to Energize'
+            self.rt_ctrl = 'Cease to Energize'
 
         if self.rt_mc_cond_delay.con_del_enable(der_status == 'Momentary Cessation', self.der_file.MC_RESP_T):
-            self.rt_status = 'Cease to Energize'
+            self.rt_ctrl = 'Cease to Energize'
 
-        if self.rt_status is None:
-            self.rt_status = 'Cease to Energize'
+        if self.rt_ctrl is None:
+            self.rt_ctrl = 'Cease to Energize'
 
     def der_rem_operation(self, p_limited_w, q_limited_var, der_status):
 
-        self.determine_rt_mode(der_status)
+        self.determine_rt_ctrl(der_status)
 
         self.p_limited_pu = p_limited_w / self.der_file.NP_VA_MAX
         self.q_limited_pu = q_limited_var / self.der_file.NP_VA_MAX
@@ -110,20 +110,20 @@ class RideThroughPerf:
         return self.p_out_w, self.q_out_var
 
     def calculate_i_output(self, p_limited_pu, q_limited_pu):
-        if self.rt_status == 'Normal Operation':
+        if self.rt_ctrl == 'Normal Operation':
             self.calculate_i_continuous_op(p_limited_pu, q_limited_pu)
 
-        if self.rt_status == 'Dynamic Voltage Support':
+        if self.rt_ctrl == 'Dynamic Voltage Support':
             self.calculate_i_DVS(p_limited_pu, q_limited_pu)
-
-        if self.rt_status == 'Cease to Energize':
-            self.calculate_i_block()
-
 
         if self.i_pos_d_limited_ref_pu > 0:
             self.i_pos_limited_ref_pu = (self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, self.der_file.NP_RT_RAMP_UP_TIME, 0) + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
         else:
             self.i_pos_limited_ref_pu = (self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, 0, self.der_file.NP_RT_RAMP_UP_TIME) + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
+
+        if self.rt_ctrl == 'Cease to Energize':
+            self.calculate_i_block()
+
 
         self.i_pos_pu = self.i_pos_lpf.low_pass_filter(self.i_pos_limited_ref_pu, self.der_file.NP_INV_DELAY)
         self.i_neg_pu = self.i_neg_lpf.low_pass_filter(self.i_neg_limited_ref_pu, self.der_file.NP_INV_DELAY)
@@ -150,7 +150,7 @@ class RideThroughPerf:
 
     def calculate_i_block(self):
         self.i_pos_d_limited_ref_pu = 0
-        self.i_pos_q_limited_ref_pu = self.der_input.v_pos_pu * self.der_file.NP_AC_V_NOM * \
+        self.i_pos_q_limited_ref_pu = - abs(self.der_input.v_pos_pu) * self.der_file.NP_AC_V_NOM * \
                                     self.der_file.NP_REACTIVE_SUSCEPTANCE / (
                                             self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
 
@@ -166,7 +166,7 @@ class RideThroughPerf:
 
         self.v_pos_out_pu, self.v_neg_out_pu = self.v_limit(self.v_pos_out_cmd_pu, self.v_neg_out_cmd_pu, self.der_file.NP_V_DC / self.der_file.NP_AC_V_NOM)
 
-        self.v_a_out_pu, self.v_b_out_pu, self.v_c_out_pu = self.convert_symm_to_fabc(self.v_pos_out_pu, self.v_neg_out_pu)
+        self.v_a_out_pu, self.v_b_out_pu, self.v_c_out_pu = self.convert_symm_to_abc(self.v_pos_out_pu, self.v_neg_out_pu)
         self.v_out_mag_pu = (abs(self.v_a_out_pu), abs(self.v_b_out_pu), abs(self.v_c_out_pu))
 
         self.v_out_theta = (cmath.phase(self.v_a_out_pu), cmath.phase(self.v_b_out_pu), cmath.phase(self.v_c_out_pu))
@@ -222,41 +222,6 @@ class RideThroughPerf:
 
         return i_pos_out_d_pu, i_pos_out_q_pu, i_neg_out_pu
 
-
-    # @property
-    # def rt_mode(self):
-    #     return self._rt_mode
-    #
-    # @rt_mode.setter
-    # def rt_mode(self, rt_mode):
-    #     if rt_mode in ['Continuous Operation', 'Mandatory Operation', 'Cease to Energize',
-    #                      'Permissive Operation', 'Momentary Cessation', 'Not Defined', None]:
-    #         self._rt_mode = rt_mode
-    #     else:
-    #         print('error in ride-through status, code incorrect')
-    #
-    # @property
-    # def rt_mode_v(self):
-    #     return self._rt_mode_v
-    #
-    # @rt_mode_v.setter
-    # def rt_mode_v(self, rt_mode_v):
-    #     if rt_mode_v in ['Continuous Operation', 'Mandatory Operation', 'Cease to Energize',
-    #                      'Permissive Operation', 'Momentary Cessation', None]:
-    #         self._rt_mode_v = rt_mode_v
-    #     else:
-    #         print('error in ride-through status, code incorrect')
-    #
-    # @property
-    # def rt_mode_f(self):
-    #     return self._rt_mode_f
-    #
-    # @rt_mode_f.setter
-    # def rt_mode_f(self, rt_mode_f):
-    #     if rt_mode_f in ['Continuous Operation', 'Mandatory Operation', 'Not Defined', None]:
-    #         self._rt_mode_f = rt_mode_f
-    #     else:
-    #         print('error in ride-through status, code incorrect')
 
 
     def __str__(self):

@@ -5,7 +5,7 @@ import logging
 import opender
 
 
-class RideThroughStatus:
+class RideThroughCrit:
     def __init__(self, der_obj):
         """
         :NP_P_MIN_PU:	DER minimum active power output

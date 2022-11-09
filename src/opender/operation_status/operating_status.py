@@ -32,16 +32,22 @@ class OperatingStatus:
         :NP_VA_MAX: Apparent power maximum rating
         :STATUS_INIT:   Initial DER Status
         """
-
+        self.der_obj = der_obj
         self.der_file = der_obj.der_file
         self.exec_delay = der_obj.exec_delay
         self.der_input = der_obj.der_input
 
-        self.der_status = der_obj.der_file.STATUS_INIT
+        if der_obj.der_file.STATUS_INIT:
+            self.der_status = 'Continuous Operation'
+        else:
+            self.der_status = 'Trip'
+
+        self.rt_pass_time_req = False
 
         self.ridethroughcrit = RideThroughCrit(der_obj)
         self.enterservicecrit = EnterServiceCrit(der_obj)
         self.tripcrit = TripCrit(der_obj)
+
 
     def determine_der_status(self):
         # Enter service criteria
@@ -53,6 +59,13 @@ class OperatingStatus:
 
         if self.der_status == 'Trip':
             if es_crit:
+                if opender.der.DER.t_s <= self.der_file.ES_RAMP_RATE:
+                    self.der_status = 'Entering Service'
+                else:
+                    self.der_status = 'Continuous Operation'
+
+        if self.der_status == 'Entering Service':
+            if self.der_obj.activepowerfunc.enterserviceperf.es_completed:
                 self.der_status = 'Continuous Operation'
 
         if self.der_status != 'Trip':
@@ -65,11 +78,12 @@ class OperatingStatus:
             elif self.ridethroughcrit.rt_mode_v == 'Mandatory Operation' or self.ridethroughcrit.rt_mode_f == 'Mandatory Operation':
                 self.der_status = 'Mandatory Operation'
             else:
-                self.der_status = 'Continuous Operation'
+                if self.der_status != 'Entering Service':
+                    self.der_status = 'Continuous Operation'
                 self.rt_pass_time_req = False
 
-            if trip_crit:
-                self.der_status = 'Trip'
+        if trip_crit:
+            self.der_status = 'Trip'
 
         return self.der_status
 

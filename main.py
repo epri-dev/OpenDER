@@ -54,6 +54,7 @@ debug_plot = []
 # }
 
 der_test.der_file.QV_MODE_ENABLE = True
+der_test.der_file.NP_ABNORMAL_OP_CAT = 'Cat_II'
 # der_test.der_file.NP_Q_MAX_INJ = 44
 # der_test.der_file.NP_Q_MAX_ABS = 44
 # der_test.der_file.NP_VA_MAX = 100
@@ -183,12 +184,12 @@ while t < 2500:
 
     # save result
     t_plot.append(t)
-    p_plot.append(der_test.p_limited_w)
-    q_plot.append(der_test.q_limited_var)
-    pdc_plot.append(der_test.der_input.p_dc_w)
+    p_plot.append(der_test.p_out_pu)
+    q_plot.append(der_test.q_out_pu)
+    pdc_plot.append(der_test.der_input.p_avl_pu)
     v_plot.append(der_test.der_input.v_meas_pu)
     stat_plot.append(der_test.der_status)
-    debug_plot.append(der_test.enterservicecrit.es_flag)
+    # debug_plot.append(der_test.enterservicecrit.es_flag)
 
     # increase t
     t = t + t_s
@@ -202,12 +203,12 @@ plt.plot(t_plot, v_plot, label = 'Voltage (pu)')
 plt.grid()
 plt.legend()
 plt.subplot(4, 1, 2, sharex=ax1)
-plt.plot(t_plot, pdc_plot, label='P_dc (W)')
-plt.plot(t_plot, p_plot, label='P_out (W)')
+plt.plot(t_plot, pdc_plot, label='P_dc (pu)')
+plt.plot(t_plot, p_plot, label='P_out (pu)')
 plt.grid()
 plt.legend()
 plt.subplot(4, 1, 3, sharex=ax1)
-plt.plot(t_plot, q_plot, label='Q_out (kvar)')
+plt.plot(t_plot, q_plot, label='Q_out (pu)')
 plt.grid()
 plt.legend()
 plt.subplot(4, 1, 4, sharex=ax1)

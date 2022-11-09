@@ -23,7 +23,6 @@ from .active_power_support_funcs.p_funcs import DesiredActivePower
 from .reactive_power_support_funcs.q_funcs import DesiredReactivePower
 from .operation_status import OperatingStatus
 from opender.operation_status.enter_service_crit.es_crit import EnterServiceCrit
-from opender.es_perf import EnterServicePerformance
 from .capability_and_priority.capability_and_priority import CapabilityPriority
 from opender.input_processing.op_cond_proc import DERInputs
 from . import setting_execution_delay
@@ -81,7 +80,7 @@ class DER:
         self.exec_delay = setting_execution_delay.SettingExecutionDelay(self.der_file)
         self.opstatus = OperatingStatus(self)
         self.activepowerfunc = DesiredActivePower(self)
-        self.enterserviceperf = EnterServicePerformance(self.der_file, self.exec_delay)
+
         self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
         self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
         self.ridethroughperf = rt_perf.RideThroughPerf(self.der_file, self.exec_delay, self.der_input)
@@ -163,10 +162,7 @@ class DER:
         self.der_status = self.opstatus.determine_der_status()
 
         # Calculate desired active power
-        self.p_act_supp_pu = self.activepowerfunc.calculate_p_funcs(self.p_out_w)
-
-        # Enter service ramp
-        self.p_desired_pu = self.enterserviceperf.es_performance(self.p_act_supp_pu, self.der_status)
+        self.p_desired_pu = self.activepowerfunc.calculate_p_funcs(self.p_out_w)
 
         # Calculate desired reactive power
         self.q_desired_pu = self.reactivepowerfunc.calculate_reactive_funcs(self.p_desired_pu, self.der_status)
@@ -194,7 +190,6 @@ class DER:
         self.enterservicecrit = EnterServiceCrit(self)
         self.opstatus = OperatingStatus(self)
         self.activepowerfunc = DesiredActivePower(self)
-        self.enterserviceperf = EnterServicePerformance(self.der_file, self.exec_delay)
         self.reactivepowerfunc = DesiredReactivePower(self.der_file, self.exec_delay, self.der_input)
         self.limited_p_q = CapabilityPriority(self.der_file, self.exec_delay)
         self.ridethroughperf = rt_perf.RideThroughPerf(self.der_file, self.exec_delay, self.der_input)
@@ -225,9 +220,9 @@ class DER:
     def __str__(self):
         # for debug, generate a string
         # E.g. can be used when print(DER_obj)
-        return f"{self.time:.1f}: {self.name} ({'on' if self.der_status else 'off'})- " \
+        return f"{self.time:.1f}: {self.name} ({self.der_status})- " \
                f"v_meas_pu={self.der_input.v_meas_pu:.5f}, " \
-               f"p_act_supp_pu={self.p_act_supp_pu:.2f}, q_desired_pu={self.q_desired_pu:.2f}, " \
+               f"p_desired_pu={self.p_desired_pu:.2f}, q_desired_pu={self.q_desired_pu:.2f}, " \
                f"p_out_kw={self.p_out_kw:.3f}, q_out_kvar={self.q_out_kvar:.3f}"
 
     def get_DERCommonFileFormat(self):

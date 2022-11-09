@@ -58,9 +58,11 @@ class EnterServicePerformance:
     EPRI Report Reference: Section 3.7 in Report #3002021694: IEEE 1547-2018 DER Model
     """
 
-    def __init__(self, der_file, exec_delay):
-        self.der_file = der_file
-        self.exec_delay = exec_delay
+    def __init__(self, der_obj):
+
+        self.der_obj = der_obj
+        self.der_file = der_obj.der_file
+        self.exec_delay = der_obj.exec_delay
 
         self.rrl = Ramping()
         self.edge = EdgeDetector(
@@ -68,8 +70,9 @@ class EnterServicePerformance:
             )
         self.es_flag = None
         self.p_desired_w = None
+        self.es_completed = False
 
-    def es_performance(self, p_act_supp_pu, der_status):
+    def es_performance(self, p_act_supp_pu):
         """
         Variable used in this function:
         
@@ -98,22 +101,25 @@ class EnterServicePerformance:
         else:
             p_es_ramp_pu = self.rrl.ramp(p_act_supp_pu, 0, self.exec_delay.es_ramp_rate_exec)
 
-        # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
-        es_flag_set = self.edge.run(True if der_status != 'Trip' else False)
+        # # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
+        # es_flag_set = self.edge.run(True if der_status != 'Trip' else False)
 
         # Eq. 3.7.1-4 Enter service ramp complete
-        es_flag_reset = (p_es_ramp_pu == p_act_supp_pu) or not der_status
+        # es_flag_reset = (p_es_ramp_pu == p_act_supp_pu) or not der_status or self.der_obj.activepowerfunc.freqdroop.pf_uf_active or self.der_obj.activepowerfunc.freqdroop.pf_of_active
 
-        # Eq. 3.7.1-5, flip-flop logic to determine if in enter service ramp
-        if es_flag_reset:
-            self.es_flag = 0
-        elif es_flag_set:
-            self.es_flag = 1
+
+        # # Eq. 3.7.1-5, flip-flop logic to determine if in enter service ramp
+        # if es_flag_reset:
+        #     self.es_flag = 0
+        # elif es_flag_set:
+        #     self.es_flag = 1
 
         # Eq. 3.7.1-6, output selector
-        if self.es_flag:
+        if self.der_obj.der_status == "Entering Service":
             self.p_es_ramp_pu = p_es_ramp_pu
+            self.es_completed = (p_es_ramp_pu == p_act_supp_pu) or self.der_obj.activepowerfunc.freqdroop.pf_uf_active or self.der_obj.activepowerfunc.freqdroop.pf_of_active
         else:
             self.p_es_ramp_pu = p_act_supp_pu
+            self.es_completed = False
 
         return self.p_es_ramp_pu

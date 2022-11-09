@@ -148,11 +148,11 @@ class FreqDroop:
 
         # Eq. 3.7.1-13, decide if frequency droop function is active
         pf_uf_active_set = self.pf_uf and self.der_file.PF_MODE_ENABLE
-        pf_uf_active_reset = (not pf_uf_active_set) and abs(self.p_pf_pu-p_pf_ref_pu)<1.e-2
+        pf_uf_active_reset = (not pf_uf_active_set) and abs(self.p_pf_pu-p_pf_ref_pu)<1.e-3
         self.pf_uf_active = self.pf_uf_active_ff.flipflop(pf_uf_active_set, pf_uf_active_reset)
 
         pf_of_active_set = self.pf_of and self.der_file.PF_MODE_ENABLE
-        pf_of_active_reset = (not pf_of_active_set) and abs(self.p_pf_pu-p_pf_ref_pu)<1.e-2
+        pf_of_active_reset = (not pf_of_active_set) and abs(self.p_pf_pu-p_pf_ref_pu)<1.e-3
         self.pf_of_active = self.pf_of_active_ff.flipflop(pf_of_active_set, pf_of_active_reset)
 
         # Save the values for calculations in next time step
@@ -164,4 +164,10 @@ class FreqDroop:
         return self.p_pf_pu, self.pf_uf_active, self.pf_of_active
 
     def active_power_without_droop(self):
-        return self.der_input.p_avl_pu
+        # return self.der_input.p_avl_pu
+        # return self.der_obj.ridethroughperf.p_out_pu
+        if self.der_obj.der_status == 'Entering Service':
+            return self.der_obj.ridethroughperf.p_out_pu
+        else:
+            return self.der_input.p_avl_pu
+

@@ -12,7 +12,7 @@
 #   prior written permission.
 
 
-from opender.active_power_support_funcs import active_power_limit, frequency_droop, volt_watt as vw
+from opender.active_power_support_funcs import active_power_limit, frequency_droop, volt_watt, es_perf
 
 class DesiredActivePower:
     """
@@ -32,14 +32,13 @@ class DesiredActivePower:
         self.pf_of_active = None
         self.p_pf_pu = None
         self.p_act_supp_pu = None
-        self.p_act_supp_w = None
-        self.p_desired_w = None
         self.ap_limit_rt = None
         self.p_pv_limit_pu = None
 
         self.aplimit = active_power_limit.ActivePowerLimit(self.der_file, self.exec_delay)
-        self.voltwatt = vw.VoltWatt(self.der_file, self.exec_delay, self.der_input)
-        self.freqwatt = frequency_droop.FreqDroop(self.der_obj)
+        self.voltwatt = volt_watt.VoltWatt(self.der_file, self.exec_delay, self.der_input)
+        self.freqdroop = frequency_droop.FreqDroop(self.der_obj)
+        self.enterserviceperf = es_perf.EnterServicePerformance(der_obj)
 
     def calculate_p_funcs(self, p_out_w):
         """
@@ -69,12 +68,14 @@ class DesiredActivePower:
         self.p_pv_limit_pu = self.voltwatt.calculate_p_pv_limit_pu(p_out_w)
 
         # Frequency-droop function
-        self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqwatt.calculate_p_pf_pu(p_out_w, self.ap_limit_rt,
-                                                                                             self.p_pv_limit_pu)
+        self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqdroop.calculate_p_pf_pu(p_out_w, self.ap_limit_rt,
+                                                                                              self.p_pv_limit_pu)
 
         self.calculate_p_act_supp_pu(p_out_w)
 
-        return self.p_act_supp_pu
+        self.p_desired_pu = self.enterserviceperf.es_performance(self.p_act_supp_pu)
+
+        return self.p_desired_pu
 
     def calculate_p_act_supp_pu(self, p_out_w):
         """

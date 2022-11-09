@@ -64,7 +64,7 @@ class RideThroughPerf:
 
     def determine_rt_ctrl(self, der_status):
 
-        if der_status == 'Continuous Operation' or der_status == 'Not Defined':
+        if der_status in ['Continuous Operation', 'Not Defined', 'Entering Service']:
             self.rt_ctrl = 'Normal Operation'
 
         if der_status == 'Mandatory Operation':
@@ -124,6 +124,10 @@ class RideThroughPerf:
         if self.rt_ctrl == 'Cease to Energize':
             self.calculate_i_block()
 
+        if self.rt_ctrl == 'Trip':
+            self.i_pos_d_limited_ref_pu = 0
+            self.i_pos_q_limited_ref_pu = 0
+            self.i_neg_limited_ref_pu = 0
 
         self.i_pos_pu = self.i_pos_lpf.low_pass_filter(self.i_pos_limited_ref_pu, self.der_file.NP_INV_DELAY)
         self.i_neg_pu = self.i_neg_lpf.low_pass_filter(self.i_neg_limited_ref_pu, self.der_file.NP_INV_DELAY)

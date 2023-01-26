@@ -11,66 +11,18 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-from opender.auxiliary_funcs.ramping import Ramping
+from .es_perf import EnterServicePerformance
 
 
-# %%
-class EdgeDetector:
-    """
-    Edge Detector
-    """
 
-    def __init__(self, up_edge=False, dn_edge=False):
-        # x0: initial output value
-        # up_edge: detect up edge
-        # dn_edge: detect down edge
-        self.x = None
-        self.up_edge = up_edge
-        self.dn_edge = dn_edge
-
-    def run(self, x):
-        """
-        Return 1 if an up edge or down edge is detected.
-
-        Input Argument:
-        
-        :param x: Input signal for edge detection
-        
-        Output:
-        
-        :param y: If up edge or down edge detected, return 1
-        """
-        if self.x is None:
-            self.x = x
-        if self.up_edge and (x - self.x > 0.1):
-            y = 1
-        elif self.dn_edge and (self.x - x > 0.1):
-            y = 1
-        else:
-            y = 0
-        self.x = x
-        return y
-
-
-class EnterServicePerformance:
+class EnterServicePerformanceBESS(EnterServicePerformance):
     """
     Calculate desired active power output in Enter service ramp condition
     EPRI Report Reference: Section 3.7 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
-
-        self.der_obj = der_obj
-        self.der_file = der_obj.der_file
-        self.exec_delay = der_obj.exec_delay
-
-        self.rrl = Ramping()
-        self.edge = EdgeDetector(
-            up_edge=True,
-            )
-        self.es_flag = None
-        self.p_desired_w = None
-        self.es_completed = False
+        super(EnterServicePerformanceBESS, self).__init__(der_obj)
 
     def es_performance(self):
         """
@@ -114,16 +66,19 @@ class EnterServicePerformance:
 
         # Eq. 3.7.1-6, output selector
         if self.der_obj.der_status == "Entering Service":
-            # if self.der_obj.der_input.p_avl_pu > 0:
-            self.p_es_pu = self.rrl.ramp(1.1, self.exec_delay.es_ramp_rate_exec, 0)
-            # else:
-            #     self.p_es_pu = self.rrl.ramp(self.der_obj.der_input.p_avl_pu, 0, self.exec_delay.es_ramp_rate_exec)
+            if self.der_obj.der_input.p_dem_pu > 0:
+                self.p_es_pu = self.rrl.ramp(1.1, self.exec_delay.es_ramp_rate_exec, 0)
+            else:
+                self.p_es_pu = self.rrl.ramp(-1.1, 0, self.exec_delay.es_ramp_rate_exec)
 
             # self.es_completed = (abs(p_es_ramp_pu) >= abs(p_desired_pu)) # or self.der_obj.activepowerfunc.freqdroop.pf_uf_active or self.der_obj.activepowerfunc.freqdroop.pf_of_active
         elif self.der_obj.der_status == "Trip":
             self.p_es_pu = self.rrl.ramp(0, 0, 0)
         else:
-            self.p_es_pu = self.rrl.ramp(self.der_obj.der_input.p_avl_pu, 0, 0)
+            if self.der_obj.der_input.p_dem_pu > 0:
+                self.p_es_pu = self.rrl.ramp(1.1, 0, 0)
+            else:
+                self.p_es_pu = self.rrl.ramp(-1.1, 0, 0)
             # self.es_completed = False
 
         return self.p_es_pu

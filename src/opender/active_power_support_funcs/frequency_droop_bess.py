@@ -21,11 +21,15 @@ from .frequency_droop import FreqDroop
 class FreqDroopBESS(FreqDroop):
     """
     Frequency-droop Function
-    EPRI Report Reference: Section 3.6.3 in Report #3002021694: IEEE 1547-2018 DER Model
+    EPRI Report Reference: Section 3.6.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self, der_obj):
         super(FreqDroopBESS, self).__init__(der_obj)
 
     def active_power_without_droop(self):
-        return self.der_input.p_dem_pu
+        # return self.der_input.p_dem_pu
+        if self.der_obj.der_status == 'Entering Service':
+            return self.der_obj.ridethroughperf.p_out_pu
+        else:
+            return self.der_input.p_dem_pu

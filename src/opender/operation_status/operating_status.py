@@ -11,27 +11,20 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-
-# -*- coding: utf-8 -*-
-
-from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 import opender
 from opender.operation_status.rt_crit import RideThroughCrit
 from opender.operation_status.enter_service_crit.es_crit import EnterServiceCrit
 from opender.operation_status.trip_crit.trip_crit import TripCrit
 
 
-
 class OperatingStatus:
+    """
+    Determine DER operating status in terms of Trip, Continuous Operation, Mandatory Operation, etc.
+    EPRI Report Reference: Section 3.5 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    """
 
     def __init__(self, der_obj):
-        """
-        :NP_P_MIN_PU:	DER minimum active power output
-        :ES_RANDOMIZED_DELAY_ACTUAL:	Specified value for enter service randomized delay for simulation purpose
-        :NP_P_MAX:  Active power maximum rating
-        :NP_VA_MAX: Apparent power maximum rating
-        :STATUS_INIT:   Initial DER Status
-        """
+
         self.der_obj = der_obj
         self.der_file = der_obj.der_file
         self.exec_delay = der_obj.exec_delay
@@ -42,6 +35,8 @@ class OperatingStatus:
         else:
             self.der_status = 'Trip'
 
+        # Defining flag indicating the minimum ride-through time has passed, and the DER is in the
+        # “may ride-through and may trip” region
         self.rt_pass_time_req = False
 
         self.ridethroughcrit = RideThroughCrit(der_obj)
@@ -50,11 +45,25 @@ class OperatingStatus:
 
 
     def determine_der_status(self):
+        """
+        Determine DER operating status in terms of Trip, Continuous Operation, Mandatory Operation, etc.
+        EPRI Report Reference: Section 3.5.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+
+        :NP_P_MIN_PU:	DER minimum active power output
+        :ES_RANDOMIZED_DELAY_ACTUAL:	Specified value for enter service randomized delay for simulation purpose
+        :NP_P_MAX:  Active power maximum rating
+        :NP_VA_MAX: Apparent power maximum rating
+        :STATUS_INIT:   Initial DER Status
+        """
+
+
         # Enter service criteria
         es_crit = self.enterservicecrit.es_decision()
 
+        # Trip criteria
         trip_crit = self.tripcrit.trip_decision()
 
+        # Ride-through criteria
         self.ridethroughcrit.determine_ride_through_mode()
 
         if self.der_status == 'Trip':
@@ -65,7 +74,7 @@ class OperatingStatus:
                     self.der_status = 'Continuous Operation'
 
         if self.der_status == 'Entering Service':
-            if self.der_obj.activepowerfunc.enterserviceperf.es_completed:
+            if self.der_obj.activepowerfunc.es_completed:
                 self.der_status = 'Continuous Operation'
 
         if self.der_status != 'Trip':

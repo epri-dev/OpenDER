@@ -18,7 +18,7 @@ from .auxiliary_funcs import time_delay as td
 class SettingExecutionDelay:
     """
     |  Modeling delayed execution of DER setting changes.
-    |  EPRI Report Reference: Section 3.4 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     parameters_list = ['AP_LIMIT_ENABLE', 'AP_LIMIT', 'ES_RANDOMIZED_DELAY', 'ES_PERMIT_SERVICE',
@@ -36,8 +36,7 @@ class SettingExecutionDelay:
                        'UF2_TRIP_F', 'UF2_TRIP_T', 'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF', 'PF_OLRT'
                        ]
 
-    __slots__ = tuple([param.lower()+'_exec' for param in parameters_list]+['tdelay','der_file_exec','der_file'])
-
+    __slots__ = tuple([param.lower()+'_exec' for param in parameters_list]+['tdelay', 'der_file_exec', 'der_file'])
 
     def __init__(self, der_file):
 
@@ -47,6 +46,7 @@ class SettingExecutionDelay:
 
         self.der_file_exec = None
 
+        # Define variables indicating the DER control settings after execution delay
         self.es_permit_service_exec = None
 
         self.ap_limit_enable_exec = None
@@ -129,8 +129,10 @@ class SettingExecutionDelay:
 
     def mode_and_execution_delay(self):
 
-        self.der_file_exec = self.tdelay.tdelay(self.der_file,self.der_file.NP_SET_EXE_TIME)
+        # Eq. 3.4.1, For each time step, execute time delay function to all settings by NP_SET_EXE_TIME
+        self.der_file_exec = self.tdelay.tdelay(self.der_file, self.der_file.NP_SET_EXE_TIME)
 
+        # Extract only the control settings from the DER common file format object
         self.ap_limit_enable_exec = self.der_file_exec.AP_LIMIT_ENABLE
         self.ap_limit_exec = self.der_file_exec.AP_LIMIT
         self.es_permit_service_exec = self.der_file_exec.ES_PERMIT_SERVICE

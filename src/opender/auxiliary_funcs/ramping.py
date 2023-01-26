@@ -20,7 +20,7 @@ from opender import der
 class Ramping:
     """
     |  Ramp rate limit function
-    |  EPRI Report Reference: Section 3.12.2 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.12.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self):

@@ -39,7 +39,7 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3, ):
     # ynew = np.append(yp, yn)
     # step 2: iterate until an intersection point is found
     x = mag
-    imax = 50
+    imax = 500
     for ii in range(imax):
         y = np.interp(x, xp, yp)
         m = np.sign(x) * np.sqrt(x**2+y**2)
@@ -48,8 +48,8 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3, ):
         else:
             x = x+k*(mag/m*x-x)
     # print warning if not converge
-    if ii == imax-1:
-        print('Warning: search did not converge!')
+    # if ii == imax-1:
+    #     print('Warning: search did not converge!')
     return x, y
 
 # def piecewise_intercept(xp1, yp1, xp2, yp2, x, step:float=0.01):
@@ -82,7 +82,7 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3, ):
 class CapabilityPriority:
     """
     Calculate active and reactive power power output limited by DER ratings, according to the priority of responses.
-    EPRI Report Reference: Section 3.9 in Report #3002021694: IEEE 1547-2018 DER Model
+    EPRI Report Reference: Section 3.9 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
     def __init__(self, der_file, exec_delay):
         self.der_file = der_file

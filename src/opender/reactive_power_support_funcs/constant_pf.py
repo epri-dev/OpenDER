@@ -23,7 +23,7 @@ from opender.auxiliary_funcs.time_delay import TimeDelay
 class ConstantPowerFactor:
     """
     |  Constant Power Factor Function
-    |  EPRI Report Reference: Section 3.9.1 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.9.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_file, exec_delay):

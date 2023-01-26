@@ -65,9 +65,9 @@ class DERCommonFileFormat:
                        'NP_V_MEAS_DELAY',
 
                        'DVS_MODE_ENABLE', 'DVS_K',
-
                        ]
 
+    # Creating object slots, so incorrect usage of variable names are rejected.
     __slots__ = tuple(['_' + param for param in parameters_list]) + tuple(['param_inputs'])
 
     def __init__(self,
@@ -575,7 +575,7 @@ class DERCommonFileFormat:
     def nameplate_value_validity_check(self):
         """
         Validity Check for Nameplate Parameters
-        Reference: Section 3.1, part of Table 3-1 in Report #3002021694: IEEE 1547-2018 DER Model
+        Reference: Section 3.1, part of Table 3-1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
         Other validity checks are performed in variable setters
         """
 
@@ -1917,9 +1917,9 @@ class DERCommonFileFormat:
     @MC_LVRT_V1.setter
     def MC_LVRT_V1(self, MC_LVRT_V1):
         self._MC_LVRT_V1 = MC_LVRT_V1
-        if self._MC_LVRT_V1 < 0 or self._MC_LVRT_V1 > 0.88:
-            logging.warning("Warning: Low-voltage momentary cessation curve point 1 voltage should be between 0 and "
-                            "0.88 per unit")
+        if self._MC_LVRT_V1 < 0 or self._MC_LVRT_V1 > 0.5:
+            logging.warning("Warning: Low-voltage momentary cessation curve point 1 voltage should be 0.5 for Category "
+                            "III DER. For other categories, there is no requirements on momentary cessation")
 
     @property
     def MC_HVRT_V1(self):
@@ -1929,8 +1929,8 @@ class DERCommonFileFormat:
     def MC_HVRT_V1(self, MC_HVRT_V1):
         self._MC_HVRT_V1 = MC_HVRT_V1
         if self._MC_HVRT_V1 < 1.1:
-            logging.warning("Warning: High-voltage momentary cessation curve point 1 voltage should be greater or "
-                            "equal to 1.1 per unit")
+            logging.warning("Warning: High-voltage momentary cessation curve point 1 voltage should be 1.1 for Category"
+                            " III DER. For other categories, there is no requirements on momentary cessation")
 
     @property
     def STATUS_INIT(self):

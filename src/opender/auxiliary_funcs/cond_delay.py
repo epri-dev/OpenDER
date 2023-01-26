@@ -18,7 +18,7 @@ class ConditionalDelay:
     """
     Conditional Delayed Enable can also be referred as On Delay.
     Output is true only when input stays true for a time period
-    EPRI Report Reference: Section 3.12.4 in Report #3002021694: IEEE 1547-2018 DER Model
+    EPRI Report Reference: Section 3.12.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self):

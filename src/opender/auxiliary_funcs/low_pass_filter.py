@@ -18,7 +18,7 @@ from opender import der
 class LowPassFilter:
     """
     |  Low pass filter for modeling DER open loop response behavior and other related responses
-    |  EPRI Report Reference: Section 3.12.1 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.12.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self):

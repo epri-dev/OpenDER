@@ -8,6 +8,9 @@ class EnterServiceCritPV(EnterServiceCrit):
         self.p_min_trip = None
 
     def es_other_crit(self):
+        """
+        :param p_avl_pu: DER available DC power in per unit considering efficiency
+        """
         # Eq 3.5.2-1, PV DER enters service when the available power is greater than the minimum power output
         self.es_p_crit = self.der_input.p_avl_pu >= self.der_file.NP_P_MIN_PU
         return self.es_p_crit

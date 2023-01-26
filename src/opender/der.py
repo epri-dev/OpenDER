@@ -24,7 +24,7 @@ from .reactive_power_support_funcs.q_funcs import DesiredReactivePower
 from .operation_status import OperatingStatus
 from opender.operation_status.enter_service_crit.es_crit import EnterServiceCrit
 from .capability_and_priority.capability_and_priority import CapabilityPriority
-from opender.input_processing.op_cond_proc import DERInputs
+from opender.op_cond_proc import DERInputs
 from . import setting_execution_delay
 from typing import Union, List, Tuple
 import numpy as np
@@ -138,9 +138,13 @@ class DER:
                 self.der_input.v = v_pu * self.der_file.NP_AC_V_NOM
 
         if theta is not None:
-            self.der_input.theta_a = theta[0]
-            self.der_input.theta_b = theta[1]
-            self.der_input.theta_c = theta[2]
+            if type(v_pu) is float or type(v_pu) is int:
+                self.der_input.theta = theta
+            else:
+                self.der_input.theta_a = theta[0]
+                self.der_input.theta_b = theta[1]
+                self.der_input.theta_c = theta[2]
+
 
     def run(self) -> Tuple[float, float]:
         """

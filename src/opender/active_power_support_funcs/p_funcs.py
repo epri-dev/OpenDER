@@ -17,7 +17,7 @@ from opender.active_power_support_funcs import active_power_limit, frequency_dro
 class DesiredActivePower:
     """
     Calculate desired active power according to volt-watt, frequency-droop, and active power limit functions
-    EPRI Report Reference: Section 3.6 in Report #3002021694: IEEE 1547-2018 DER Model
+    EPRI Report Reference: Section 3.6 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -31,9 +31,10 @@ class DesiredActivePower:
         self.pf_uf_active = None
         self.pf_of_active = None
         self.p_pf_pu = None
-        self.p_act_supp_pu = None
+        self.p_desired_pu = None
         self.ap_limit_rt = None
         self.p_pv_limit_pu = None
+        self.es_completed = False
 
         self.aplimit = active_power_limit.ActivePowerLimit(self.der_file, self.exec_delay)
         self.voltwatt = volt_watt.VoltWatt(self.der_file, self.exec_delay, self.der_input)
@@ -54,7 +55,7 @@ class DesiredActivePower:
 
         Internal variable:
         
-        :param p_act_supp_pu:	Desired output active power from active power support functions in per unit
+        :param p_desired_pu:	Desired output active power from active power support functions in per unit
 
         Output
         
@@ -71,16 +72,16 @@ class DesiredActivePower:
         self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqdroop.calculate_p_pf_pu(p_out_w, self.ap_limit_rt,
                                                                                               self.p_pv_limit_pu)
 
-        self.calculate_p_act_supp_pu(p_out_w)
+        self.p_es_pu = self.enterserviceperf.es_performance()
 
-        self.p_desired_pu = self.enterserviceperf.es_performance(self.p_act_supp_pu)
+        self.p_desired_pu = self.calculate_p_desired_pu(p_out_w)
 
         return self.p_desired_pu
 
-    def calculate_p_act_supp_pu(self, p_out_w):
+    def calculate_p_desired_pu(self, p_out_w):
         """
         Calculate desired active power according to volt-watt, frequency-droop, and active power limit functions
-        EPRI Report Reference: Section 3.6.4 in Report #3002021694: IEEE 1547-2018 DER Model
+        EPRI Report Reference: Section 3.6.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
         """
         # Calculate active power based on grid-support functions
 
@@ -88,35 +89,40 @@ class DesiredActivePower:
         if self.der_obj.der_status != 'Trip':
             if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False \
                     and self.pf_uf_active == False and self.pf_of_active == False:
-                self.p_act_supp_pu = min(self.der_input.p_avl_pu, 1)
+                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, 1)
 
             if self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == False \
                     and self.pf_uf_active == False and self.pf_of_active == False:
-                self.p_act_supp_pu = min(self.der_input.p_avl_pu, self.ap_limit_rt, 1)
+                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.ap_limit_rt, 1)
 
             if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == True \
                     and self.pf_uf_active == False and self.pf_of_active == False:
-                self.p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, 1)
+                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.p_pv_limit_pu, 1)
 
             if (self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True
                     and self.pf_uf_active == False and self.pf_of_active == False):
-                self.p_act_supp_pu = min(self.der_input.p_avl_pu, self.ap_limit_rt, self.p_pv_limit_pu, 1)
+                self.p_desired_pu = min(self.der_input.p_avl_pu, self.ap_limit_rt, self.p_pv_limit_pu, 1)
 
             if self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True:
-                self.p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
+                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
 
             if self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True:
-                self.p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
+                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
             if self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True:
-                self.p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
+                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
 
             if self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True:
-                self.p_act_supp_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
-        else:
-            self.p_act_supp_pu = 0
+                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
-        return self.p_act_supp_pu
+            if self.p_es_pu > self.p_desired_pu:
+                self.es_completed = True
+        else:
+            self.p_desired_pu = 0
+            self.es_completed = False
+
+
+        return self.p_desired_pu
 
     def __str__(self):
-        return f"ap_limit_rt = {self.ap_limit_rt}, p_pv_limit_pu = {self.p_pv_limit_pu}, p_pf_pu = {self.p_pf_pu}, p_act_supp_pu = {self.p_act_supp_pu}"
+        return f"ap_limit_rt = {self.ap_limit_rt}, p_pv_limit_pu = {self.p_pv_limit_pu}, p_pf_pu = {self.p_pf_pu}, p_desired_pu = {self.p_desired_pu}"

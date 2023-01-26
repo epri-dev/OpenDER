@@ -22,7 +22,7 @@ from opender.reactive_power_support_funcs import volt_var, watt_var, constant_va
 class DesiredReactivePower:
     """
     |  Desired Reactive Power Calculation
-    |  EPRI Report Reference: Section 3.8 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.8 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_file, exec_delay, der_input):

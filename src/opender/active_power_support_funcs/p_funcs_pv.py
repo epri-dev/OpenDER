@@ -19,7 +19,7 @@ from opender.active_power_support_funcs.p_funcs import DesiredActivePower
 class DesiredActivePowerPV(DesiredActivePower):
     """
     Calculate desired active power according to volt-watt, frequency-droop, and active power limit functions
-    EPRI Report Reference: Section 3.6 in Report #3002021694: IEEE 1547-2018 DER Model
+    EPRI Report Reference: Section 3.6 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):

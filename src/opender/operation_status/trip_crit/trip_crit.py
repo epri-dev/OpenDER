@@ -5,15 +5,12 @@ import logging
 
 
 class TripCrit:
+    """
+    Trip criteria
+    EPRI Report Reference: Section 3.5.1.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    """
 
     def __init__(self, der_obj):
-        """
-        :NP_P_MIN_PU:	DER minimum active power output
-        :ES_RANDOMIZED_DELAY_ACTUAL:	Specified value for enter service randomized delay for simulation purpose
-        :NP_P_MAX:  Active power maximum rating
-        :NP_VA_MAX: Apparent power maximum rating
-        :STATUS_INIT:   Initial DER Status
-        """
 
         self.der_file = der_obj.der_file
         self.exec_delay = der_obj.exec_delay
@@ -40,6 +37,18 @@ class TripCrit:
         self.of2_delay = ConditionalDelay()
 
     def trip_decision(self):
+        """
+        Deciding Trip Criteria, if met, DER goes to "Trip" status.
+
+        Variable used in this function:
+        :param es_permit_service_exec: Permit service activated by request from the area EPS operator (ES_PERMIT_SERVICE) after execution delay
+
+        Output:
+        :param es_crit:	Enter service criteria met
+        """
+
+        # Eq 3.5.1-7 Decision depending on abnormal voltage and frequency trip settings, permit service setting,
+        # and other trip criteria
         self.trip_crit = self.abnormal_voltage_freq_trip() \
                          or self.other_trip() \
                          or not self.exec_delay.es_permit_service_exec
@@ -47,6 +56,29 @@ class TripCrit:
 
     def abnormal_voltage_freq_trip(self):
         """
+        Abnormal voltage and frequency trip criteria
+
+        Variable used in this function:
+
+        :param v_low_pu: Minimum applicable voltage as enter service, over voltage trip criterion in per unit
+        :param v_high_pu: Maximum applicable voltage as enter service, over voltage trip criterion in per unit
+        :param freq_hz: Frequency at RPA
+        :param ov2_trip_v_exec: High voltage must trip curve point OV2 voltage setting (OV2_TRIP_V) signal after execution delay
+        :param ov2_trip_t_exec: High voltage must trip curve point OV2 duration setting (OV2_TRIP_T) signal after execution delay
+        :param ov1_trip_v_exec: High voltage must trip curve point OV1 voltage setting (OV1_TRIP_V) signal after execution delay
+        :param ov1_trip_t_exec: High voltage must trip curve point OV1 duration setting (OV1_TRIP_T) signal after execution delay
+        :param uv2_trip_v_exec: Low voltage must trip curve point UV2 voltage setting (UV2_TRIP_V) signal after execution delay
+        :param uv2_trip_t_exec: Low voltage must trip curve point UV2 duration setting (UV2_TRIP_T) signal after execution delay
+        :param uv1_trip_v_exec: Low voltage must trip curve point UV1 voltage setting (UV1_TRIP_V) signal after execution delay
+        :param uv1_trip_t_exec: Low voltage must trip curve point UV1 duration setting (UV1_TRIP_T) signal after execution delay
+        :param of2_trip_v_exec: High frequency must trip curve point OF2 voltage setting (OF2_TRIP_V) signal after execution delay
+        :param of2_trip_t_exec: High frequency must trip curve point OF2 duration setting (OF2_TRIP_T) signal after execution delay
+        :param of1_trip_v_exec: High frequency must trip curve point OF1 voltage setting (OF1_TRIP_V) signal after execution delay
+        :param of1_trip_t_exec: High frequency must trip curve point OF1 duration setting (OF1_TRIP_T) signal after execution delay
+        :param uf2_trip_v_exec: Low frequency must trip curve point UF2 voltage setting (UF2_TRIP_V) signal after execution delay
+        :param uf2_trip_t_exec: Low frequency must trip curve point UF2 duration setting (UF2_TRIP_T) signal after execution delay
+        :param uf1_trip_v_exec: Low frequency must trip curve point UF1 voltage setting (UF1_TRIP_V) signal after execution delay
+        :param uf1_trip_t_exec: Low frequency must trip curve point UF1 duration setting (UF1_TRIP_T) signal after execution delay
 
         """
         # Eq 3.5.1-6, under- and over-voltage, under- and over-frequency trip criterion using conditional delayed enable
@@ -67,11 +99,10 @@ class TripCrit:
         self.of2_trip = self.of2_delay.con_del_enable(self.der_input.freq_hz > self.exec_delay.of2_trip_f_exec,
                                                       self.exec_delay.of2_trip_t_exec)
 
-        # Eq 3.5.1-7, final trip decision based on all trip conditions
+        # Part of Eq 3.5.1-7, abnormal voltage and frequency trip decision based on trip settings.
         self.vf_trip = self.uv1_trip or self.ov1_trip or self.uv2_trip or self.ov2_trip or \
                        self.uf1_trip or self.of1_trip or self.uf2_trip or self.of2_trip
 
-        # return der_status output
         return self.vf_trip
 
     def other_trip(self):

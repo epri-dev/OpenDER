@@ -22,7 +22,8 @@ import numpy as np
 # %%
 class EnterServiceCrit:
     """
-    Enter Service criteria, if met, DER goes to "Entering Service" status
+    Enter Service criteria
+    EPRI Report Reference: Section 3.5.1.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -44,8 +45,7 @@ class EnterServiceCrit:
 
     def es_decision(self):
         """
-        Generate DER status (ON/OFF) based on enter service and trip settings
-        EPRI Report Reference: Section 3.5 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        Deciding Enter Service Criteria, if met, DER goes to "Entering Service" status.
 
         Variable used in this function:
         
@@ -60,6 +60,8 @@ class EnterServiceCrit:
         :param es_delay_exec: Minimum intentional delay before initiating softstart (ES_DELAY) signal after execution delay
         :param es_randomized_delay_exec: Maximum time for enter service randomized delay (ES_RANDOMIZED_DELAY) signal after execution delay
         :param es_ramp_rate_exec: Enter service soft-start duration (ES_RAMP_RATE) signal after execution delay
+        :param ES_RANDOMIZED_DELAY_ACTUAL: Specified value for enter service randomized delay for simulation purpose
+        :param NP_VA_MAX: Apparent power maximum rating
 
         Output:
         :param es_crit:	Enter service criteria met
@@ -103,4 +105,8 @@ class EnterServiceCrit:
         return self.es_crit
 
     def es_other_crit(self):
+        """
+        Other criteria for enter service, used by Eq 3.5.1-3. Default is True.
+        Overridden by es_crit_pv.py for PV DERs, where enter service criteria also considers available power.
+        """
         return True

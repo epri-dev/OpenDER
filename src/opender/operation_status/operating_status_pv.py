@@ -14,17 +14,20 @@
 
 # -*- coding: utf-8 -*-
 
-from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 import opender
 from opender.operation_status.enter_service_crit import EnterServiceCritPV
 from opender.operation_status.trip_crit import TripCritPV
 from .operating_status import OperatingStatus
 
 
-
 class OperatingStatusPV(OperatingStatus):
+    """
+    Determine Overall DER operating status for PV DER
+    EPRI Report Reference: Section 3.5.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    """
     def __init__(self, der_obj: opender.DER):
         super(OperatingStatusPV, self).__init__(der_obj)
 
+        # Update enter service criteria and trip criteria based on available power.
         self.enterservicecrit = EnterServiceCritPV(der_obj)
         self.tripcrit = TripCritPV(der_obj)

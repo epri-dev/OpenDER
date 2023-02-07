@@ -21,9 +21,10 @@ class ConstantVARs:
     EPRI Report Reference: Section 3.9.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
-    def __init__(self, der_file, exec_delay):
-        self.der_file = der_file
-        self.exec_delay = exec_delay
+    def __init__(self, der_obj):
+
+        self.der_file = der_obj.der_file
+        self.exec_delay = der_obj.exec_delay
 
         self.const_q_lpf = LowPassFilter()
         self.const_q_delay = TimeDelay()
@@ -36,10 +37,11 @@ class ConstantVARs:
         
         :param const_q_exec:	Constant Reactive Power Setting (CONST_Q) after execution delay
         :param CONST_Q_RT:	Constant Reactive Power Mode Response Time
+        :param NP_REACT_TIME:	DER grid support function reaction time
 
         Output:
         
-        :param const_q_desired_var"	Output reactive power from constant reactive power function
+        :param const_q_desired_pu:	Output reactive power from constant reactive power function
         """
 
         # Eq. 3.9.1-17, apply the low pass filter to the reference reactive power. Note that there can be multiple
@@ -47,6 +49,5 @@ class ConstantVARs:
         # according to the lab test results.
         q_const_q_lpf_pu = self.const_q_lpf.low_pass_filter(self.exec_delay.const_q_exec, self.der_file.CONST_Q_RT - self.der_file.NP_REACT_TIME)
         q_const_q_desired_pu = self.const_q_delay.tdelay(q_const_q_lpf_pu, self.der_file.NP_REACT_TIME)
-
 
         return q_const_q_desired_pu

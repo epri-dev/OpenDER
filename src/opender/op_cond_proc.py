@@ -25,6 +25,12 @@ from opender import auxiliary_funcs
 
 
 class DERInputs:
+    """
+    This module handles inputs to the DER model, and generate per unit value of applicable voltage,
+    per unit available power for PV DER, per unit active power demand for BESS DER, etc.
+    EPRI Report Reference: Section 3.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    """
+
     def __init__(self, der_file: DERCommonFileFormat):
 
         self.der_file = der_file
@@ -64,9 +70,7 @@ class DERInputs:
 
     def operating_condition_input_processing(self):
         """
-        |  Calculates the applicable voltage to be used by other modules of the DER model, as well as per-unit value of
-        the available DC power
-        |  EPRI Report Reference: Section 3.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        EPRI Report Reference: Section 3.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
 
         Used variables as inputs:
         :param v_a, v_b, v_c:	Three-phase line-to-ground RMS voltage at RPA
@@ -88,6 +92,8 @@ class DERInputs:
         :param v_low_pu:	Minimum applicable voltage as enter service, over voltage trip criterion in per uni
         :param p_avl_pu:    DER available active power in per unit considering efficiency
         :param p_dem_pu:    BESS DER active power demand in per unit
+        :param v_pos_pu:    Positive sequence voltage phasor as complex number at RPA
+        :param v_neg_pu:    Negative sequence voltage phasor as complex number at RPA
         """
 
         # perform input validity check
@@ -148,9 +154,11 @@ class DERInputs:
             self.p_avl_pu = 1
 
     def operating_conditions_validity_check(self):
-        # Validity Check for DER Model operating conditions
-        # Reference: Table 3-5 in Report #3002025583: IEEE 1547-2018 OpenDER Model
-        # Should be executed every timestep
+        """
+        Validity Check for DER Model operating conditions
+        Reference: Table 3-5 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        Should be executed every timestep
+        """
 
         if self.der_file.NP_PHASE == "SINGLE":
             if self.v is None:

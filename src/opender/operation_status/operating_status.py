@@ -19,8 +19,8 @@ from opender.operation_status.trip_crit.trip_crit import TripCrit
 
 class OperatingStatus:
     """
-    Determine DER operating status in terms of Trip, Continuous Operation, Mandatory Operation, etc.
-    EPRI Report Reference: Section 3.5 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    Determine Overall DER operating status in terms of Trip, Entering Service, Continuous Operation, etc.
+    EPRI Report Reference: Section 3.5.1.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -30,67 +30,76 @@ class OperatingStatus:
         self.exec_delay = der_obj.exec_delay
         self.der_input = der_obj.der_input
 
+        # Initiating DER operation status, which could be Trip, Entering Service, Continuous Operation,
+        # Momentary Cessation, Mandatory Operation, Permissive Operation, Cease to Energize,
+        # and Not Defined (for frequency ride-through)
+        # For value initiation, it is assumed to be either in service (continuous operation) or not in service (trip)
+        # Ride-through status may be determined after running through the voltage and frequency ride-through criteria.
         if der_obj.der_file.STATUS_INIT:
             self.der_status = 'Continuous Operation'
         else:
             self.der_status = 'Trip'
 
-        # Defining flag indicating the minimum ride-through time has passed, and the DER is in the
-        # “may ride-through and may trip” region
-        self.rt_pass_time_req = False
-
         self.ridethroughcrit = RideThroughCrit(der_obj)
         self.enterservicecrit = EnterServiceCrit(der_obj)
         self.tripcrit = TripCrit(der_obj)
 
-
     def determine_der_status(self):
         """
-        Determine DER operating status in terms of Trip, Continuous Operation, Mandatory Operation, etc.
-        EPRI Report Reference: Section 3.5.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        Determine DER operating status by considering enter service, trip criteria and ride-though modes
 
-        :NP_P_MIN_PU:	DER minimum active power output
-        :ES_RANDOMIZED_DELAY_ACTUAL:	Specified value for enter service randomized delay for simulation purpose
-        :NP_P_MAX:  Active power maximum rating
-        :NP_VA_MAX: Apparent power maximum rating
-        :STATUS_INIT:   Initial DER Status
+        Variable used in this function:
+        :param rt_mode_v:	DER voltage ride-through performance mode.
+        :param rt_mode_f:	DER frequency ride-through performance mode.
+        :param es_crit:	Enter service criteria met
+        :param trip_crit:	Trip criteria met
+        :param t_s:	Simulation time step
+        :param es_ramp_rate_exec:	Enter service ramp time duration (ES_RAMP_RATE) after execution delay
+        :param es_completed:	Enter service ramp completed in the previous time step
         """
 
-
-        # Enter service criteria
+        # Enter service criteria (Section 3.5.1.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model)
         es_crit = self.enterservicecrit.es_decision()
 
-        # Trip criteria
+        # Trip criteria (Section 3.5.1.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model)
         trip_crit = self.tripcrit.trip_decision()
 
-        # Ride-through criteria
+        # Ride-through criteria (Section 3.5.1.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model)
         self.ridethroughcrit.determine_ride_through_mode()
 
+        # Eq 3.5.1-51,52, If DER is in Trip condition, and enter service criteria is met, depending on whether
+        # simulation time step is greater than the ramp time, DER goes to "Entering Service" or "Continuous Operation"
         if self.der_status == 'Trip':
             if es_crit:
-                if opender.der.DER.t_s <= self.der_file.ES_RAMP_RATE:
+                if opender.der.DER.t_s <= self.exec_delay.es_ramp_rate_exec:
                     self.der_status = 'Entering Service'
                 else:
                     self.der_status = 'Continuous Operation'
 
+        # Eq 3.5.1-53, If DER was Entering Service, and the enter service process has completed, DER goes to
+        # "Continuous Operation"
         if self.der_status == 'Entering Service':
             if self.der_obj.activepowerfunc.es_completed:
                 self.der_status = 'Continuous Operation'
 
+        # Eq 3.5.1-54~58, If DER is not Tripped (Entering Service, Continuous Operation, or all other Ride-through
+        # modes), DER status depends on ride-through modes, in the priority of: Not Defined (frequency ride-through),
+        # Other ride-through modes, and Continuous Operation.
         if self.der_status != 'Trip':
-
             if self.ridethroughcrit.rt_mode_f == 'Not Defined':
                 self.der_status = 'Not Defined'
             elif self.ridethroughcrit.rt_mode_v in ['Cease to Energize', 'Permissive Operation', 'Momentary Cessation']:
                 self.der_status = self.ridethroughcrit.rt_mode_v
-
             elif self.ridethroughcrit.rt_mode_v == 'Mandatory Operation' or self.ridethroughcrit.rt_mode_f == 'Mandatory Operation':
                 self.der_status = 'Mandatory Operation'
             else:
                 if self.der_status != 'Entering Service':
                     self.der_status = 'Continuous Operation'
-                self.rt_pass_time_req = False
+                # Eq 3.5.1-57, If DER is in continuous operation, reset the flag that indicates required
+                # ride-through time has passed
+                self.ridethroughcrit.reset_rt_pass_time_req()
 
+        # Eq. 3.5.1-59, if trip criteria is met, DER goes to Trip mode
         if trip_crit:
             self.der_status = 'Trip'
 

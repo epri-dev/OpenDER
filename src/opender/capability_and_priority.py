@@ -47,9 +47,7 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3, ):
             break
         else:
             x = x+k*(mag/m*x-x)
-    # print warning if not converge
-    # if ii == imax-1:
-    #     print('Warning: search did not converge!')
+
     return x, y
 
 # def piecewise_intercept(xp1, yp1, xp2, yp2, x, step:float=0.01):
@@ -84,12 +82,34 @@ class CapabilityPriority:
     Calculate active and reactive power power output limited by DER ratings, according to the priority of responses.
     EPRI Report Reference: Section 3.9 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
-    def __init__(self, der_file, exec_delay):
-        self.der_file = der_file
-        self.exec_delay = exec_delay
+    def __init__(self, der_obj):
+        self.der_file = der_obj.der_file
+        self.exec_delay = der_obj.exec_delay
 
-        # Eq 3.10.1-2 Calculate intermediate variables of reactive power injection and absorption capability by IEEE 1547
-        # -2018
+        self.p_desired_w = None     # Desired active power from DER active power support functions in per unit
+        self.q_desired_var = None   # Desired reactive power from DER reactive power support functions in per unit
+        self.np_va_max_appl = None     # Applicable nameplate apparent power rating depending on inject or absorb P
+        self.q_max_inj = None   # Maximum reactive power injection at the desired active power output, defined by the 
+                                # capability curve NP_Q_CAPABILITY_BY_P_CURVE
+        self.q_max_abs = None   # Maximum reactive power absorption at the desired active power output
+        self.q_limited_by_p_var = None  # Desired output reactive power after considering DER reactive power capability 
+                                        # curve in volt-var or constant reactive power mode
+        self.q_limited_qp_var = None    # Desired output reactive power after considering DER apparent power capability
+                                        # circle in watt-var mode
+        self.q_limited_pf_var = None    # Desired output reactive power after considering DER apparent power capability
+                                        # circle in constant power factor mode
+        self.p_limited_pf_w = None      # Desired output active power after considering DER apparent power capability 
+                                        # circle in constant power factor mode
+
+        self.p_itcp_w = None        # Intercept point P of DER apparent power capability circle and a piecewise curve
+        self.q_itcp_var = None      # Intercept point Q of DER apparent power capability circle and a piecewise curve
+
+        self.p_limited_w = None     # DER output active power after considering DER apparent power limits
+        self.q_limited_var = None   # DER output reactive power after considering DER apparent power limits
+
+
+        # Eq 3.9.1-2, Calculate intermediate variables of reactive power injection and absorption capability by IEEE 
+        # 1547-2018
         self.q_requirement_abs = (0.25 if self.der_file.NP_NORMAL_OP_CAT == 'CAT_A' else 0.44) * self.der_file.NP_VA_MAX
         self.q_requirement_inj = 0.44 * self.der_file.NP_VA_MAX
 
@@ -98,123 +118,113 @@ class CapabilityPriority:
         Calculate limited DER output P and Q based on DER ratings and priority of responses.
 
         Variables used in this function:
-        
-        :param p_desired_w:	Desired output active power considering DER enter service performance
-        :param q_desired_var:	Desired output reactive power from reactive power support functions
+        :param p_desired_pu:	Desired output active power considering DER enter service performance
+        :param q_desired_pu:	Desired output reactive power from reactive power support functions
         :param const_pf_mode_enable_exec:	Constant Power Factor Mode Enable (CONST_PF_MODE_ENABLE) after execution delay
         :param qv_mode_enable_exec:	Voltage-Reactive Power Mode Enable (QV_MODE_ENABLE) after execution delay
         :param qp_mode_enable_exec:	Active Power Reactive Power Mode Enable (QP_MODE_ENABLE) after execution delay
         :param const_q_mode_enable_exec:	Constant Reactive Power Mode Enable (CONST_Q_MODE_ENABLE) after execution delay
-        :param WattVar_Curve: Watt-var settings
-              ('P_PU' = [qp_curve_p1_gen_exec, qp_curve_p2_gen_exec, qp_curve_p3_gen_exec]
-              'Q_PU' = [qp_curve_q1_gen_exec, qp_curve_q2_gen_exec, qp_curve_q3_gen_exec])
-
-        Internal variables:
-        
-        :param q_requirement_inj:	Reactive power injection capability required by IEEE 1547-2018 (constant, 0.44 of DER VA rating)
-        :param q_requirement_abs:	Reactive power absorption capability required by IEEE 1547-2018 (constant, 0.25 of DER VA rating if CAT_A, 0.44 of DER VA rating if CAT_B)
-        :param q_max_inj:	Maximum reactive power injection at the desired active power output, defined by the capability curve NP_Q_CAPABILITY_BY_P_CURVE
-        :param q_max_abs:	Maximum reactive power absorption at the desired active power output, defined by the capability curve NP_Q_CAPABILITY_BY_P_CURVE
-        :param p_itcp_w:  Intercept point active power of DER apparent power capability circle and a piecewise curve
-        :param q_itcp_var:    Intercept point active power of DER apparent power capability circle and a piecewise curve
-        :param q_limited_by_p_var:	Desired output reactive power after considering DER reactive power capability curve in volt-var or constant reactive power mode.
-        :param q_limited_pf_var:	Desired output reactive power after considering DER apparent power capability circle in constant power factor mode
-        :param q_limited_qp_var:	Desired output reactive power after considering DER apparent power capability circle in watt-var mode
+        :param NP_PRIO_OUTSIDE_MIN_Q_REQ:	Priority outside minimum requirements
+        :param NP_NORMAL_OP_CAT:	Normal operating performance category
+        :param NP_Q_MAX_INJ:	Reactive power injected maximum rating
+        :param NP_Q_MAX_ABS:	Reactive power absorbed maximum rating
+        :param NP_P_MAX:	Active power rating at unity power factor
+        :param NP_VA_MAX:	Apparent power maximum rating
+        :param NP_Q_CAPABILITY_BY_P_CURVE: DER reactive power capability curves (P_Q_INJ_PU, Q_MAX_INJ_PU, P_Q_ABS_PU, Q_MAX_ABS_PU)
 
         Outputs:
-        
         :param p_limited_w:	DER output active power after considering DER apparent power limits
         :param q_limited_var:	DER output reactive power after considering DER apparent power limits
         """
 
-        # Eq. 3.10.1-1 Calculate desired P and Q in watts and vars
-        p_desired_w = p_desired_pu * self.der_file.NP_P_MAX
-        q_desired_var = q_desired_pu * self.der_file.NP_VA_MAX
-        # Eq. 3.10.1-3 Calculate applicable apparent power rating
-        np_va_max_appl = self.der_file.NP_VA_MAX if p_desired_w >= 0 else self.der_file.NP_APPARENT_POWER_CHARGE_MAX
+        # Eq. 3.9.1-1 Calculate desired P and Q in watts and vars
+        self.p_desired_w = p_desired_pu * self.der_file.NP_P_MAX
+        self.q_desired_var = q_desired_pu * self.der_file.NP_VA_MAX
+        # Eq. 3.9.1-3 Calculate applicable apparent power rating
+        self.np_va_max_appl = self.der_file.NP_VA_MAX if self.p_desired_w >= 0 else self.der_file.NP_APPARENT_POWER_CHARGE_MAX
 
         if self.exec_delay.const_q_mode_enable_exec or self.exec_delay.qv_mode_enable_exec:
             # Constant-Q or Volt-Var
-            # Eq. 3.10.1-4, find the range of DER output Q with given desired P
-            q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_desired_pu,
+            # Eq. 3.9.1-4, find the range of DER output Q with given desired P
+            self.q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_desired_pu,
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'],
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
-            q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_desired_pu,
+            self.q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_desired_pu,
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'],
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
 
-            # Eq. 3.10.1-5, limit q_desired_var according to limit (+injection / -absorption)
-            q_limited_by_p_var = min(q_max_inj, max(-q_max_abs, q_desired_var))
+            # Eq. 3.9.1-5, limit q_desired_var according to limit (+injection / -absorption)
+            self.q_limited_by_p_var = min(self.q_max_inj, max(-self.q_max_abs, self.q_desired_var))
 
-            if p_desired_w**2+q_limited_by_p_var**2 < np_va_max_appl**2:
-                # Eq. 3.10.1-6, if within DER max apparent power rating, no changes need to be made
-                p_limited_w = p_desired_w
-                q_limited_var = q_limited_by_p_var
+            if self.p_desired_w**2+self.q_limited_by_p_var**2 < self.np_va_max_appl**2:
+                # Eq. 3.9.1-6, if within DER max apparent power rating, no changes need to be made
+                self.p_limited_w = self.p_desired_w
+                self.q_limited_var = self.q_limited_by_p_var
             elif self.der_file.NP_PRIO_OUTSIDE_MIN_Q_REQ == 'ACTIVE':
-                # Eq. 3.10.1-7 reserve Q capability to the table 7 requirement and give the rest to P
-                q_limited_var = min(self.q_requirement_inj, max(-self.q_requirement_abs, q_limited_by_p_var))
-                p_limited_w = np.sqrt(np_va_max_appl**2-q_limited_var**2) * np.sign(p_desired_w)
+                # Eq. 3.9.1-7 reserve Q capability to the table 7 requirement and give the rest to P
+                self.q_limited_var = min(self.q_requirement_inj, max(-self.q_requirement_abs, self.q_limited_by_p_var))
+                self.p_limited_w = np.sqrt(self.np_va_max_appl**2-self.q_limited_var**2) * np.sign(self.p_desired_w)
 
             else:
-                # Eq. 3.10.1-8, Reactive power priority, reduce P to match apparent power limit
-                q_limited_var = q_limited_by_p_var
-                p_limited_w = np.sqrt(np_va_max_appl**2-q_limited_by_p_var**2) * np.sign(p_desired_w)
+                # Eq. 3.9.1-8, Reactive power priority, reduce P to match apparent power limit
+                self.q_limited_var = self.q_limited_by_p_var
+                self.p_limited_w = np.sqrt(self.np_va_max_appl**2-self.q_limited_by_p_var**2) * np.sign(self.p_desired_w)
 
         elif self.exec_delay.const_pf_mode_enable_exec:
             # Constant-PF
-            if p_desired_w ** 2 + q_desired_var ** 2 < np_va_max_appl ** 2:
-                # Eq. 3.10.1-9, no changes to be made
-                p_limited_pf_w = p_desired_w
-                q_limited_pf_var = q_desired_var
+            if self.p_desired_w ** 2 + self.q_desired_var ** 2 < self.np_va_max_appl ** 2:
+                # Eq. 3.9.1-9, no changes to be made
+                self.p_limited_pf_w = self.p_desired_w
+                self.q_limited_pf_var = self.q_desired_var
             else:
-                # Eq. 3.10.1-10, reduce P & Q proportionally to maintain constant power factor
-                k = min(1., np_va_max_appl/max(1.e-9, np.sqrt(p_desired_w**2+q_desired_var**2)))
-                p_limited_pf_w = p_desired_w*k
-                q_limited_pf_var = q_desired_var*k
+                # Eq. 3.9.1-10, reduce P & Q proportionally to maintain constant power factor
+                k = min(1., self.np_va_max_appl/max(1.e-9, np.sqrt(self.p_desired_w**2+self.q_desired_var**2)))
+                self.p_limited_pf_w = self.p_desired_w*k
+                self.q_limited_pf_var = self.q_desired_var*k
 
             # Find the intercept point between DER reactive power capability curve and DER apparent power capability
             # circuit, indicated as p_itcp_w and q_itcp_var
-            if q_limited_pf_var > 0:
+            if self.q_limited_pf_var > 0:
                 # Find the capability curve for Q injection
                 xp = [x*self.der_file.NP_P_MAX for x in self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU']]
                 yp = [y*self.der_file.NP_VA_MAX for y in self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU']]
                 # Find the intercept point
-                p_itcp_w, q_itcp_var = intercep_piecewise_circle(np_va_max_appl if p_desired_w > 0 else
-                                                                   -np_va_max_appl, xp, yp)
+                self.p_itcp_w, self.q_itcp_var = intercep_piecewise_circle(self.np_va_max_appl if self.p_desired_w > 0 else
+                                                                   -self.np_va_max_appl, xp, yp)
             else:
                 # Find the capability curve for Q absorption
                 xp = [x*self.der_file.NP_P_MAX for x in self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU']]
                 yp = [y*self.der_file.NP_VA_MAX for y in self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU']]
                 # Find the intercept point
-                p_itcp_w, q_itcp_var = intercep_piecewise_circle(np_va_max_appl if p_desired_w > 0 else
-                                                                   -np_va_max_appl, xp, yp)
+                self.p_itcp_w, self.q_itcp_var = intercep_piecewise_circle(self.np_va_max_appl if self.p_desired_w > 0 else
+                                                                   -self.np_va_max_appl, xp, yp)
 
-            # Eq. 3.10.1-11, If DER offer capability to operate with a smaller power factor than 0.9, this model assumes
+            # Eq. 3.9.1-11, If DER offer capability to operate with a smaller power factor than 0.9, this model assumes
             # to reduce Q magnitude if outside of DER Q capability range. There could be other behaviors that may be
             # modeled in future version
-            if abs(q_limited_pf_var) > q_itcp_var:
+            if abs(self.q_limited_pf_var) > self.q_itcp_var:
                 # If P and Q are both beyond the intercept point, reduce P magnitude to the intercept point
-                p_limited_w = min(abs(p_itcp_w), abs(p_desired_w)) * np.sign(p_desired_w)
+                self.p_limited_w = min(abs(self.p_itcp_w), abs(self.p_desired_w)) * np.sign(self.p_desired_w)
             else:
-                p_limited_w = p_limited_pf_w
+                self.p_limited_w = self.p_limited_pf_w
 
             # Find the reactive power capability at P, which is already within the capability
-            q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_limited_w/self.der_file.NP_P_MAX,
+            self.q_max_inj = self.der_file.NP_VA_MAX * np.interp(self.p_limited_w/self.der_file.NP_P_MAX,
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'],
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
-            q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_limited_w/self.der_file.NP_P_MAX,
+            self.q_max_abs = self.der_file.NP_VA_MAX * np.interp(self.p_limited_w/self.der_file.NP_P_MAX,
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'],
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
 
             # Limit Q based on DER output P
-            q_limited_var = min(q_max_inj, max(-q_max_abs, q_limited_pf_var))
+            self.q_limited_var = min(self.q_max_inj, max(-self.q_max_abs, self.q_limited_pf_var))
 
         elif self.exec_delay.qp_mode_enable_exec:
             # Watt-Var
-            if p_desired_w ** 2 + q_desired_var ** 2 < np_va_max_appl ** 2:
-                # Eq. 3.10.1-12, no changes to be made
-                p_limited_w = p_desired_w
-                q_limited_qp_var = q_desired_var
+            if self.p_desired_w ** 2 + self.q_desired_var ** 2 < self.np_va_max_appl ** 2:
+                # Eq. 3.9.1-12, no changes to be made
+                self.p_limited_w = self.p_desired_w
+                self.q_limited_qp_var = self.q_desired_var
             else:
 
                 # Define watt-var curve
@@ -233,30 +243,30 @@ class CapabilityPriority:
                                self.exec_delay.qp_curve_q3_gen_exec, self.exec_delay.qp_curve_q3_gen_exec]]
 
                 # Find intercept point of VA limit circle and watt-var curve, and assign
-                # to p_limited_w and q_limited_qp_var
-                if p_desired_w > 0:
-                    p_itcp_w, q_itcp_var = intercep_piecewise_circle(np_va_max_appl, qp_curve_p, qp_curve_q)
-                    p_limited_w = min(p_itcp_w, p_desired_w)
+                # to self.p_limited_w and self.q_limited_qp_var
+                if self.p_desired_w > 0:
+                    self.p_itcp_w, self.q_itcp_var = intercep_piecewise_circle(self.np_va_max_appl, qp_curve_p, qp_curve_q)
+                    self.p_limited_w = min(self.p_itcp_w, self.p_desired_w)
                 else:
-                    p_itcp_w, q_itcp_var = intercep_piecewise_circle(-np_va_max_appl, qp_curve_p, qp_curve_q)
-                    p_limited_w = max(p_itcp_w, p_desired_w)
-                q_limited_qp_var = min(abs(q_itcp_var), abs(q_desired_var))*np.sign(q_desired_var)
+                    self.p_itcp_w, self.q_itcp_var = intercep_piecewise_circle(-self.np_va_max_appl, qp_curve_p, qp_curve_q)
+                    self.p_limited_w = max(self.p_itcp_w, self.p_desired_w)
+                self.q_limited_qp_var = min(abs(self.q_itcp_var), abs(self.q_desired_var))*np.sign(self.q_desired_var)
 
-            # Eq. 3.10.1-13, reduce Q if outside of DER Q capability range
-            q_max_inj = self.der_file.NP_VA_MAX * np.interp(p_desired_w/self.der_file.NP_P_MAX,
+            # Eq. 3.9.1-13, reduce Q if outside of DER Q capability range
+            self.q_max_inj = self.der_file.NP_VA_MAX * np.interp(self.p_desired_w/self.der_file.NP_P_MAX,
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'],
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])
-            q_max_abs = self.der_file.NP_VA_MAX * np.interp(p_desired_w/self.der_file.NP_P_MAX,
+            self.q_max_abs = self.der_file.NP_VA_MAX * np.interp(self.p_desired_w/self.der_file.NP_P_MAX,
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU'],
                                                             self.der_file.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU'])
-            q_limited_var = min(q_max_inj, max(-q_max_abs, q_limited_qp_var))
+            self.q_limited_var = min(self.q_max_inj, max(-self.q_max_abs, self.q_limited_qp_var))
 
         else:
             # undefined Q control mode
-            p_limited_w = p_desired_w
-            q_limited_var = 0
+            self.p_limited_w = self.p_desired_w
+            self.q_limited_var = 0
 
-        return p_limited_w, q_limited_var
+        return self.p_limited_w, self.q_limited_var
 
 
 

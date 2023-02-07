@@ -17,8 +17,8 @@ from .es_perf import EnterServicePerformance
 
 class EnterServicePerformanceBESS(EnterServicePerformance):
     """
-    Calculate desired active power output in Enter service ramp condition
-    EPRI Report Reference: Section 3.7 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    Calculate desired active power output in Enter service ramp condition for BESS DER
+    EPRI Report Reference: Section 3.7.3.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -26,9 +26,11 @@ class EnterServicePerformanceBESS(EnterServicePerformance):
 
     def es_performance(self):
         """
+        Determine the ramp reference when entering service
+
         Variable used in this function:
         
-        :param der_status:	Status of DER (on or off)
+        :param der_status:	Status of DER (Trip, Entering Service, etc)
         :param es_ramp_rate_exec:	Enter service soft-start duration (ES_RAMP_RATE) signal after execution delay
         :param p_act_supp_w:	Desired output active power from active power support functions in kW
         :param NP_P_MAX:	Active power rating at unity power factor
@@ -46,39 +48,24 @@ class EnterServicePerformanceBESS(EnterServicePerformance):
         :param p_desired_w:	Desired output active power considering DER enter service performance
         """
 
-
-        # Eq. 3.7.1-2, ramp rate limiter
-
-
-
-        # # Eq. 3.7.1-3 Edge detector to identify Enter Service decision
-        # es_flag_set = self.edge.run(True if der_status != 'Trip' else False)
-
-        # Eq. 3.7.1-4 Enter service ramp complete
-        # es_flag_reset = (p_es_ramp_pu == p_desired_pu) or not der_status or self.der_obj.activepowerfunc.freqdroop.pf_uf_active or self.der_obj.activepowerfunc.freqdroop.pf_of_active
-
-
-        # # Eq. 3.7.1-5, flip-flop logic to determine if in enter service ramp
-        # if es_flag_reset:
-        #     self.es_flag = 0
-        # elif es_flag_set:
-        #     self.es_flag = 1
-
-        # Eq. 3.7.1-6, output selector
         if self.der_obj.der_status == "Entering Service":
+            # Eq 3.7.3-1,2, If power demand is positive (discharging), ramp reference is set to a value higher than 1,
+            # If power demand is negative (charging), ramp reference is set to a value smaller than -1. Purpose is to
+            # identify completion of enter service ramp
             if self.der_obj.der_input.p_dem_pu > 0:
                 self.p_es_pu = self.rrl.ramp(1.1, self.exec_delay.es_ramp_rate_exec, 0)
             else:
                 self.p_es_pu = self.rrl.ramp(-1.1, 0, self.exec_delay.es_ramp_rate_exec)
 
-            # self.es_completed = (abs(p_es_ramp_pu) >= abs(p_desired_pu)) # or self.der_obj.activepowerfunc.freqdroop.pf_uf_active or self.der_obj.activepowerfunc.freqdroop.pf_of_active
         elif self.der_obj.der_status == "Trip":
+            # Eq 3.7.3-3, if DER is tripped, the reference should be reset to 0
             self.p_es_pu = self.rrl.ramp(0, 0, 0)
         else:
+            # Eq 3.7.3-4, if DER is not tripped and enter service process is completed, the reference is set to a
+            # constant value with magnitude greater than 1, and sign depending on the sign of power demand.
             if self.der_obj.der_input.p_dem_pu > 0:
                 self.p_es_pu = self.rrl.ramp(1.1, 0, 0)
             else:
                 self.p_es_pu = self.rrl.ramp(-1.1, 0, 0)
-            # self.es_completed = False
 
         return self.p_es_pu

@@ -20,7 +20,7 @@ from opender.auxiliary_funcs.time_delay import TimeDelay
 class FreqDroop:
     """
     Frequency-droop Function
-    EPRI Report Reference: Section 3.6.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7.1.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self, der_obj):
@@ -30,32 +30,31 @@ class FreqDroop:
         self.exec_delay = der_obj.exec_delay
         self.der_input = der_obj.der_input
 
-        self.pf_lpf = low_pass_filter.LowPassFilter()
-        self.pf_delay = TimeDelay()
-        self.p_pf_pre_pu = None
-        self.p_pf_pre_pu_prev = None
-        self.p_pf_lpf_pu = None
-        self.p_out_w_prev = None
-        self.pf_uf_prev = None
-        self.pf_of_prev = None
-        self.p_pf_of_pu = None
-        self.p_pf_of_pu = None
-        self.pf_uf = None
-        self.pf_of = None
-        self.p_pf_pu = 0
-        self.p_pf_pu_prev = None
-        self.p_pf_pre_pu_temp = None
+        self.p_pf_pre_pu = None         # Pre-disturbance active power output, defined by the active power output at
+                                        # the point of time the frequency exceeds the deadband.
+        self.p_pf_pre_pu_prev = None    # Value of variable p_pf_pre_pu in the previous time step
+        self.p_out_w_prev = None       # Value of variable p_out_w (DER output active power) in the previous time step
+
+        self.p_pf_of_pu = None      # Frequency droop active power reference for over-frequency condition
+        self.p_pf_uf_pu = None      # Frequency droop active power reference for under-frequency condition
+        self.pf_uf = None           # Under-frequency detected
+        self.pf_of = None           # Over-frequency detected
+        self.pf_uf_prev = None      # Value of variable pf_uf in the previous time step
+        self.pf_of_prev = None      # Value of variable pf_of in the previous time step
+        self.pf_uf_active = 0       # Frequency-droop over-frequency active
+        self.pf_of_active = 0       # Frequency-droop under-frequency active
+        self.pf_olrt_appl = None    # Applied open-loop response time for frequency-droop function
+        self.p_pf_ref_pu = None     # Frequency droop active power reference in per unit
+        self.p_pf_lpf_pu = None     # Frequency droop active power after low pass filter, before reaction time
+
+        self.p_pf_pu = 0            # Output active power from frequency-droop function
+        self.pf_uf_active = 0       # Frequency-droop under-frequency active
+        self.pf_of_active = 0       # Frequency-droop over-frequency active
+
         self.pf_uf_active_ff = FlipFlop(0)
         self.pf_of_active_ff = FlipFlop(0)
-        self.pf_uf_active = 0
-        self.pf_of_active = 0
-        self.pf_olrt_appl = None
-        self.pf_uf_active_set = None
-        self.pf_uf_active_reset = None
-
-        self.pf_of_active_set = None
-        self.pf_of_active_reset = None
-        self.p_pf_self_pu = None
+        self.pf_lpf = low_pass_filter.LowPassFilter()
+        self.pf_delay = TimeDelay()
 
     def calculate_p_pf_pu(self, p_out_w, ap_limit_rt, p_pv_limit_pu):
         
@@ -63,38 +62,30 @@ class FreqDroop:
         Calculate power reference according to frequency-droop function
 
         Variable used in this function:
-        
-        :param f_meas_hz:	DER frequency measurement in Hertz, from model input
+        :param p_out_w: DER output active power in the previous time step
+        :param ap_limit_rt: Active power limit due to active power limit function
+        :param p_pv_limit_pu: Active power limit due to Volt-watt function
+        :param freq_hz:	DER frequency measurement in Hertz, from model input
         :param pf_dbof_exec:	Over frequency deadband offset from nominal frequency signal (PF_DBOF) after execution delay
         :param pf_dbuf_exec:	Under frequency deadband offset from nominal frequency signal (PF_DBUF) after execution delay
         :param pf_kof_exec:	Over frequency slope signal (PF_KOF) after execution delay
         :param pf_kuf_exec:	Under frequency slope signal (PF_KUF) after execution delay
         :param pf_olrt_exec:	Frequency-Active power open-loop response time signal (PF_OLRT) after execution delay
-        :param self.pf_olrt_appl:  Applied open-loop response time for frequency droop function
+        :param pf_olrt_appl:  Applied open-loop response time for frequency droop function
         :param p_avl_pu:	DER available DC power in pu
         :param NP_EFFICIENCY:	DER system efficiency for DC/AC power conversion
         :param NP_P_MIN_PU:	DER minimum active power output
         :param NP_P_MAX:	DER active power rating at unity power factor
-
-        Internal variables:
-        
-        :param pf_of:	Over-frequency detected
-        :param pf_uf:	Under-frequency detected
-        :param p_pf_pre_pu:	Pre-disturbance active power output, defined by the active power output at the point of time the frequency exceeds the deadband.
-
-        Internal state variables:
-        
-        :param p_pf_pre_pu_prev:	Value of variable p_pf_pre_pu (pre-disturbance active power output) in the previous time step (initialized by the first value of p_dc_w×NP_EFFICIENCY/NP_P_MAX)
-        :param p_out_w_prev:	Value of variable p_out_w (DER model output active power) in the previous time step (initialized by the first value of p_dc_w×NP_EFFICIENCY)
-        :param pf_of_prev:	Value of variable pf_of (Over-frequency detected) in the previous time step (initialized by 0)
-        :param pf_uf_prev:	Value of variable pf_uf (Under-frequency detected) in the previous time step (initialized by 0)
+        :param PF_MODE_ENABLE: Frequency-Active power mode enable
+        :param NP_REACT_TIME:   DER grid support function reaction time
 
         Output:
-        
-        :param p_pf_pu	Output active power from frequency-droop function
+        :param p_pf_pu:     Output active power from frequency-droop function
+        :param pf_uf_active:    Frequency-droop under-frequency active
+        :param pf_of_active:    Frequency-droop over-frequency active
         """
 
-        # Eq. 3.7.1-7, detect if in under-frequency or over-frequency condition
+        # Eq. 3.7.1-10, detect if in under-frequency or over-frequency condition
         if(self.der_input.freq_hz < (60 - self.exec_delay.pf_dbuf_exec)) and self.der_file.PF_MODE_ENABLE:
             self.pf_uf = 1
         else:
@@ -113,9 +104,8 @@ class FreqDroop:
 
         # Initialize internal state variables of DER output in previous time step
         if self.p_out_w_prev is None:
-            self.p_out_w_prev = min((self.der_input.p_avl_pu * self.der_file.NP_P_MAX),
-                                     (ap_limit_rt*self.der_file.NP_P_MAX),
-                                     (p_pv_limit_pu*self.der_file.NP_P_MAX))
+            self.p_out_w_prev = min(self.get_p_pu() * self.der_file.NP_P_MAX,
+                                    ap_limit_rt * self.der_file.NP_P_MAX, p_pv_limit_pu * self.der_file.NP_P_MAX)
         else:
             self.p_out_w_prev = p_out_w
 
@@ -123,66 +113,63 @@ class FreqDroop:
         if self.p_pf_pre_pu_prev is None:
             self.p_pf_pre_pu_prev = min(self.der_input.p_avl_pu, ap_limit_rt, p_pv_limit_pu)
 
-        # Eq. 3.7.1-8, calculate pre-disturbance active power output
-        self.p_pf_pre_pu_temp = self.p_out_w_prev / self.der_file.NP_P_MAX
+        # Eq. 3.7.1-11, calculate pre-disturbance active power output
         if self.pf_uf == 1 and self.pf_uf_prev == 1:
             self.p_pf_pre_pu = self.p_pf_pre_pu_prev
         elif self.pf_of == 1 and self.pf_of_prev == 1:
             self.p_pf_pre_pu = self.p_pf_pre_pu_prev
         else:
-            self.p_pf_pre_pu = self.p_pf_pre_pu_temp
+            self.p_pf_pre_pu = self.p_out_w_prev / self.der_file.NP_P_MAX
 
-        # Eq. 3.7.1-9, calculate active power reference according to frequency-droop - overfrequency
+        # Eq. 3.7.1-12, calculate active power reference according to frequency-droop - overfrequency
         self.p_pf_of_pu = max(self.p_pf_pre_pu - 
                               ((self.der_input.freq_hz - (60 + self.exec_delay.pf_dbof_exec)) 
                                / (60 * self.exec_delay.pf_kof_exec)),
                               self.der_file.NP_P_MIN_PU)
 
-        # Eq. 3.7.1-10, calculate active power reference according to frequency-droop - underfrequency
+        # Eq. 3.7.1-13, calculate active power reference according to frequency-droop - underfrequency
         self.p_pf_uf_pu = min(self.p_pf_pre_pu + 
                               (((60 - self.exec_delay.pf_dbof_exec) - self.der_input.freq_hz) 
                                / ((60 * self.exec_delay.pf_kuf_exec)))
                               , self.der_input.p_avl_pu)
 
-        # Eq. 3.7.1-11, calculate active power reference according to frequency-droop
+        # Eq. 3.7.1-15, calculate active power reference according to frequency-droop
         if self.pf_of == 1:
-            self.p_pf_self_pu = self.p_pf_of_pu
+            self.p_pf_ref_pu = self.p_pf_of_pu
         elif self.pf_uf == 1:
-            self.p_pf_self_pu = self.p_pf_uf_pu
+            self.p_pf_ref_pu = self.p_pf_uf_pu
         else:
-            self.p_pf_self_pu = min(self.active_power_without_droop(), ap_limit_rt, p_pv_limit_pu)
+            self.p_pf_ref_pu = min(self.p_pf_normal_pu(), ap_limit_rt, p_pv_limit_pu)
 
-        # Eq. 3.7.1-12, apply the low pass filter
+        # Eq. 3.7.1-16, apply the low pass filter
         self.pf_olrt_appl = self.exec_delay.pf_olrt_exec if self.pf_uf or self.pf_of or self.pf_uf_active or self.pf_of_active else 0
-        self.p_pf_lpf_pu = self.pf_lpf.low_pass_filter(self.p_pf_self_pu, self.pf_olrt_appl - self.der_file.NP_REACT_TIME)
+        self.p_pf_lpf_pu = self.pf_lpf.low_pass_filter(self.p_pf_ref_pu, self.pf_olrt_appl - self.der_file.NP_REACT_TIME)
         self.p_pf_pu = self.pf_delay.tdelay(self.p_pf_lpf_pu, self.der_file.NP_REACT_TIME)
 
-        # Initialize internal state variable for the first time step of simulation
-        if self.p_pf_pu_prev is None:
-            self.p_pf_pu_prev = self.p_pf_pu
+        # Eq. 3.7.1-17, decide if frequency droop function is active
+        self.pf_uf_active = self.pf_uf_active_ff.flipflop(self.pf_uf and self.der_file.PF_MODE_ENABLE,
+                                                          (not (self.pf_uf and self.der_file.PF_MODE_ENABLE))
+                                                          and abs(self.p_pf_pu-self.p_pf_ref_pu)<1.e-3)
 
-        # Eq. 3.7.1-13, decide if frequency droop function is active
-        self.pf_uf_active_set = self.pf_uf and self.der_file.PF_MODE_ENABLE
-        self.pf_uf_active_reset = (not self.pf_uf_active_set) and abs(self.p_pf_pu-self.p_pf_self_pu)<1.e-3
-        self.pf_uf_active = self.pf_uf_active_ff.flipflop(self.pf_uf_active_set, self.pf_uf_active_reset)
-
-        self.pf_of_active_set = self.pf_of and self.der_file.PF_MODE_ENABLE
-        self.pf_of_active_reset = (not self.pf_of_active_set) and abs(self.p_pf_pu-self.p_pf_self_pu)<1.e-3
-        self.pf_of_active = self.pf_of_active_ff.flipflop(self.pf_of_active_set, self.pf_of_active_reset)
+        self.pf_of_active = self.pf_of_active_ff.flipflop(self.pf_of and self.der_file.PF_MODE_ENABLE,
+                                                          (not (self.pf_of and self.der_file.PF_MODE_ENABLE))
+                                                          and abs(self.p_pf_pu-self.p_pf_ref_pu)<1.e-3)
 
         # Save the values for calculations in next time step
         self.pf_uf_prev = self.pf_uf
         self.pf_of_prev = self.pf_of
         self.p_pf_pre_pu_prev = self.p_pf_pre_pu
-        self.p_pf_pu_prev = self.p_pf_pu
 
         return self.p_pf_pu, self.pf_uf_active, self.pf_of_active
 
-    def active_power_without_droop(self):
-        # return self.der_input.p_avl_pu
-        # return self.der_obj.ridethroughperf.p_out_pu
+    def p_pf_normal_pu(self):
+        # Eq. 3.7.1-14, if DER is entering service, the pre-disturbance power is obtained from the DER output power
+        # in the previous simulation time step.
         if self.der_obj.der_status == 'Entering Service':
-            return self.der_obj.ridethroughperf.p_out_pu
+            return self.der_obj.p_out_w/self.der_file.NP_P_MAX
         else:
             return self.der_input.p_avl_pu
 
+    def get_p_pu(self):
+        # For initialization of p_pf_pre_pu_prev and p_out_w_prev
+        return self.der_input.p_avl_pu

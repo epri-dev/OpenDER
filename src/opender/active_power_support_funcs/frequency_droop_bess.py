@@ -20,16 +20,21 @@ from .frequency_droop import FreqDroop
 
 class FreqDroopBESS(FreqDroop):
     """
-    Frequency-droop Function
-    EPRI Report Reference: Section 3.6.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    Frequency-droop Function for BESS DER
+    EPRI Report Reference: Section 3.7.3.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self, der_obj):
         super(FreqDroopBESS, self).__init__(der_obj)
 
-    def active_power_without_droop(self):
-        # return self.der_input.p_dem_pu
+    def p_pf_normal_pu(self):
+        # Eq 3.7.3-5, frequency-droop active power if no grid-support functions (freq-droop, volt-watt and active power
+        # limit) are enabled is determined by the active power demand, rather than available active power
         if self.der_obj.der_status == 'Entering Service':
-            return self.der_obj.ridethroughperf.p_out_pu
+            return self.der_obj.p_out_w/self.der_file.NP_P_MAX
         else:
             return self.der_input.p_dem_pu
+
+    def get_p_pu(self):
+        # For initialization of p_pf_pre_pu_prev and p_out_w_prev (reference Table 3-21)
+        return self.der_input.p_dem_pu

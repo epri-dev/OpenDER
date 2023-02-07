@@ -10,3 +10,13 @@
 # · Neither the name of the EPRI nor the names of its contributors may be used
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
+
+import cmath
+
+
+def convert_symm_to_abc(pos_pu, neg_pu):
+    a_pu = pos_pu + neg_pu
+    b_pu = cmath.exp(1j * ((-2 / 3) * cmath.pi)) * pos_pu + cmath.exp(1j * ((2 / 3) * cmath.pi)) * neg_pu
+    c_pu = cmath.exp(1j * ((2 / 3) * cmath.pi)) * pos_pu + cmath.exp(
+        1j * ((-2 / 3)) * cmath.pi) * neg_pu  # TODO make the exp as a constant to save calculation time
+    return a_pu, b_pu, c_pu

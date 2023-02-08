@@ -68,9 +68,12 @@ class DER_BESS(DER):
                 self.der_input.v = v_pu * self.der_file.NP_AC_V_NOM
 
         if theta is not None:
-            self.der_input.theta_a = theta[0]
-            self.der_input.theta_b = theta[1]
-            self.der_input.theta_c = theta[2]
+            if type(v_pu) is float or type(v_pu) is int:
+                self.der_input.theta = theta
+            else:
+                self.der_input.theta_a = theta[0]
+                self.der_input.theta_b = theta[1]
+                self.der_input.theta_c = theta[2]
 
     def get_DERCommonFileFormat(self):
         return DERCommonFileFormatBESS()

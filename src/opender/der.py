@@ -26,7 +26,7 @@ from opender.operation_status.enter_service_crit.es_crit import EnterServiceCrit
 from opender.capability_and_priority import CapabilityPriority
 from opender.op_cond_proc import DERInputs
 from . import setting_execution_delay, rt_perf
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Any
 import numpy as np
 from .output_options import DEROutputs
 
@@ -91,7 +91,7 @@ class DER:
         """
         Update DER inputs
         :param p_dc_w: Available DC power in W
-        :param p_dc_w:	Available DC power in kW
+        :param p_dc_kw:	Available DC power in kW
         :param p_dc_pu:	Available DC power in per unit
         :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
         :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
@@ -202,29 +202,34 @@ class DER:
         self.p_out_w = None
         self.q_out_var = None
 
-    def get_der_output(self, type='PQ'):
-        if type == 'PQ_VA':
+    def get_der_output(self, output: str = 'PQ_pu') -> Union[Tuple[Any, Any], Tuple[List[Any], List[Any]]]:
+        if output == 'PQ_VA':
             return self.p_out_w, self.q_out_var
-        elif type == 'PQ_kVA':
+        elif output == 'PQ_kVA':
             return self.p_out_kw, self.q_out_kvar
-        elif type == 'PQ_pu':
+        elif output == 'PQ_pu':
             return self.p_out_pu, self.q_out_pu
-        elif type == 'I_A':
+        elif output == 'I_A':
             self.der_output.calculate_i_output(self.i_pos_pu, self.i_neg_pu)
             return self.der_output.i_mag_amp, self.der_output.i_theta
-        elif type == 'I_pu':
+        elif output == 'I_pu':
             self.der_output.calculate_i_output(self.i_pos_pu, self.i_neg_pu)
             return self.der_output.i_mag_pu, self.der_output.i_theta
-        elif type == 'Ipn_pu':
+        elif output == 'Ipn_pu':
             return self.i_pos_pu, self.i_neg_pu
-        elif type == 'V_pu':
+        elif output == 'V_pu':
             self.der_output.calculate_v_output(self.i_pos_pu, self.i_neg_pu)
             return self.der_output.v_out_mag_pu, self.der_output.v_out_theta
-        elif type == 'V_V':
+        elif output == 'V_V':
             self.der_output.calculate_v_output(self.i_pos_pu, self.i_neg_pu)
             return self.der_output.v_out_mag_v, self.der_output.v_out_theta
         else:
             print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu")
+
+            #TODO should we use different methods to get model outputs, or use a single one with different values?
+            #TODO if use Python 3.8, Literal type may be used to suggest possible values.
+
+
 
     def __str__(self):
         # for debug, generate a string

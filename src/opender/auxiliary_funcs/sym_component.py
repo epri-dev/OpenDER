@@ -13,10 +13,12 @@
 
 import cmath
 
+alpha = cmath.exp(1j * ((2 / 3) * cmath.pi))
+alpha2 = cmath.exp(1j * ((-2 / 3) * cmath.pi))
+
 
 def convert_symm_to_abc(pos_pu, neg_pu):
     a_pu = pos_pu + neg_pu
-    b_pu = cmath.exp(1j * ((-2 / 3) * cmath.pi)) * pos_pu + cmath.exp(1j * ((2 / 3) * cmath.pi)) * neg_pu
-    c_pu = cmath.exp(1j * ((2 / 3) * cmath.pi)) * pos_pu + cmath.exp(
-        1j * ((-2 / 3)) * cmath.pi) * neg_pu  # TODO make the exp as a constant to save calculation time
+    b_pu = alpha2 * pos_pu + alpha * neg_pu
+    c_pu = alpha * pos_pu + alpha2 * neg_pu
     return a_pu, b_pu, c_pu

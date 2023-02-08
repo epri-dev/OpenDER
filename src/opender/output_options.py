@@ -37,10 +37,10 @@ class DEROutputs:
         self.i_a_pu = 0     # DER output phase a current in per unit
         self.i_b_pu = 0     # DER output phase b current in per unit
         self.i_c_pu = 0     # DER output phase c current in per unit
-        self.i_mag_pu = (0, 0, 0)   # For single phase DER: a single floating number of DER output current magnitude in per unit
+        self.i_mag_pu = [0, 0, 0]   # For single phase DER: an array of a single floating number of DER output current magnitude in per unit
                                     # For three phase DER: an array of three floating numbers of DER three phase output current magnitude in per unit
-        self.i_mag_amp = (0, 0, 0)  # DER output current magnitude in ampere
-        self.i_theta = (0, 0, 0)    # DER output current phase angle
+        self.i_mag_amp = [0, 0, 0]  # DER output current magnitude in ampere
+        self.i_theta = [0, 0, 0]    # DER output current phase angle
 
         self.v_pos_out_cmd_pu = 0   # DER output positive sequence voltage magnitude before limitation in per unit
         self.v_neg_out_cmd_pu = 0   # DER output negative sequence voltage magnitude before limitation in per unit
@@ -48,10 +48,10 @@ class DEROutputs:
         self.v_pos_out_pu = 0       # DER output positive sequence voltage magnitude in per unit
         self.v_neg_out_pu = 0       # DER output negative sequence voltage magnitude in per unit
         self.v_a_out_pu, self.v_b_out_pu, self.v_c_out_pu = 0, 0, 0  # DER output phase voltage in per unit
-        self.v_out_mag_pu = (0, 0, 0)   # For single phase DER: a single floating number of DER output voltage magnitude in per unit
+        self.v_out_mag_pu = [0, 0, 0]   # For single phase DER: an array of a single floating number of DER output voltage magnitude in per unit
                                         # For three phase DER: an array of three floating numbers of DER three phase output voltage magnitude in per unit
-        self.v_out_mag_v = (0, 0, 0)    # DER output voltage magnitude in volts
-        self.v_out_theta = (0, 0, 0)    # DER output voltage phase angle
+        self.v_out_mag_v = [0, 0, 0]    # DER output voltage magnitude in volts
+        self.v_out_theta = [0, 0, 0]    # DER output voltage phase angle
 
     def calculate_p_q_output(self, i_pos_pu):
         """
@@ -95,19 +95,19 @@ class DEROutputs:
             # Eq 3.11.2-1, calculate three phase current
             self.i_a_pu, self.i_b_pu, self.i_c_pu = sym_component.convert_symm_to_abc(i_pos_pu, i_neg_pu)
 
-            self.i_mag_pu = (abs(self.i_a_pu), abs(self.i_b_pu), abs(self.i_c_pu))
+            self.i_mag_pu = [abs(self.i_a_pu), abs(self.i_b_pu), abs(self.i_c_pu)]
 
             # Eq 3.11.2-2, calculate three phase current in ampere
             self.i_mag_amp = [i * self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM * 0.5773502691896258 for i in
                               self.i_mag_pu]
 
             # Eq 3.11.2-3, Calculate current phase angles
-            self.i_theta = (cmath.phase(self.i_a_pu), cmath.phase(self.i_b_pu), cmath.phase(self.i_c_pu))
+            self.i_theta = [cmath.phase(self.i_a_pu), cmath.phase(self.i_b_pu), cmath.phase(self.i_c_pu)]
         else:
             # Eq 3.11.2-4, calculate current amplitude and angles for single phase DER
-            self.i_mag_pu = abs(i_pos_pu)
-            self.i_mag_amp = self.i_mag_pu * self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM
-            self.i_theta = cmath.phase(i_pos_pu)
+            self.i_mag_pu = [abs(i_pos_pu)]
+            self.i_mag_amp = [self.i_mag_pu * self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM]
+            self.i_theta = [cmath.phase(i_pos_pu)]
 
     def calculate_v_output(self, i_pos_pu, i_neg_pu):
         """
@@ -136,19 +136,19 @@ class DEROutputs:
         if self.der_file.NP_PHASE == "THREE":
             # Eq 3.11.3-4, Calculate three phase voltages in per unit based on limited positive and negative voltage
             self.v_a_out_pu, self.v_b_out_pu, self.v_c_out_pu = sym_component.convert_symm_to_abc(self.v_pos_out_pu, self.v_neg_out_pu)
-            self.v_out_mag_pu = (abs(self.v_a_out_pu), abs(self.v_b_out_pu), abs(self.v_c_out_pu))
+            self.v_out_mag_pu = [abs(self.v_a_out_pu), abs(self.v_b_out_pu), abs(self.v_c_out_pu)]
 
             # Eq 3.11.3-5, Calculate three phase voltage in volts
             self.v_out_mag_v = [i * self.der_file.NP_AC_V_NOM * 0.5773502691896258 for i in self.v_out_mag_pu]
 
             # Eq 3.11.3-6, Calculate three phase voltage angles
-            self.v_out_theta = (cmath.phase(self.v_a_out_pu), cmath.phase(self.v_b_out_pu), cmath.phase(self.v_c_out_pu))
+            self.v_out_theta = [cmath.phase(self.v_a_out_pu), cmath.phase(self.v_b_out_pu), cmath.phase(self.v_c_out_pu)]
         else:
 
             # Eq 3.11.3-7~9, Calculate three phase voltage angles
-            self.v_out_mag_pu = abs(self.v_pos_out_pu)
-            self.v_out_mag_v = self.v_out_mag_pu * self.der_file.NP_AC_V_NOM
-            self.v_out_theta = cmath.phase(self.v_pos_out_pu)
+            self.v_out_mag_pu = [abs(self.v_pos_out_pu)]
+            self.v_out_mag_v = [self.v_out_mag_pu * self.der_file.NP_AC_V_NOM]
+            self.v_out_theta = [cmath.phase(self.v_pos_out_pu)]
 
     def v_limit(self, pos_pu, neg_pu):
         v_limit = self.der_file.NP_V_DC / self.der_file.NP_AC_V_NOM

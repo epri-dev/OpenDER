@@ -138,7 +138,8 @@ class DERInputs:
         elif self.der_file.NP_PHASE == "SINGLE":
 
             # Eq. 3.3.1-7, single phase applicable voltages
-            self.v_pos_pu = self.v_meas_pu = self.v_high_pu = self.v_low_pu = (self.v / self.der_file.NP_AC_V_NOM)
+            self.v_pos_pu = (self.v / self.der_file.NP_AC_V_NOM) * cmath.exp(1j * self.theta)
+            self.v_meas_pu = self.v_high_pu = self.v_low_pu = (self.v / self.der_file.NP_AC_V_NOM)
             self.v_neg_pu = self.v_zero_pu = 0
             self.v_angle = cmath.phase(self.v_pos_pu)
 

@@ -3,10 +3,10 @@
 
 EPRI’s OpenDER model aims to accurately represent steady-state and dynamic behaviors of inverter-based distributed
 energy resources (DERs). The model follows interconnection standards or grid-codes and is informed by the observed
-behaviors of commercial products. First version of the model includes photovoltaic (PV) DER behaviors according to
-the capabilities and functionalities required by the IEEE standard 1547-2018. This first-of-its-kind model can be
-used to run snapshot, Quasi-Static Time Series (QSTS), and a variety of dynamic analyses to study the impacts of DERs
-on distribution operations and planning.
+behaviors of commercial products. Currently, model version 2.0 includes photovoltaic (PV) and battery energy storage
+system (BESS) DER behaviors according to the capabilities and functionalities required by the IEEE standard 1547-2018.
+This first-of-its-kind model can be used to run snapshot, Quasi-Static Time Series (QSTS), and a variety of dynamic
+analyses to study the impacts of DERs on distribution operations and planning.
 
 This project is licensed under the terms of the BSD-3 clause license.
 
@@ -36,7 +36,7 @@ Development Objective
 
 Overall Block Diagram
 ---------------------
-.. figure:: https://raw.githubusercontent.com/epri-dev/OpenDER/develop/docs/blockdiagram.png
+.. figure:: https://raw.githubusercontent.com/epri-dev/OpenDER/develop_req_SQA/docs/blockdiagram.png
     :width: 900
 
 Dependencies

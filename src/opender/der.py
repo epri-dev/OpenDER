@@ -1,4 +1,5 @@
 # Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+import cmath
 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: 
@@ -29,6 +30,7 @@ from . import setting_execution_delay, rt_perf
 from typing import Union, List, Tuple, Any
 import numpy as np
 from .output_options import DEROutputs
+from opender.auxiliary_funcs.sym_component import convert_symm_to_abc
 
 
 class DER:
@@ -86,8 +88,8 @@ class DER:
         self.der_output = DEROutputs(self)
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
-                         f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None,
-                         p_dc_w: float = None) -> None:
+                         v_symm_pu: List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None,
+                         p_dc_pu: float = None, p_dc_w: float = None) -> None:
         """
         Update DER inputs
         :param p_dc_w: Available DC power in W
@@ -95,6 +97,7 @@ class DER:
         :param p_dc_pu:	Available DC power in per unit
         :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
         :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
+        :param v_symm_pu: DER RPA voltage in per unit as complex number for positive, negative, and zero sequences
         :param theta: DER RPA voltage angles
         :param f: DER RPA frequency in Hertz
         """
@@ -144,6 +147,28 @@ class DER:
                 self.der_input.theta_a = theta[0]
                 self.der_input.theta_b = theta[1]
                 self.der_input.theta_c = theta[2]
+
+        if v_symm_pu is not None:
+            if self.der_file.NP_PHASE == "THREE":
+                v_base = self.der_file.NP_AC_V_NOM / np.sqrt(3)
+                v_pos = v_symm_pu[0] * v_base
+                v_neg = v_symm_pu[1] * v_base
+                if len(v_symm_pu)<3:
+                    v_zero = 0
+                else:
+                    v_zero = v_symm_pu[2] * v_base
+
+                v_a_cplx, v_b_cplx, v_c_cplx = convert_symm_to_abc(v_pos,v_neg,v_zero)
+                self.der_input.v_a = abs(v_a_cplx)
+                self.der_input.v_b = abs(v_b_cplx)
+                self.der_input.v_c = abs(v_c_cplx)
+                self.der_input.theta_a = np.angle(v_a_cplx)
+                self.der_input.theta_b = np.angle(v_b_cplx)
+                self.der_input.theta_c = np.angle(v_c_cplx)
+
+            else:
+                self.der_input.v = abs(v_symm_pu[0] * self.der_file.NP_AC_V_NOM)
+                self.der_input.theta = np.angle(v_symm_pu[0] * self.der_file.NP_AC_V_NOM)
 
     def run(self) -> Tuple[float, float]:
         """

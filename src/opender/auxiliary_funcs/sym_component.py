@@ -12,13 +12,14 @@
 #   prior written permission.
 
 import cmath
+from typing import Tuple
 
 alpha = cmath.exp(1j * ((2 / 3) * cmath.pi))
 alpha2 = cmath.exp(1j * ((-2 / 3) * cmath.pi))
 
 
-def convert_symm_to_abc(pos_pu, neg_pu):
-    a_pu = pos_pu + neg_pu
-    b_pu = alpha2 * pos_pu + alpha * neg_pu
-    c_pu = alpha * pos_pu + alpha2 * neg_pu
+def convert_symm_to_abc(pos_pu:complex, neg_pu:complex, zero_pu:complex=0) -> Tuple[complex, complex, complex]:
+    a_pu = pos_pu + neg_pu + zero_pu
+    b_pu = alpha2 * pos_pu + alpha * neg_pu + zero_pu
+    c_pu = alpha * pos_pu + alpha2 * neg_pu + zero_pu
     return a_pu, b_pu, c_pu

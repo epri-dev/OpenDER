@@ -1,4 +1,4 @@
-# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 import cmath
 
 # Redistribution and use in source and binary forms, with or without modification,
@@ -11,10 +11,6 @@ import cmath
 # · Neither the name of the EPRI nor the names of its contributors may be used 
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
-
-# -*- coding: utf-8 -*-
-
-# Created on Mon Sep 20 15:22:44 2021
 
 # @author: Jithendar Anandan
 # @email: janandan@epri.com

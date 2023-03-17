@@ -66,6 +66,7 @@ class RideThroughPerf:
         :param der_status:	Status of DER (Trip, Entering Service, Continuous Operation, etc)
         :param NP_CTE_RESP_T:   Cease to Energize response time
         :param MC_RESP_T:       Momentary cessation response time
+        :param DVS_MODE_ENABLE: Dynamic Voltage Support enable
 
         Outputs:
         :param rt_ctrl: DER ride-through control mode
@@ -136,9 +137,9 @@ class RideThroughPerf:
         Variables used in this function:
         :param NP_RT_RAMP_UP_TIME: Time required for the active current restore from 0 to 100% of rated current after momentary cessation
         :param NP_INV_DELAY: Time from a step change in the current reference input until the output changes by 90% of its final change
-        :param NP_REACTIVE_SUSCEPTANCE:
-
-
+        :param NP_REACTIVE_SUSCEPTANCE: Reactive susceptance that remains connected to the Area EPS in the cease to energize and trip state
+        :param NP_CURRENT_PU: DER nameplate max current in per unit
+        :param DVS_K: Dynamic Voltage Support K factor (Per unit current increase in respond to per unit voltage change during ride-through)
         """
         if self.rt_ctrl == 'Normal Operation':
             # Eq 3.10.1-3, calculate current based on desired P, Q and terminal voltage.

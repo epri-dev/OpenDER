@@ -54,7 +54,7 @@ class DERCommonFileFormat:
 
                        'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF', 'PF_OLRT',
 
-                       'MC_LVRT_V1', 'MC_HVRT_V1',
+                       # 'MC_LVRT_V1', 'MC_HVRT_V1',
 
                        'NP_EFFICIENCY', 'NP_V_DC', 'P_Q_INJ_PU', 'P_Q_ABS_PU', 'Q_MAX_INJ_PU', 'Q_MAX_ABS_PU',
                        'NP_PRIO_OUTSIDE_MIN_Q_REQ', 'NP_V_MEAS_UNBALANCE', 'NP_PHASE', 'NP_P_MIN_PU', 'AP_RT',
@@ -223,8 +223,8 @@ class DERCommonFileFormat:
         self._PF_KUF = 0.05
         self._PF_OLRT = 5
 
-        self._MC_LVRT_V1 = None
-        self._MC_HVRT_V1 = None
+        # self._MC_LVRT_V1 = None
+        # self._MC_HVRT_V1 = None
 
         if self.isNotNaN(self.param_inputs.NP_TYPE):
             self.NP_TYPE = self.param_inputs.NP_TYPE
@@ -498,8 +498,8 @@ class DERCommonFileFormat:
             self.UV1_TRIP_T = 2
             self.UV2_TRIP_V = 0.45
             self.UV2_TRIP_T = 0.16
-            self.MC_LVRT_V1 = 0
-            self.MC_HVRT_V1 = 2
+            # self.MC_LVRT_V1 = 0
+            # self.MC_HVRT_V1 = 2
 
         elif self.NP_ABNORMAL_OP_CAT == "CAT_II":
             self.OV1_TRIP_T = 2
@@ -507,16 +507,16 @@ class DERCommonFileFormat:
             self.UV1_TRIP_T = 10
             self.UV2_TRIP_V = 0.45
             self.UV2_TRIP_T = 0.16
-            self.MC_LVRT_V1 = 0
-            self.MC_HVRT_V1 = 2
+            # self.MC_LVRT_V1 = 0
+            # self.MC_HVRT_V1 = 2
         else:
             self.OV1_TRIP_T = 13
             self.UV1_TRIP_V = 0.88
             self.UV1_TRIP_T = 21
             self.UV2_TRIP_V = 0.5
             self.UV2_TRIP_T = 2
-            self.MC_LVRT_V1 = 0.5
-            self.MC_HVRT_V1 = 1.1
+            # self.MC_LVRT_V1 = 0.5
+            # self.MC_HVRT_V1 = 1.1
 
         if self.isNotNaN(self.param_inputs.OV2_TRIP_V):
             self.OV2_TRIP_V = self.param_inputs.OV2_TRIP_V
@@ -562,10 +562,10 @@ class DERCommonFileFormat:
             self.PF_KUF = self.param_inputs.PF_KUF
         if self.isNotNaN(self.param_inputs.PF_OLRT):
             self.PF_OLRT = self.param_inputs.PF_OLRT
-        if self.isNotNaN(self.param_inputs.MC_LVRT_V1):
-            self.MC_LVRT_V1 = self.param_inputs.MC_LVRT_V1
-        if self.isNotNaN(self.param_inputs.MC_HVRT_V1):
-            self.MC_HVRT_V1 = self.param_inputs.MC_HVRT_V1
+        # if self.isNotNaN(self.param_inputs.MC_LVRT_V1):
+        #     self.MC_LVRT_V1 = self.param_inputs.MC_LVRT_V1
+        # if self.isNotNaN(self.param_inputs.MC_HVRT_V1):
+        #     self.MC_HVRT_V1 = self.param_inputs.MC_HVRT_V1
 
 
 
@@ -1910,27 +1910,27 @@ class DERCommonFileFormat:
         if self.PF_OLRT < 0.2 or self.PF_OLRT > 10:
             logging.warning("Warning: Frequency-droop function open-loop response time should be within the range "
                             "defined in IEEE 1547-2018 Clause 6.5.2.7.2")
-    @property
-    def MC_LVRT_V1(self):
-        return self._MC_LVRT_V1
+    # @property
+    # def MC_LVRT_V1(self):
+    #     return self._MC_LVRT_V1
+    #
+    # @MC_LVRT_V1.setter
+    # def MC_LVRT_V1(self, MC_LVRT_V1):
+    #     self._MC_LVRT_V1 = MC_LVRT_V1
+    #     if self._MC_LVRT_V1 < 0 or self._MC_LVRT_V1 > 0.5:
+    #         logging.warning("Warning: Low-voltage momentary cessation curve point 1 voltage should be 0.5 for Category "
+    #                         "III DER. For other categories, there is no requirements on momentary cessation")
 
-    @MC_LVRT_V1.setter
-    def MC_LVRT_V1(self, MC_LVRT_V1):
-        self._MC_LVRT_V1 = MC_LVRT_V1
-        if self._MC_LVRT_V1 < 0 or self._MC_LVRT_V1 > 0.5:
-            logging.warning("Warning: Low-voltage momentary cessation curve point 1 voltage should be 0.5 for Category "
-                            "III DER. For other categories, there is no requirements on momentary cessation")
-
-    @property
-    def MC_HVRT_V1(self):
-        return self._MC_HVRT_V1
-
-    @MC_HVRT_V1.setter
-    def MC_HVRT_V1(self, MC_HVRT_V1):
-        self._MC_HVRT_V1 = MC_HVRT_V1
-        if self._MC_HVRT_V1 < 1.1:
-            logging.warning("Warning: High-voltage momentary cessation curve point 1 voltage should be 1.1 for Category"
-                            " III DER. For other categories, there is no requirements on momentary cessation")
+    # @property
+    # def MC_HVRT_V1(self):
+    #     return self._MC_HVRT_V1
+    #
+    # @MC_HVRT_V1.setter
+    # def MC_HVRT_V1(self, MC_HVRT_V1):
+    #     self._MC_HVRT_V1 = MC_HVRT_V1
+    #     if self._MC_HVRT_V1 < 1.1:
+    #         logging.warning("Warning: High-voltage momentary cessation curve point 1 voltage should be 1.1 for Category"
+    #                         " III DER. For other categories, there is no requirements on momentary cessation")
 
     @property
     def STATUS_INIT(self):

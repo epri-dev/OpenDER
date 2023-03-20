@@ -1,5 +1,5 @@
 """
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -56,7 +56,7 @@ class TestConstantPowerFactor352:
 
         p_limit = 1
 
-        self.si_obj.der_file.NP_P_MAX = 100
+
         self.si_obj.der_file.CONST_PF_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.CONST_PF = 0.9
         self.si_obj.der_file.CONST_PF_EXCITATION = "INJ"
@@ -65,13 +65,12 @@ class TestConstantPowerFactor352:
         self.si_obj.der_file.NP_EFFICIENCY = 0.97
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c= 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu)
         self.si_obj.run()
 
         # Check inputs
         assert self.si_obj.der_file.CONST_PF_MODE_ENABLE
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc * 1000 == self.si_obj.der_input.p_dc_w
         assert 0.9 == self.si_obj.der_file.CONST_PF
         assert "INJ" == self.si_obj.der_file.CONST_PF_EXCITATION
         assert not self.si_obj.der_file.AP_LIMIT_ENABLE

@@ -1,4 +1,4 @@
-# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: 
@@ -20,7 +20,7 @@ from opender import der
 class Ramping:
     """
     |  Ramp rate limit function
-    |  EPRI Report Reference: Section 3.11.2 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.12.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self):
@@ -44,7 +44,7 @@ class Ramping:
             self.ramp_out_prev = ramp_in
         ramp_out = None
 
-        # Eq. 73 and 74, apply ramp rate limit
+        # Eq. 3.12.2-2 and -3, apply ramp rate limit
         if(ramp_up_time != 0):
             ramp_up_limit = der.DER.t_s / ramp_up_time
             if ((self.ramp_out_prev + ramp_up_limit) < ramp_in):

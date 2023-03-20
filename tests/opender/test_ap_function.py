@@ -1,5 +1,5 @@
 """
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -42,14 +42,13 @@ class TestLimitP:
         self.si_obj.der_file.AP_LIMIT_ENABLE = "ENABLED"
         self.si_obj.der_file.AP_LIMIT = p_limit
 
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c= 277.128129, 277.128129, 277.128129
+        self.si_obj.update_der_input(v_pu=1, p_dc_kw=p_dc)
         self.si_obj.run()
 
         # Check inputs
         assert True == self.si_obj.der_file.AP_LIMIT_ENABLE
         assert p_limit == self.si_obj.der_file.AP_LIMIT
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc*1000 == self.si_obj.der_input.p_dc_w
 
         # Check Results
         p_actual = self.si_obj.p_out_kw

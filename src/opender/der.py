@@ -1,4 +1,5 @@
-# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
+import cmath
 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: 
@@ -11,25 +12,21 @@
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-# -*- coding: utf-8 -*-
-
-# Created on Mon Sep 20 15:22:44 2021
-
 # @author: Jithendar Anandan
 # @email: janandan@epri.com
 
-from . import common_file_format
-from .active_power_support_funcs import active_power_support_functions
-from .reactive_power_support_funcs import reactive_power_support_functions
-from . import rem_ctrl
-from . import enter_service_and_trip
-from . import enter_service_perf
-from . import capability_and_priority
-from . import operating_condition_input_processing as ocip
-from . import setting_execution_delay
-from typing import Union, List, Tuple
+from .common_file_format.common_file_format import DERCommonFileFormat
+from .active_power_support_funcs.p_funcs import DesiredActivePower
+from .reactive_power_support_funcs.q_funcs import DesiredReactivePower
+from .operation_status import OperatingStatus
+from opender.operation_status.enter_service_crit.es_crit import EnterServiceCrit
+from opender.capability_and_priority import CapabilityPriority
+from opender.op_cond_proc import DERInputs
+from . import setting_execution_delay, rt_perf
+from typing import Union, List, Tuple, Any
 import numpy as np
-
+from .output_options import DEROutputs
+from opender.auxiliary_funcs.sym_component import convert_symm_to_abc
 
 
 class DER:
@@ -42,53 +39,73 @@ class DER:
         :param der_file_obj: DER common file format object created from common_file_format.py
         """
 
-        if der_file_obj is None:
-            der_file_obj = common_file_format.DERCommonFileFormat()
-
-        self.der_file = der_file_obj
-        self.der_file.nameplate_value_validity_check()
         self.time = 0       # Elapsed time from start of simulation
         self.name = 'DER1'  # Identification if multiple DERs are defined
         self.bus = None     # Bus which DER is connected to
 
+        if der_file_obj is None:
+            der_file_obj = self.get_DERCommonFileFormat()
+
+        self.der_file = der_file_obj
+        self.der_file.nameplate_value_validity_check()
+
         # Intermediate variables
-        self.p_act_supp_kw = None
-        self.p_desired_kw = None
-        self.q_desired_kvar = None
-        self.p_limited_kw = None
-        self.q_limited_kvar = None
-
-        self.der_status = self.der_file.STATUS_INIT
-
+        self.p_desired_pu = None
+        self.q_desired_pu = None
+        self.p_limited_w = None
+        self.q_limited_var = None
+        self.i_pos_pu = None
+        self.i_neg_pu = None
+        self.p_out_w = None
+        self.q_out_var = None
+        self.p_out_pu = None
+        self.q_out_pu = None
         self.p_out_kw = None
         self.q_out_kvar = None
 
+        if self.der_file.STATUS_INIT:
+            self.der_status = 'Continuous Operation'
+        else:
+            self.der_status = 'Trip'
+
+        self.es_crit = None
+
+        self.p_out_w = None
+        self.q_out_var = None
+
         # DER model modules
-        self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
-        self.enterserviceperf = enter_service_perf.EnterServicePerformance()
-        self.reactivepowerfunc = reactive_power_support_functions.DesiredReactivePower()
-        self.limited_p_q = capability_and_priority.CapabilityPriority()
-        self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = active_power_support_functions.DesiredActivePower()
-        self.der_input = ocip.DERInputs()
+        self.der_input = DERInputs(self.der_file)
+        self.exec_delay = setting_execution_delay.SettingExecutionDelay(self.der_file)
+        self.opstatus = OperatingStatus(self)
+        self.activepowerfunc = DesiredActivePower(self)
+        self.reactivepowerfunc = DesiredReactivePower(self)
+        self.limited_p_q = CapabilityPriority(self)
+        self.ridethroughperf = rt_perf.RideThroughPerf(self)
+        self.der_output = DEROutputs(self)
 
     def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
-                         f: float = None, v_pu: Union[List[float], float] = None, p_dc_pu: float = None) -> None:
+                         v_symm_pu: List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None,
+                         p_dc_pu: float = None, p_dc_w: float = None) -> None:
         """
         Update DER inputs
+        :param p_dc_w: Available DC power in W
         :param p_dc_kw:	Available DC power in kW
         :param p_dc_pu:	Available DC power in per unit
         :param v: DER RPA voltage in Volt: if receive a float for three phase DER, all three phases are updated
         :param v_pu: DER RPA voltage in per unit: if receive a float for three phase DER, all three phases are updated
+        :param v_symm_pu: DER RPA voltage in per unit as complex number for positive, negative, and zero sequences
         :param theta: DER RPA voltage angles
         :param f: DER RPA frequency in Hertz
         """
 
+        if p_dc_w is not None:
+            self.der_input.p_dc_w = p_dc_w
+
         if p_dc_kw is not None:
-            self.der_input.p_dc_kw = p_dc_kw
+            self.der_input.p_dc_w = p_dc_kw * 1000
 
         if p_dc_pu is not None:
-            self.der_input.p_dc_kw = p_dc_pu * self.der_file.NP_P_MAX
+            self.der_input.p_dc_w = p_dc_pu * self.der_file.NP_P_MAX
 
         if f is not None:
             self.der_input.freq_hz = f
@@ -120,9 +137,34 @@ class DER:
                 self.der_input.v = v_pu * self.der_file.NP_AC_V_NOM
 
         if theta is not None:
-            self.der_input.theta_a = theta[0]
-            self.der_input.theta_b = theta[1]
-            self.der_input.theta_c = theta[2]
+            if type(v_pu) is float or type(v_pu) is int:
+                self.der_input.theta = theta
+            else:
+                self.der_input.theta_a = theta[0]
+                self.der_input.theta_b = theta[1]
+                self.der_input.theta_c = theta[2]
+
+        if v_symm_pu is not None:
+            if self.der_file.NP_PHASE == "THREE":
+                v_base = self.der_file.NP_AC_V_NOM / np.sqrt(3)
+                v_pos = v_symm_pu[0] * v_base
+                v_neg = v_symm_pu[1] * v_base
+                if len(v_symm_pu)<3:
+                    v_zero = 0
+                else:
+                    v_zero = v_symm_pu[2] * v_base
+
+                v_a_cplx, v_b_cplx, v_c_cplx = convert_symm_to_abc(v_pos,v_neg,v_zero)
+                self.der_input.v_a = abs(v_a_cplx)
+                self.der_input.v_b = abs(v_b_cplx)
+                self.der_input.v_c = abs(v_c_cplx)
+                self.der_input.theta_a = np.angle(v_a_cplx)
+                self.der_input.theta_b = np.angle(v_b_cplx)
+                self.der_input.theta_c = np.angle(v_c_cplx)
+
+            else:
+                self.der_input.v = abs(v_symm_pu[0] * self.der_file.NP_AC_V_NOM)
+                self.der_input.theta = np.angle(v_symm_pu[0] * self.der_file.NP_AC_V_NOM)
 
     def run(self) -> Tuple[float, float]:
         """
@@ -135,50 +177,88 @@ class DER:
         self.time = self.time + self.__class__.t_s
 
         # Input processing
-        self.der_input.operating_condition_input_processing(self.der_file)
+        self.der_input.operating_condition_input_processing()
 
         # Execution delay
-        self.executiondelay.mode_and_execution_delay(self.der_file)
+        self.exec_delay.mode_and_execution_delay()
 
-        # Enter service and trip decision making
-        self.der_status = self.enterservicetrip.es_decision(self.der_file, self.executiondelay, self.der_input)
+        # Determine DER operating status
+        self.der_status = self.opstatus.determine_der_status()
 
         # Calculate desired active power
-        self.p_act_supp_kw = self.activepowerfunc.calculate_p_act_supp_kw(self.der_file, self.executiondelay, self.der_input, self.p_out_kw)
-
-        # Enter service ramp
-        self.p_desired_kw = self.enterserviceperf.es_performance(self.der_file, self.executiondelay, self.p_act_supp_kw, self.der_status)
+        self.p_desired_pu = self.activepowerfunc.calculate_p_funcs(self.p_out_w)
 
         # Calculate desired reactive power
-        self.q_desired_kvar = self.reactivepowerfunc.calculate_reactive_funcs(self.der_file, self.executiondelay, self.der_input, self.p_desired_kw, self.der_status)
+        self.q_desired_pu = self.reactivepowerfunc.calculate_reactive_funcs(self.p_desired_pu, self.der_status)
 
         # Limit DER output based on kVA rating and DER capability curve
-        self.p_limited_kw, self.q_limited_kvar = self.limited_p_q.calculate_limited_pq(self.der_file, self.executiondelay, p_desired_kw=self.p_desired_kw,q_desired_kvar=self.q_desired_kvar)
+        self.p_limited_w, self.q_limited_var = self.limited_p_q.calculate_limited_pq(self.p_desired_pu, self.q_desired_pu)
 
-        # Determine DER model output value
-        self.p_out_kw, self.q_out_kvar = rem_ctrl.RemainingControl(self.p_limited_kw, self.q_limited_kvar)
+        # Calculate DER output positive and negative sequence current based on ride-through performance
+        self.i_pos_pu, self.i_neg_pu = self.ridethroughperf.der_rem_operation(self.p_limited_w, self.q_limited_var, self.der_status)
 
-        return self.p_out_kw,self.q_out_kvar
+        # Generate DER model output value
+        self.p_out_w, self.q_out_var = self.der_output.calculate_p_q_output(self.i_pos_pu)
+        self.p_out_kw = self.der_output.p_out_kw
+        self.q_out_kvar = self.der_output.q_out_kvar
+        self.p_out_pu = self.der_output.p_out_pu
+        self.q_out_pu = self.der_output.q_out_pu
+
+        return self.p_out_w, self.q_out_var
 
     def reinitialize(self):
         # only used when need to reset DER model
         self.der_status = self.der_file.STATUS_INIT
         self.time = 0
-        self.enterservicetrip = enter_service_and_trip.EnterServiceTrip(self.der_file.STATUS_INIT)
-        self.enterserviceperf = enter_service_perf.EnterServicePerformance()
-        self.reactivepowerfunc = reactive_power_support_functions.DesiredReactivePower()
-        self.limited_p_q = capability_and_priority.CapabilityPriority()
-        self.executiondelay = setting_execution_delay.SettingExecutionDelay()
-        self.activepowerfunc = active_power_support_functions.DesiredActivePower()
+        # self.der_input = DERInputs(self.der_file)
+        self.exec_delay = setting_execution_delay.SettingExecutionDelay(self.der_file)
+        self.enterservicecrit = EnterServiceCrit(self)
+        self.opstatus = OperatingStatus(self)
+        self.activepowerfunc = DesiredActivePower(self)
+        self.reactivepowerfunc = DesiredReactivePower(self)
+        self.limited_p_q = CapabilityPriority(self)
+        self.ridethroughperf = rt_perf.RideThroughPerf(self)
+        self.der_output = DEROutputs(self)
 
-        self.p_out_kw = None
-        self.q_out_kvar = None
+        self.p_out_w = None
+        self.q_out_var = None
+
+    def get_der_output(self, output: str = 'PQ_pu') -> Union[Tuple[Any, Any], Tuple[List[Any], List[Any]]]:
+        if output == 'PQ_VA':
+            return self.p_out_w, self.q_out_var
+        elif output == 'PQ_kVA':
+            return self.p_out_kw, self.q_out_kvar
+        elif output == 'PQ_pu':
+            return self.p_out_pu, self.q_out_pu
+        elif output == 'I_A':
+            self.der_output.calculate_i_output(self.i_pos_pu, self.i_neg_pu)
+            return self.der_output.i_mag_amp, self.der_output.i_theta
+        elif output == 'I_pu':
+            self.der_output.calculate_i_output(self.i_pos_pu, self.i_neg_pu)
+            return self.der_output.i_mag_pu, self.der_output.i_theta
+        elif output == 'Ipn_pu':
+            return self.i_pos_pu, self.i_neg_pu
+        elif output == 'V_pu':
+            self.der_output.calculate_v_output(self.i_pos_pu, self.i_neg_pu)
+            return self.der_output.v_out_mag_pu, self.der_output.v_out_theta
+        elif output == 'V_V':
+            self.der_output.calculate_v_output(self.i_pos_pu, self.i_neg_pu)
+            return self.der_output.v_out_mag_v, self.der_output.v_out_theta
+        else:
+            print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu")
+
+            #TODO should we use different methods to get model outputs, or use a single one with different values?
+            #TODO if use Python 3.8, Literal type may be used to suggest possible values.
+
+
 
     def __str__(self):
         # for debug, generate a string
         # E.g. can be used when print(DER_obj)
-        return f"{self.time:.1f}: {self.name} - v_meas_pu={self.der_input.v_meas_pu:.5f}, " \
-               f"p_act_supp_kw={self.p_act_supp_kw:.2f}, q_desired_kvar={self.q_desired_kvar:.2f}, " \
-               f"p_out_kw={self.p_out_kw:.2f}, q_out_kvar={self.q_out_kvar:.2f}"
+        return f"{self.time:.1f}: {self.name} ({self.der_status})- " \
+               f"v_meas_pu={self.der_input.v_meas_pu:.5f}, " \
+               f"p_desired_pu={self.p_desired_pu:.2f}, q_desired_pu={self.q_desired_pu:.2f}, " \
+               f"p_out_kw={self.p_out_kw:.3f}, q_out_kvar={self.q_out_kvar:.3f}"
 
-
+    def get_DERCommonFileFormat(self):
+        return DERCommonFileFormat()

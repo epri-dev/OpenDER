@@ -1,4 +1,4 @@
-# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: 
@@ -54,6 +54,7 @@ debug_plot = []
 # }
 
 der_test.der_file.QV_MODE_ENABLE = True
+der_test.der_file.NP_ABNORMAL_OP_CAT = 'Cat_II'
 # der_test.der_file.NP_Q_MAX_INJ = 44
 # der_test.der_file.NP_Q_MAX_ABS = 44
 # der_test.der_file.NP_VA_MAX = 100
@@ -144,7 +145,7 @@ der_test.der_file.QV_MODE_ENABLE = True
 
 
 der_test.der_input.freq_hz=60
-der_test.der_input.p_dc_kw=100
+der_test.der_input.p_dc_w=100000
 while t < 2500:
     if (t < 5)or(100<t<700)or(800<t<1400)or(1500<t<2100):
         der_test.der_input.v_a = 1*240/1.732
@@ -183,12 +184,12 @@ while t < 2500:
 
     # save result
     t_plot.append(t)
-    p_plot.append(der_test.p_limited_kw)
-    q_plot.append(der_test.q_limited_kvar)
-    pdc_plot.append(der_test.der_input.p_dc_kw)
+    p_plot.append(der_test.p_out_pu)
+    q_plot.append(der_test.q_out_pu)
+    pdc_plot.append(der_test.der_input.p_avl_pu)
     v_plot.append(der_test.der_input.v_meas_pu)
     stat_plot.append(der_test.der_status)
-    debug_plot.append(der_test.enterservicetrip.es_flag)
+    # debug_plot.append(der_test.enterservicecrit.es_flag)
 
     # increase t
     t = t + t_s
@@ -202,12 +203,12 @@ plt.plot(t_plot, v_plot, label = 'Voltage (pu)')
 plt.grid()
 plt.legend()
 plt.subplot(4, 1, 2, sharex=ax1)
-plt.plot(t_plot, pdc_plot, label='P_dc (kW)')
-plt.plot(t_plot, p_plot, label='P_out (kW)')
+plt.plot(t_plot, pdc_plot, label='P_dc (pu)')
+plt.plot(t_plot, p_plot, label='P_out (pu)')
 plt.grid()
 plt.legend()
 plt.subplot(4, 1, 3, sharex=ax1)
-plt.plot(t_plot, q_plot, label='Q_out (kvar)')
+plt.plot(t_plot, q_plot, label='Q_out (pu)')
 plt.grid()
 plt.legend()
 plt.subplot(4, 1, 4, sharex=ax1)

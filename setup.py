@@ -1,4 +1,4 @@
-# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: 
@@ -38,7 +38,7 @@ def read(*names, **kwargs):
 
 setup(
     name='opender',
-    version='1.0.1',
+    version='2.0.0',
     license='BSD',
     description='Open-source Distributed Energy Resources (DER) Model that represents IEEE Standard 1547-2018 '
                 'requirements for steady-state and dynamic analyses',
@@ -47,8 +47,8 @@ setup(
         re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))
     ),
     long_description_content_type='text/x-rst',
-    author='Jithendar Anandan, Yiwei Ma, Wei Ren, and Paulo Radatz',
-    author_email='janandan@epri.com, yma@epri.com, wren@epri.com, pradatz@epri.com',
+    author='Yiwei Ma, Wei Ren, Paulo Radatz, Jithendar Anandan',
+    author_email='yma@epri.com, wren@epri.com, pradatz@epri.com',
     url='https://github.com/epri-dev/opender',
     packages=find_packages('src'),
     package_dir={'': 'src'},

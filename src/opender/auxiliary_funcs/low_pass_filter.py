@@ -1,4 +1,4 @@
-# Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+# Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: 
@@ -18,7 +18,7 @@ from opender import der
 class LowPassFilter:
     """
     |  Low pass filter for modeling DER open loop response behavior and other related responses
-    |  EPRI Report Reference: Section 3.11.1 in Report #3002021694: IEEE 1547-2018 DER Model
+    |  EPRI Report Reference: Section 3.12.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self):
@@ -48,7 +48,7 @@ class LowPassFilter:
         if(t_olrt < (1.15 * der.DER.t_s)):
             lpf_out = lpf_in
         else:
-            # Eq. 71, apply first order lag
+            # Eq. 3.12.1-2, apply first order lag
             t_olrt_t = t_olrt/1.15
             lpf_out = ((der.DER.t_s / (der.DER.t_s + t_olrt_t)) * (lpf_in + self.lpf_in_prev)) + ((t_olrt_t - der.DER.t_s) / (
                         der.DER.t_s + t_olrt_t) * self.lpf_out_prev)

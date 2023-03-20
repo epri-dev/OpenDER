@@ -1,5 +1,5 @@
 """
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -50,7 +50,7 @@ class TestVoltVar317:
                                   for i in input_list])
     def test_volt_var_q_priority(self, v_pu, p_dc, p_expected, q_expected, calculated_v):
 
-        self.si_obj.der_file.NP_P_MAX = 100
+
         self.si_obj.der_file.QV_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.QV_CURVE_V1 = 0.92
         self.si_obj.der_file.QV_CURVE_V2 = 0.98
@@ -60,22 +60,20 @@ class TestVoltVar317:
         self.si_obj.der_file.QV_CURVE_Q2 = 0
         self.si_obj.der_file.QV_CURVE_Q3 = 0
         self.si_obj.der_file.QV_CURVE_Q4 = -0.44
-        self.si_obj.der_file.NP_Q_MAX_INJ = 44
-        self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_MAX_INJ = 44e3
+        self.si_obj.der_file.NP_Q_MAX_ABS = 44e3
         self.si_obj.der_file.NP_V_MEAS_UNBALANCE = "AVG"
         self.si_obj.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
         self.si_obj.der_file.OV1_TRIP_V = 1.2
         self.si_obj.der_file.OV2_TRIP_V = 1.2
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu[0], 277.128129 * v_pu[1], 277.128129 * v_pu[2]
-        self.si_obj.der_input.theta_a, self.si_obj.der_input.theta_b, self.si_obj.der_input.theta_c = 1 * v_pu[3], 1 * v_pu[4], 1 * v_pu[5]
+        self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu[0:3], theta=v_pu[3:6])
         self.si_obj.reinitialize()
         self.si_obj.run()
 
         # Check inputs
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc * 1000 == self.si_obj.der_input.p_dc_w
  #       assert "Reactive Power" == self.si_obj.der_file.power_priority
         assert True == self.si_obj.der_file.QV_MODE_ENABLE
         assert 0.92 == self.si_obj.der_file.QV_CURVE_V1
@@ -86,8 +84,8 @@ class TestVoltVar317:
         assert 0 == self.si_obj.der_file.QV_CURVE_Q2
         assert 0 == self.si_obj.der_file.QV_CURVE_Q3
         assert -0.44 == self.si_obj.der_file.QV_CURVE_Q4
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_INJ
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_ABS
+        assert 44 * 1000 == self.si_obj.der_file.NP_Q_MAX_INJ
+        assert 44 * 1000 == self.si_obj.der_file.NP_Q_MAX_ABS
         assert "AVG" == self.si_obj.der_file.NP_V_MEAS_UNBALANCE
 
         # Check Results

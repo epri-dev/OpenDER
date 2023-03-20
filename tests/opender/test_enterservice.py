@@ -1,5 +1,5 @@
 """
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@ input_list = [  #ES_DELAY, ES_RAMP_RATE, ES_RANDOMIZED_DELAY, ES_V_HIGH, ES_V_LO
     (0,0,1,1.05,0.88,60.1,59.0,1.0,1.0,58.98,59.92)
 
 ]
-t_s_list = [1, 10,100,1000000]
+t_s_list = [1, 10, 100, 1000000]
 
 class TestEnterService562:
     #IEEE 1547.1-2020, section 5.6.2: type test
@@ -60,45 +60,45 @@ class TestEnterService562:
 
         t1=0
         period1=max(60,2*self.si_obj.der_file.ES_DELAY+self.si_obj.der_file.ES_RANDOMIZED_DELAY)
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu, p_dc_kw=p_dc)
         self.si_obj.der_input.freq_hz = init_f
 
         while t1+t_s<=period1:
             self.si_obj.run()
-            assert False == self.si_obj.der_status, 'enter service stage e) fail'
+            assert 'Trip' == self.si_obj.der_status, 'enter service stage e) fail'
             t1=t1+t_s
 
         t2=0
         period2=max(60,2*self.si_obj.der_file.ES_DELAY+self.si_obj.der_file.ES_RANDOMIZED_DELAY)
         self.si_obj.der_file.ES_PERMIT_SERVICE = True
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         while t2+t_s<=period2:
             self.si_obj.run()
-            assert False == self.si_obj.der_status, f'enter service stage h) fail, at t={t2}'
+            assert 'Trip' == self.si_obj.der_status, f'enter service stage h) fail, at t={t2}'
             t2=t2+t_s
 
         t3=0
         period3=0.25*self.si_obj.der_file.ES_DELAY
         v_pu = final_v
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         self.si_obj.der_input.freq_hz=final_f
         while t3+t_s <= period3:
             self.si_obj.run()
-            assert False == self.si_obj.der_status, f'enter service stage i) fail, at t={t3}'
+            assert 'Trip' == self.si_obj.der_status, f'enter service stage i) fail, at t={t3}'
             t3=t3+t_s
 
-        t4=0
+        t4=t_s
         v_pu = init_v
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         self.si_obj.der_input.freq_hz=init_f
         self.si_obj.run()
+        p_prev = self.si_obj.p_out_kw
 
         v_pu = final_v
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(v_pu=v_pu)
         self.si_obj.der_input.freq_hz=final_f
 
-        while self.si_obj.der_status == False:
+        while self.si_obj.der_status == 'Trip':
             p_prev = self.si_obj.p_out_kw
             self.si_obj.run()
             t4=t4+t_s
@@ -126,5 +126,5 @@ class TestEnterService562:
             self.si_obj.run()
             while t5+t_s <= 5:
                 self.si_obj.run()
-                assert False == self.si_obj.der_status, 'enter service stage l) fail'
+                assert 'Trip' == self.si_obj.der_status, 'enter service stage l) fail'
                 t5=t5+t_s

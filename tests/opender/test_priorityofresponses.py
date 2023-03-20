@@ -1,5 +1,5 @@
 """
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -74,40 +74,40 @@ class TestPriorityOfResponse:
 
         self.si_obj.update_der_input(v_pu=1,f=60) #step 1
         self.si_obj.run()
-        assert abs(0.5 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_kw) < epsilon
-        assert abs(input_list[2] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_kvar) < epsilon
+        assert abs(0.5 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_w) < epsilon
+        assert abs(input_list[2] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_var) < epsilon
 
         self.si_obj.update_der_input(v_pu=1.09,f=60) #step 2
         self.si_obj.run()
-        assert abs(0.4 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_kw) < epsilon
-        assert abs(input_list[3] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_kvar) < epsilon
+        assert abs(0.4 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_w) < epsilon
+        assert abs(input_list[3] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_var) < epsilon
 
         self.si_obj.update_der_input(v_pu=1.09,f=60.336) #step 3
         self.si_obj.run()
-        assert abs(0.3 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_kw) < epsilon
-        assert abs(input_list[4] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_kvar) < epsilon
+        assert abs(0.3 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_w) < epsilon
+        assert abs(input_list[4] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_var) < epsilon
 
         self.si_obj.update_der_input(v_pu=1.09,f=60) #step 4
         self.si_obj.run()
-        assert abs(0.4 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_kw) < epsilon
-        assert abs(input_list[5] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_kvar) < epsilon
+        assert abs(0.4 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_w) < epsilon
+        assert abs(input_list[5] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_var) < epsilon
 
         self.si_obj.update_der_input(v_pu=1.09,f=59.364) #step 5
         self.si_obj.run()
-        assert abs(0.4 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_kw) < epsilon
-        assert abs(input_list[6] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_kvar) < epsilon
+        assert abs(0.4 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_w) < epsilon
+        assert abs(input_list[6] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_var) < epsilon
 
         self.si_obj.update_der_input(v_pu=1,f=59.364) #step 6
         self.si_obj.run()
-        assert abs(0.6 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_kw) < epsilon
-        assert abs(input_list[7] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_kvar) < epsilon
+        assert abs(0.6 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_w) < epsilon
+        assert abs(input_list[7] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_var) < epsilon
 
         self.si_obj.update_der_input(v_pu=1, f=60)  # step 7
         self.si_obj.run()
-        assert abs(0.5 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_kw) < epsilon
-        assert abs(input_list[8] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_kvar) < epsilon
+        assert abs(0.5 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_w) < epsilon
+        assert abs(input_list[8] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_var) < epsilon
 
         self.si_obj.update_der_input(v_pu=1,f=59.364) #step 8
         self.si_obj.run()
-        assert abs(0.7 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_kw) < epsilon
-        assert abs(input_list[9] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_kvar) < epsilon
+        assert abs(0.7 * self.si_obj.der_file.NP_P_MAX - self.si_obj.p_out_w) < epsilon
+        assert abs(input_list[9] * self.si_obj.der_file.NP_VA_MAX - self.si_obj.q_out_var) < epsilon

@@ -1,5 +1,5 @@
 """
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ class TestVoltWatt3322:
     def test_volt_watt(self, v_pu, p_dc, p_expected, q_expected, calculated_v):
         p_limit = 0.5
 
-        self.si_obj.der_file.NP_P_MAX = 100
+
         self.si_obj.der_file.PV_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.PV_CURVE_V1 = 1.06
         self.si_obj.der_file.PV_CURVE_V2 = 1.1
@@ -69,15 +69,15 @@ class TestVoltWatt3322:
         self.si_obj.der_file.NP_V_MEAS_UNBALANCE = "POS"
         self.si_obj.der_file.OV1_TRIP_V = 1.2
         self.si_obj.der_file.OV2_TRIP_V = 1.2
+        self.si_obj.der_file.NP_ABNORMAL_OP_CAT = 'CAT_II'
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c = 277.128129 * v_pu[0], 277.128129 * v_pu[1], 277.128129 * v_pu[2]
-        self.si_obj.der_input.theta_a, self.si_obj.der_input.theta_b, self.si_obj.der_input.theta_c = 1 * v_pu[3], 1 * v_pu[4], 1 * v_pu[5]
+        self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu[0:3], theta=v_pu[3:6])
+
         self.si_obj.run()
 
         # Check inputs
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc * 1000 == self.si_obj.der_input.p_dc_w
         assert self.si_obj.der_file.PV_MODE_ENABLE
         assert 1.06 == self.si_obj.der_file.PV_CURVE_V1
         assert 1.1 == self.si_obj.der_file.PV_CURVE_V2

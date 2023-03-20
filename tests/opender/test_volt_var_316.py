@@ -1,5 +1,5 @@
 """
-Copyright © 2022 Electric Power Research Institute, Inc. All rights reserved.
+Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -53,7 +53,7 @@ class TestVoltVar316:
                                   for i in input_list])
     def test_volt_var_q_priority(self, v_pu, p_dc, p_expected, q_expected):
 
-        self.si_obj.der_file.NP_P_MAX = 100
+
         self.si_obj.der_file.QV_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.QV_CURVE_V1 = 0.92
         self.si_obj.der_file.QV_CURVE_V2 = 0.98
@@ -65,14 +65,19 @@ class TestVoltVar316:
         self.si_obj.der_file.QV_CURVE_Q4 = -0.44
         self.si_obj.der_file.NP_Q_MAX_INJ = 44
         self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_CAPABILITY_BY_P_CURVE = {
+            'P_Q_INJ_PU': [-1, 0.04999, 0.05, 0.2, 1],
+            'P_Q_ABS_PU': [-1, 0.04999, 0.05, 0.2, 1],
+            'Q_MAX_INJ_PU': [0, 0, 0.11, 0.44, 0.44],
+            'Q_MAX_ABS_PU': [0, 0, 0.11, 0.44, 0.44],
+        }
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
-        self.si_obj.der_input.p_dc_kw = p_dc
-        self.si_obj.der_input.v_a, self.si_obj.der_input.v_b, self.si_obj.der_input.v_c= 277.128129 * v_pu, 277.128129 * v_pu, 277.128129 * v_pu
+        self.si_obj.update_der_input(p_dc_kw=p_dc, v_pu=v_pu)
         self.si_obj.run()
 
         # Check inputs
-        assert p_dc == self.si_obj.der_input.p_dc_kw
+        assert p_dc * 1000 == self.si_obj.der_input.p_dc_w
  #       assert "Reactive Power" == self.si_obj.der_file.power_priority
         assert True == self.si_obj.der_file.QV_MODE_ENABLE
         assert 0.92 == self.si_obj.der_file.QV_CURVE_V1

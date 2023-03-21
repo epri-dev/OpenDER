@@ -1,4 +1,4 @@
-.. figure:: https://raw.githubusercontent.com/epri-dev/OpenDER/develop/docs/logo.png
+.. figure:: https://raw.githubusercontent.com/epri-dev/OpenDER/develop_req_SQA/docs/logo.png
     :alt: Open-source Distributed Energy Resources (OpenDER) Model
 
 EPRI’s OpenDER model aims to accurately represent steady-state and dynamic behaviors of inverter-based distributed
@@ -20,7 +20,7 @@ OpenDER is under active development. Use the following resources to get involved
 
 * EPRI OpenDER homepage (`link <https://www.epri.com/OpenDER>`__)
 
-* Model specification: IEEE 1547-2018 OpenDER Model: Version 2.0, EPRI, Palo Alto, CA: 2021. 3002025583
+* Model specification: IEEE 1547-2018 OpenDER Model: Version 2.0, EPRI, Palo Alto, CA: 2022. 3002025583
   (`link <https://www.epri.com/research/products/000000003002025583>`__)
 
 Development Objective

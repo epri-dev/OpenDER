@@ -4,6 +4,7 @@ Changelog
 2.0.1 (2023-03-21)
 ------------------
 * Fixed a bug where enter service randomized enter delay does not behave as expected
+* Fixed a bug where momentary cessation does not behave as expected
 
 2.0.0 (2023-03-20)
 ------------------

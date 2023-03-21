@@ -1,7 +1,11 @@
 
 Changelog
 =========
-2.0 (2023-02)
+2.0.1 (2023-03-21)
+------------------
+* Fixed a bug where enter service randomized enter delay does not behave as expected
+
+2.0.0 (2023-03-20)
 ------------------
 * Changed all units of nameplate rating to the base unit Watt/var/VA, from kW/kvar/kVA in Version 1.0.
 * Added one time delay feature to represent the DER active and reactive grid support functions’ reaction time, and a first order lag for in applicable voltage measurement.

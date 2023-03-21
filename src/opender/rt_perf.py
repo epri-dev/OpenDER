@@ -152,15 +152,16 @@ class RideThroughPerf:
         # Current limitation to the nameplate current rating
         self.i_pos_d_limited_ref_pu, self.i_pos_q_limited_ref_pu, self.i_neg_limited_ref_pu = self.i_limit()
 
-        # Eq 3.10.1-8, To model the ride-through recovery performance as required in IEEE 1547-2018 Section 6.4.2.7,
+        if self.rt_ctrl == 'Cease to Energize':
+            self.calculate_i_block()
+
+        # Eq 3.10.1-9, To model the ride-through recovery performance as required in IEEE 1547-2018 Section 6.4.2.7,
         # a ramp rate limit is applied to the active current component. This ramp rate limit is only applied for ramp up
         if self.i_pos_d_limited_ref_pu > 0:
             self.i_pos_limited_ref_pu = (self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, self.der_file.NP_RT_RAMP_UP_TIME, 0) + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
         else:
             self.i_pos_limited_ref_pu = (self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, 0, self.der_file.NP_RT_RAMP_UP_TIME) + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
 
-        if self.rt_ctrl == 'Cease to Energize':
-            self.calculate_i_block()
 
         # Eq 3.10.1-10, first order lag low pass filters are applied to the DER output current references,
         # emulating the closed-loop DER inverter control delay.
@@ -187,7 +188,7 @@ class RideThroughPerf:
         self.i_neg_ref_pu = self.der_input.v_neg_pu * 1j * self.der_file.DVS_K
 
     def calculate_i_block(self):
-        # Eq 3.10.1-9, In momentary cessation condition, active current is 0, reactive currents depend on DER filter
+        # Eq 3.10.1-8, In momentary cessation condition, active current is 0, reactive currents depend on DER filter
         # susceptance.
         self.i_pos_d_limited_ref_pu = 0
         self.i_pos_q_limited_ref_pu = - abs(self.der_input.v_pos_pu) * self.der_file.NP_AC_V_NOM * \

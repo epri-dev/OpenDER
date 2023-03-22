@@ -771,7 +771,7 @@ class DERCommonFileFormat:
     def NP_ABNORMAL_OP_CAT(self, NP_ABNORMAL_OP_CAT):
         if NP_ABNORMAL_OP_CAT.upper() == 'CAT_I' or NP_ABNORMAL_OP_CAT.upper() == 'CAT_II' \
                 or NP_ABNORMAL_OP_CAT.upper() == 'CAT_III':
-            self._NP_ABNORMAL_OP_CAT = NP_ABNORMAL_OP_CAT
+            self._NP_ABNORMAL_OP_CAT = NP_ABNORMAL_OP_CAT.upper()
         else:
             logging.error("Error: Value of NP_ABNORMAL_OP_CAT should be CAT_I, CAT_II"
                           " or CAT_III, CAT_III is used by default")

@@ -66,7 +66,6 @@ The grid voltage is set to be alternating between 1 and 1.11 per unit every ~10 
 
 DER should be observed to enter service and trip periodically.
 
-Please ensure python PATH is set in the environment variables before running the batch file
 
 Unit tests
 ----------

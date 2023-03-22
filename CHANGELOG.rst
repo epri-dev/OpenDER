@@ -1,6 +1,10 @@
 
 Changelog
 =========
+2.0.2 (2023-03-)
+------------------
+* Fixed a bug abnormal operation category (NP_ABNORMAL_OP_CAT) only accepts uppercase values
+
 2.0.1 (2023-03-21)
 ------------------
 * Fixed a bug where enter service randomized enter delay does not behave as expected

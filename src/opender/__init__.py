@@ -1,4 +1,4 @@
-__version__ = '2.0.1'
+__version__ = '2.0.2'
 
 from .common_file_format import DERCommonFileFormat
 from .common_file_format import DERCommonFileFormatBESS

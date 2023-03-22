@@ -152,6 +152,7 @@ class RideThroughPerf:
         # Current limitation to the nameplate current rating
         self.i_pos_d_limited_ref_pu, self.i_pos_q_limited_ref_pu, self.i_neg_limited_ref_pu = self.i_limit()
 
+        # Eq 3.10.1-8, calculate current during cease to energize state.
         if self.rt_ctrl == 'Cease to Energize':
             self.calculate_i_block()
 
@@ -172,6 +173,8 @@ class RideThroughPerf:
             # Eq 3.10.1-11, if trips, DER output no current.
             self.i_pos_pu = 0
             self.i_neg_pu = 0
+
+        return self.i_pos_pu, self.i_neg_pu
 
 
     def calculate_i_continuous_op(self, p_limited_pu, q_limited_pu):

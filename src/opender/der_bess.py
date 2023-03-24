@@ -56,3 +56,6 @@ class DER_BESS(DER):
 
     def get_DERCommonFileFormat(self):
         return DERCommonFileFormatBESS()
+
+    def get_bess_soc(self) -> float:
+        return self.activepowerfunc.soc_calc.bess_soc

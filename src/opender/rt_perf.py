@@ -182,14 +182,14 @@ class RideThroughPerf:
 
     def calculate_i_continuous_op(self, p_limited_pu, q_limited_pu):
         # Eq 3.10.1-3, calculate current based on desired P, Q and terminal voltage.
-        self.i_pos_d_ref_pu = p_limited_pu / abs(self.der_input.v_pos_pu)
-        self.i_pos_q_ref_pu = - q_limited_pu / abs(self.der_input.v_pos_pu)
+        self.i_pos_d_ref_pu = p_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
+        self.i_pos_q_ref_pu = - q_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
         self.i_neg_ref_pu = 0
 
     def calculate_i_DVS(self, p_limited_pu, q_limited_pu):
         # Eq 3.10.1-4,calcualte current based on desired P, Q terminal voltage, and dynamic voltage support settings
-        self.i_pos_d_ref_pu = p_limited_pu / abs(self.der_input.v_pos_pu)
-        self.i_pos_q_ref_pu = - q_limited_pu / abs(self.der_input.v_pos_pu) + (
+        self.i_pos_d_ref_pu = p_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
+        self.i_pos_q_ref_pu = - q_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001) + (
                     abs(self.der_input.v_pos_pu) - 1) * self.der_file.DVS_K
         self.i_neg_ref_pu = self.der_input.v_neg_pu * 1j * self.der_file.DVS_K
 

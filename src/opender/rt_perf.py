@@ -56,6 +56,7 @@ class RideThroughPerf:
 
         self.rt_mc_cond_delay = ConditionalDelay()
         self.rt_cte_cond_delay = ConditionalDelay()
+        self.rt_return_from_mc_delay = ConditionalDelay()
 
     def determine_rt_ctrl(self, der_status):
         """
@@ -73,23 +74,25 @@ class RideThroughPerf:
         """
 
         # Eq 3.10.1-1, Determine ride-through control mode depending on the DER operation status.
-        if der_status in ['Continuous Operation', 'Not Defined', 'Entering Service']:
-            self.rt_ctrl = 'Normal Operation'
-
-        if der_status == 'Mandatory Operation':
-            if self.der_file.DVS_MODE_ENABLE:
-                self.rt_ctrl = 'Dynamic Voltage Support'
-            else:
-                self.rt_ctrl = 'Normal Operation'
-
-        if der_status== 'Permissive Operation':
-            if self.der_file.DVS_MODE_ENABLE:
-                self.rt_ctrl = 'Dynamic Voltage Support'
-            else:
-                self.rt_ctrl = 'Normal Operation'
-
         if der_status == 'Trip':
             self.rt_ctrl = 'Trip'
+
+        if self.rt_return_from_mc_delay.con_del_enable(not (der_status in ['Momentary Cessation', 'Cease to Energize']), self.der_file.MC_RETURN_T):
+            if der_status in ['Continuous Operation', 'Not Defined', 'Entering Service']:
+                self.rt_ctrl = 'Normal Operation'
+
+            if der_status == 'Mandatory Operation':
+                if self.der_file.DVS_MODE_ENABLE:
+                    self.rt_ctrl = 'Dynamic Voltage Support'
+                else:
+                    self.rt_ctrl = 'Normal Operation'
+
+            if der_status== 'Permissive Operation':
+                if self.der_file.DVS_MODE_ENABLE:
+                    self.rt_ctrl = 'Dynamic Voltage Support'
+                else:
+                    self.rt_ctrl = 'Normal Operation'
+
 
         # The standard allows a maximum of 0.16 s response time to enter cease to energize.
         if self.rt_cte_cond_delay.con_del_enable(der_status == 'Cease to Energize', self.der_file.NP_CTE_RESP_T):

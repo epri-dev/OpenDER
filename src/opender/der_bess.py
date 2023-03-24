@@ -27,8 +27,9 @@ class DER_BESS(DER):
         self.activepowerfunc = DesiredActivePowerBESS(self)
         # self.enterservicetrip = EnterServiceCritBESS(self)
 
-    def update_der_input(self, p_dem_w: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
-                         v_symm_pu: List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None,
+    def update_der_input(self, p_dem_w: float = None, v: Union[List[float], float] = None,
+                         theta: Union[List[float], float] = None, v_symm_pu: List[complex] = None,
+                         f: float = None, v_pu: Union[List[float], float] = None,
                          p_dem_pu: float = None, p_dem_kw: float = None) -> None:
         """
         Update DER inputs

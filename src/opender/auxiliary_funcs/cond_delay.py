@@ -12,6 +12,7 @@
 #   prior written permission.
 
 from opender import der
+import math
 
 
 class ConditionalDelay:
@@ -22,7 +23,7 @@ class ConditionalDelay:
     """
 
     def __init__(self):
-        self.con_del_enable_int = 0  # initialize timer
+        self.con_del_enable_int = math.inf  # initialize timer
         self.con_del_enable_out = 0  # initialize output
 
     def con_del_enable(self, con_del_enable_in, con_del_enable_time):

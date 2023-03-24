@@ -1,5 +1,4 @@
 # Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
-import cmath
 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
@@ -12,7 +11,7 @@ import cmath
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-
+import cmath
 from .der import DER
 from .operation_status.enter_service_crit import EnterServiceCritPV
 from .active_power_support_funcs.p_funcs_pv import DesiredActivePowerPV

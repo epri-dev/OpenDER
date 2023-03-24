@@ -81,9 +81,9 @@ class DER:
         self.ridethroughperf = rt_perf.RideThroughPerf(self)
         self.der_output = DEROutputs(self)
 
-    def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
-                         v_symm_pu: List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None,
-                         p_dc_pu: float = None, p_dc_w: float = None) -> None:
+    def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None,
+                         theta: Union[List[float], float] = None, v_symm_pu: List[complex] = None, f: float = None,
+                         v_pu: Union[List[float], float] = None, p_dc_pu: float = None, p_dc_w: float = None) -> None:
         """
         Update DER inputs
         :param p_dc_w: Available DC power in W
@@ -107,8 +107,8 @@ class DER:
 
         self._update_der_input_v_f(v, theta, v_symm_pu, f, v_pu)
 
-    def _update_der_input_v_f(self, v: Union[List[float], float] = None, theta: List[float] = None, v_symm_pu:
-                              List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None) -> None:
+    def _update_der_input_v_f(self, v: Union[List[float], float] = None, theta: Union[List[float], float] = None,
+                              v_symm_pu: List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None) -> None:
         if f is not None:
             self.der_input.freq_hz = f
 
@@ -247,7 +247,7 @@ class DER:
             self.der_output.calculate_v_output(self.i_pos_pu, self.i_neg_pu)
             return self.der_output.v_out_mag_v, self.der_output.v_out_theta
         else:
-            print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu")
+            print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu'")
 
 
 

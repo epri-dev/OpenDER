@@ -2060,8 +2060,8 @@ class DERCommonFileFormat:
         if MC_RETURN_T < 0:
             logging.error('Time to restore service for momentary cessation should be greater than 0')
             self._MC_RETURN_T = 0
-        if MC_RETURN_T > 0.5:
-            logging.warning('Time to restore service for momentary cessation should be less than 0.5s')
+        if MC_RETURN_T > 0.4:
+            logging.warning('Time to restore service for momentary cessation should be less than 0.4s')
 
 
     @property

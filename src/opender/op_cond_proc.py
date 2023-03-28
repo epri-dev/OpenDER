@@ -167,6 +167,10 @@ class DERInputs:
             if self.v < 0:
                 logging.error("Error: V should be greater than 0, converting it to postive")
                 self.v = -self.v
+            if self.theta is None:
+                logging.warning("Error: Theta is not defined. Default to 0")
+                self.theta = 0
+
 
         if self.der_file.NP_PHASE == "THREE":
             if self.v_a is None or self.v_b is None or self.v_c is None:

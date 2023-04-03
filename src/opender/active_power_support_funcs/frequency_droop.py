@@ -20,7 +20,7 @@ from opender.auxiliary_funcs.time_delay import TimeDelay
 class FreqDroop:
     """
     Frequency-droop Function
-    EPRI Report Reference: Section 3.7.1.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7.1.4 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self, der_obj):

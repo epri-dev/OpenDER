@@ -536,7 +536,7 @@ class DERCommonFileFormat:
     def nameplate_value_validity_check(self):
         """
         Validity Check for Nameplate Parameters
-        Reference: Section 3.1, part of Table 3-1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        Reference: Section 3.1, part of Table 3-1 in Report #3002026631: IEEE 1547-2018 OpenDER Model
         Other validity checks are performed in variable setters
         """
 

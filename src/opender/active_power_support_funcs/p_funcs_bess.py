@@ -22,7 +22,7 @@ from opender import DER
 class DesiredActivePowerBESS(DesiredActivePower):
     """
     Desired active power calculation from active power support functions for BESS DER
-    EPRI Report Reference: Section 3.7.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
     def __init__(self, der_obj):
         super(DesiredActivePowerBESS, self).__init__(der_obj)
@@ -40,7 +40,7 @@ class DesiredActivePowerBESS(DesiredActivePower):
         Based on the calculated values from volt-watt, frequency-droop, active power limit, and enter service ramp,
         their enabling signal, and DER operating status, generate the DER desired active power output. Specifically
         for BESS DER, the State of Charge (SoC) and limitation of output active power due to SoC is considered.
-        EPRI Report Reference: Section 3.7.3.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        EPRI Report Reference: Section 3.7.3.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
 
         Variable used in this function:
         :param ap_limit_enable_exec:	Active power limit enable (AP_LIMIT_ENABLE) signal after execution delay

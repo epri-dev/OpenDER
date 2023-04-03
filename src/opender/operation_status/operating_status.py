@@ -20,7 +20,7 @@ from opender.operation_status.trip_crit.trip_crit import TripCrit
 class OperatingStatus:
     """
     Determine Overall DER operating status in terms of Trip, Entering Service, Continuous Operation, etc.
-    EPRI Report Reference: Section 3.5.1.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.5.1.4 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -58,13 +58,13 @@ class OperatingStatus:
         :param es_completed:	Enter service ramp completed in the previous time step
         """
 
-        # Enter service criteria (Section 3.5.1.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model)
+        # Enter service criteria (Section 3.5.1.1 in Report #3002026631: IEEE 1547-2018 OpenDER Model)
         es_crit = self.enterservicecrit.es_decision()
 
-        # Trip criteria (Section 3.5.1.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model)
+        # Trip criteria (Section 3.5.1.2 in Report #3002026631: IEEE 1547-2018 OpenDER Model)
         trip_crit = self.tripcrit.trip_decision()
 
-        # Ride-through criteria (Section 3.5.1.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model)
+        # Ride-through criteria (Section 3.5.1.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model)
         self.ridethroughcrit.determine_ride_through_mode()
 
         # Eq 3.5.1-51,52, If DER is in Trip condition, and enter service criteria is met, depending on whether

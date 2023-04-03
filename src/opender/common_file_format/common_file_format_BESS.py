@@ -12,13 +12,6 @@
 #   prior written permission.
 
 
-# -*- coding: utf-8 -*-
-# @Time    : 2/12/2021 11:18 AM
-# @Author  : Paulo Radatz
-# @Email   : pradatz@epri.com
-# @File    : common_file_format.py
-# @Software: PyCharm
-
 import pandas as pd
 import numpy as np
 import pathlib

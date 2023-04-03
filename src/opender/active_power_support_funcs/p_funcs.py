@@ -18,7 +18,7 @@ from opender.active_power_support_funcs import active_power_limit, frequency_dro
 class DesiredActivePower:
     """
     Desired active power calculation from active power support functions
-    EPRI Report Reference: Section 3.7 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -73,7 +73,7 @@ class DesiredActivePower:
         """
         Based on the calculated values from volt-watt, frequency-droop, active power limit, and enter service ramp,
         their enabling signal, and DER operating status, generate the DER desired active power output
-        EPRI Report Reference: Section 3.7.1.5 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        EPRI Report Reference: Section 3.7.1.5 in Report #3002026631: IEEE 1547-2018 OpenDER Model
 
         Variable used in this function:
         :param ap_limit_enable_exec:	Active power limit enable (AP_LIMIT_ENABLE) signal after execution delay

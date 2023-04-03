@@ -18,7 +18,7 @@ from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 class TripCrit:
     """
     Trip criteria
-    EPRI Report Reference: Section 3.5.1.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.5.1.2 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):

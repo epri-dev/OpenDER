@@ -47,6 +47,7 @@ class RideThroughPerf:
 
         self.i_pos_d_limited_ref_pu = 0     # Active current magnitude in positive sequence after limitation
         self.i_pos_q_limited_ref_pu = 0     # Reactive current magnitude in positive sequence after limitation
+        self.i_pos_d_rrl_ref_pu = 0         # Active current magnitude in positive sequence after ramp rate limit
         self.i_pos_limited_ref_pu = 0       # Positive sequence current phasor as complex number after limitation and active current ramp up limit
         self.i_neg_limited_ref_pu = 0       # Negative sequence current phasor as complex number after limitation
 
@@ -144,76 +145,88 @@ class RideThroughPerf:
         :param NP_CURRENT_PU: DER nameplate max current in per unit
         :param DVS_K: Dynamic Voltage Support K factor (Per unit current increase in respond to per unit voltage change during ride-through)
         """
-        if self.rt_ctrl == 'Normal Operation':
-            # Eq 3.10.1-3, calculate current based on desired P, Q and terminal voltage.
-            self.calculate_i_continuous_op(p_limited_pu, q_limited_pu)
-
-        if self.rt_ctrl == 'Dynamic Voltage Support':
-            # Eq 3.10.1-4,calcualte current based on desired P, Q terminal voltage, and dynamic voltage support settings
-            self.calculate_i_DVS(p_limited_pu, q_limited_pu)
-
-        # Current limitation to the nameplate current rating
-        self.i_pos_d_limited_ref_pu, self.i_pos_q_limited_ref_pu, self.i_neg_limited_ref_pu = self.i_limit()
-
-        # Eq 3.10.1-8, calculate current during cease to energize state.
-        if self.rt_ctrl == 'Cease to Energize':
-            self.calculate_i_block()
-
-        # Eq 3.10.1-9, To model the ride-through recovery performance as required in IEEE 1547-2018 Section 6.4.2.7,
-        # a ramp rate limit is applied to the active current component. This ramp rate limit is only applied for ramp up
-        if self.i_pos_d_limited_ref_pu > 0:
-            self.i_pos_limited_ref_pu = (self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, self.der_file.NP_RT_RAMP_UP_TIME, 0) + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
-        else:
-            self.i_pos_limited_ref_pu = (self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, 0, self.der_file.NP_RT_RAMP_UP_TIME) + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
-
-
-        # Eq 3.10.1-10, first order lag low pass filters are applied to the DER output current references,
-        # emulating the closed-loop DER inverter control delay.
-        self.i_pos_pu = self.i_pos_lpf.low_pass_filter(self.i_pos_limited_ref_pu, self.der_file.NP_INV_DELAY)
-        self.i_neg_pu = self.i_neg_lpf.low_pass_filter(self.i_neg_limited_ref_pu, self.der_file.NP_INV_DELAY)
 
         if self.rt_ctrl == 'Trip':
-            # Eq 3.10.1-11, if trips, DER output no current.
+            # Eq 3.10.1-3, if trips, DER output no current.
             self.i_pos_pu = 0
             self.i_neg_pu = 0
+            # Reset state variables to 0, to better model restoration of output
+            self.i_pos_lpf.lpf_out_prev = self.i_pos_lpf.lpf_in_prev = 0
+            self.i_neg_lpf.lpf_out_prev = self.i_neg_lpf.lpf_in_prev = 0
+            self.i_pos_d_rrl.ramp_out_prev = 0
+
+        elif self.rt_ctrl == 'Cease to Energize':
+            # Eq 3.10.1-4, calculate current during cease to energize state.
+            self.calculate_i_block()
+            # Reset state variables to 0, to better model restoration of output
+            self.i_pos_lpf.lpf_out_prev = self.i_pos_lpf.lpf_in_prev = 0
+            self.i_neg_lpf.lpf_out_prev = self.i_neg_lpf.lpf_in_prev = 0
+            self.i_pos_d_rrl.ramp_out_prev = 0
+
+        else:
+
+            if self.rt_ctrl == 'Normal Operation':
+                # Eq 3.10.1-5, calculate current based on desired P, Q and terminal voltage.
+                self.calculate_i_continuous_op(p_limited_pu, q_limited_pu)
+
+            if self.rt_ctrl == 'Dynamic Voltage Support':
+                # Eq 3.10.1-6,calcualte current based on desired P, Q terminal voltage, and dynamic voltage support settings
+                self.calculate_i_DVS(p_limited_pu, q_limited_pu)
+
+            # Eq 3.10.1-7~9, Current limitation to the nameplate current rating
+            self.i_pos_d_limited_ref_pu, self.i_pos_q_limited_ref_pu, self.i_neg_limited_ref_pu = self.i_limit()
+
+            # Eq 3.10.1-10, To model the ride-through recovery performance as required in IEEE 1547-2018 Section 6.4.2.7,
+            # a ramp rate limit is applied to the active current component. This ramp rate limit is only applied for ramp up
+            if self.i_pos_d_rrl_ref_pu >= 0:
+                self.i_pos_d_rrl_ref_pu = self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, self.der_file.NP_RT_RAMP_UP_TIME, 0)
+            else:
+                self.i_pos_d_rrl_ref_pu = self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, 0, self.der_file.NP_RT_RAMP_UP_TIME)
+
+            self.i_pos_limited_ref_pu = (self.i_pos_d_rrl_ref_pu + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
+            # Eq 3.10.1-11, first order lag low pass filters are applied to the DER output current references,
+            # emulating the closed-loop DER inverter control delay.
+            self.i_pos_pu = self.i_pos_lpf.low_pass_filter(self.i_pos_limited_ref_pu, self.der_file.NP_INV_DELAY)
+            self.i_neg_pu = self.i_neg_lpf.low_pass_filter(self.i_neg_limited_ref_pu, self.der_file.NP_INV_DELAY)
 
         return self.i_pos_pu, self.i_neg_pu
 
 
     def calculate_i_continuous_op(self, p_limited_pu, q_limited_pu):
-        # Eq 3.10.1-3, calculate current based on desired P, Q and terminal voltage.
+        # Eq 3.10.1-5, calculate current based on desired P, Q and terminal voltage.
         self.i_pos_d_ref_pu = p_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
         self.i_pos_q_ref_pu = - q_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
         self.i_neg_ref_pu = 0
 
     def calculate_i_DVS(self, p_limited_pu, q_limited_pu):
-        # Eq 3.10.1-4,calcualte current based on desired P, Q terminal voltage, and dynamic voltage support settings
+        # Eq 3.10.1-6,calcualte current based on desired P, Q terminal voltage, and dynamic voltage support settings
         self.i_pos_d_ref_pu = p_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
         self.i_pos_q_ref_pu = - q_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001) + (
                     abs(self.der_input.v_pos_pu) - 1) * self.der_file.DVS_K
         self.i_neg_ref_pu = self.der_input.v_neg_pu * 1j * self.der_file.DVS_K
 
     def calculate_i_block(self):
-        # Eq 3.10.1-8, In momentary cessation condition, active current is 0, reactive currents depend on DER filter
+        # Eq 3.10.1-4, In momentary cessation condition, active current is 0, reactive currents depend on DER filter
         # susceptance.
-        self.i_pos_d_limited_ref_pu = 0
-        self.i_pos_q_limited_ref_pu = - abs(self.der_input.v_pos_pu) * self.der_file.NP_AC_V_NOM * \
-                                    self.der_file.NP_REACTIVE_SUSCEPTANCE / (
-                                            self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
-
-        self.i_neg_limited_ref_pu = 1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
+        self.i_pos_d_ref_pu = 0
+        self.i_pos_q_ref_pu = - abs(self.der_input.v_pos_pu) * self.der_file.NP_AC_V_NOM * \
                                     self.der_file.NP_REACTIVE_SUSCEPTANCE / (
                                             self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
 
 
+        self.i_pos_pu = (self.i_pos_d_ref_pu + self.i_pos_q_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
+
+        self.i_neg_pu = 1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
+                                    self.der_file.NP_REACTIVE_SUSCEPTANCE / (
+                                            self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
 
     def i_limit(self):
-        # Eq 3.10.1-5 calculate maximum current if output current follows reference
+        # Eq 3.10.1-7 calculate maximum current if output current follows reference
         i_pos_pu = (self.i_pos_d_ref_pu + 1j * self.i_pos_q_ref_pu) * np.exp(1j * np.angle(self.der_input.v_pos_pu))
         i_max_pu = max([abs(x) for x in sym_component.convert_symm_to_abc(i_pos_pu, self.i_neg_ref_pu)])
 
         if i_max_pu <= self.der_file.NP_CURRENT_PU:
-            # Eq 3.10.1-6, DER is able to carry out the current reference
+            # Eq 3.10.1-8, DER is able to carry out the current reference
             i_pos_out_d_pu = self.i_pos_d_ref_pu
             i_pos_out_q_pu = self.i_pos_q_ref_pu
             i_neg_out_pu = self.i_neg_ref_pu
@@ -222,7 +235,7 @@ class RideThroughPerf:
             i_pos_pu = (1j * self.i_pos_q_ref_pu) * np.exp(1j * np.angle(self.der_input.v_pos_pu))
             i_max_pu = max([abs(x) for x in sym_component.convert_symm_to_abc(i_pos_pu, self.i_neg_ref_pu)])
             if i_max_pu > self.der_file.NP_CURRENT_PU:
-                # Eq 3.10.1-7, if i_max_pu is still greater than nameplate current capability, active current should be
+                # Eq 3.10.1-9, if i_max_pu is still greater than nameplate current capability, active current should be
                 # 0, and reactive currents reduces proportionally.
                 i_pos_out_d_pu = 0
                 i_pos_out_q_pu = self.i_pos_q_ref_pu / i_max_pu * self.der_file.NP_CURRENT_PU

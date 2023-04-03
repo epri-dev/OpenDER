@@ -18,8 +18,8 @@ from .active_power_support_funcs.p_funcs_bess import DesiredActivePowerBESS
 from typing import Union, List
 
 class DER_BESS(DER):
-    def __init__(self, der_file_obj=None):
-        super(DER_BESS, self).__init__(der_file_obj)
+    def __init__(self, der_file_obj=None, **kwargs):
+        super(DER_BESS, self).__init__(der_file_obj, **kwargs)
         self.der_file.NP_Q_CAPABILITY_LOW_P = 'SAME'
         self.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 

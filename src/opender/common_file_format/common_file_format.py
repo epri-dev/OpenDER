@@ -72,8 +72,8 @@ class DERCommonFileFormat:
 
     def __init__(self,
                  as_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters", "AS-with std-values.csv"),
-                 model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters",
-                                                                                  "Model-parameters.csv")):
+                 model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters", "Model-parameters.csv"),
+                 **kwargs):
         """
         Creating a DER common file format object
         :param as_file_path: File directory address for Common file format Applied Setting file.
@@ -528,7 +528,11 @@ class DERCommonFileFormat:
         # if self.isNotNaN(self.param_inputs.MC_HVRT_V1):
         #     self.MC_HVRT_V1 = self.param_inputs.MC_HVRT_V1
 
-
+        for key, value in kwargs.items():
+            if key in self._get_parameter_list():
+                setattr(self, key, value)
+            else:
+                logging.warning(f"'{key}' is not in the parameter list, please double check")
 
     def _get_parameter_list(self):
         return self.__class__.parameters_list

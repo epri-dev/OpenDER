@@ -1,10 +1,11 @@
 
 Changelog
 =========
-2.0.2 (2023-03-)
+2.0.2 (2023-04-03)
 ------------------
 * Fixed a bug abnormal operation category (NP_ABNORMAL_OP_CAT) only accepts uppercase values
-* Added a time delay for restoring output from momentary cessation
+* Updated ride-through performance to better represent actual inverter's behavior
+* Added an option to update DER parameter when creating the object.
 
 2.0.1 (2023-03-21)
 ------------------

@@ -18,8 +18,8 @@ from .active_power_support_funcs.p_funcs_pv import DesiredActivePowerPV
 
 
 class DER_PV(DER):
-    def __init__(self, der_file_obj=None):
-        super(DER_PV, self).__init__(der_file_obj)
+    def __init__(self, der_file_obj=None, **kwargs):
+        super(DER_PV, self).__init__(der_file_obj, **kwargs)
         # Replace enter service module to include cut-in and cut-out behavior
 
         self.enterservicetrip = EnterServiceCritPV(self)

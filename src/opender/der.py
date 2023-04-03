@@ -31,7 +31,7 @@ class DER:
     # Global Variables
     t_s = 100000        # Simulation time step, default for snapshot analysis
 
-    def __init__(self, der_file_obj=None):
+    def __init__(self, der_file_obj=None, **kwargs):
         """
         Creating a DER Object
         :param der_file_obj: DER common file format object created from common_file_format.py
@@ -42,7 +42,7 @@ class DER:
         self.bus = None     # Bus which DER is connected to
 
         if der_file_obj is None:
-            der_file_obj = self.get_DERCommonFileFormat()
+            der_file_obj = self.get_DERCommonFileFormat(**kwargs)
 
         self.der_file = der_file_obj
         self.der_file.nameplate_value_validity_check()
@@ -259,5 +259,5 @@ class DER:
                f"p_desired_pu={self.p_desired_pu:.2f}, q_desired_pu={self.q_desired_pu:.2f}, " \
                f"p_out_kw={self.p_out_kw:.3f}, q_out_kvar={self.q_out_kvar:.3f}"
 
-    def get_DERCommonFileFormat(self):
-        return DERCommonFileFormat()
+    def get_DERCommonFileFormat(self, **kwargs):
+        return DERCommonFileFormat(**kwargs)

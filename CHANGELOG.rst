@@ -1,6 +1,10 @@
 
 Changelog
 =========
+Not released changes
+------------------
+* Fixed the option to update BESS DER parameter when creating the object.
+
 2.0.2 (2023-04-03)
 ------------------
 * Fixed a bug abnormal operation category (NP_ABNORMAL_OP_CAT) only accepts uppercase values

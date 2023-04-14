@@ -1,9 +1,10 @@
 
 Changelog
 =========
-Not released changes
+2.0.3 (2023-04-14)
 ------------------
 * Fixed the option to update BESS DER parameter when creating the object.
+* Fixed a bug when initializing a BESS DER during abnormal frequency condition.
 
 2.0.2 (2023-04-03)
 ------------------

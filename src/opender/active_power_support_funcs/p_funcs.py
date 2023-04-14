@@ -43,7 +43,7 @@ class DesiredActivePower:
         self.freqdroop = frequency_droop.FreqDroop(self.der_obj)
         self.enterserviceperf = es_perf.EnterServicePerformance(der_obj)
 
-    def calculate_p_funcs(self, p_out_pu):
+    def calculate_p_funcs(self, p_out_w):
         """
         Call active power support functions and based on the results, generate desired active power output
 
@@ -58,18 +58,18 @@ class DesiredActivePower:
         self.p_pv_limit_pu = self.voltwatt.calculate_p_pv_limit_pu()
 
         # Frequency-droop function
-        self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqdroop.calculate_p_pf_pu(p_out_pu,
+        self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqdroop.calculate_p_pf_pu(p_out_w,
                                                                                               self.ap_limit_rt,
                                                                                               self.p_pv_limit_pu)
         # Enter service ramp performance
         self.p_es_pu = self.enterserviceperf.es_performance()
 
         # Calculate final desired active power based on other functions
-        self.p_desired_pu = self.calculate_p_desired_pu(p_out_pu)
+        self.p_desired_pu = self.calculate_p_desired_pu(p_out_w)
 
         return self.p_desired_pu
 
-    def calculate_p_desired_pu(self, p_out_pu):
+    def calculate_p_desired_pu(self, p_out_w):
         """
         Based on the calculated values from volt-watt, frequency-droop, active power limit, and enter service ramp,
         their enabling signal, and DER operating status, generate the DER desired active power output

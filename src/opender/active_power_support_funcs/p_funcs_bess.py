@@ -35,7 +35,7 @@ class DesiredActivePowerBESS(DesiredActivePower):
                                             # unit without considering the BESS related constraints
         self.p_es_dem_pu = None             # Active power demand considering enter service ramp
 
-    def calculate_p_desired_pu(self, p_out_pu):
+    def calculate_p_desired_pu(self, p_out_w):
         """
         Based on the calculated values from volt-watt, frequency-droop, active power limit, and enter service ramp,
         their enabling signal, and DER operating status, generate the DER desired active power output. Specifically
@@ -54,7 +54,7 @@ class DesiredActivePowerBESS(DesiredActivePower):
         if DER.t_s <= 7200 and self.der_file.NP_BESS_CAPACITY is not None:
             # For time series simulation
             # Calculate SoC
-            self.soc_calc.calculate_soc(p_out_pu)
+            self.soc_calc.calculate_soc(p_out_w)
 
             # Calculate P limits
             self.soc_calc.calculate_p_max_by_soc()

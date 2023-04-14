@@ -111,7 +111,7 @@ class FreqDroop:
 
         # Initialize internal state variables of pre-disturbance active power output
         if self.p_pf_pre_pu_prev is None:
-            self.p_pf_pre_pu_prev = min(self.der_input.p_avl_pu, ap_limit_rt, p_pv_limit_pu)
+            self.p_pf_pre_pu_prev = min(self.get_p_pu(), ap_limit_rt, p_pv_limit_pu)
 
         # Eq. 3.7.1-11, calculate pre-disturbance active power output
         if self.pf_uf == 1 and self.pf_uf_prev == 1:

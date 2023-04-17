@@ -61,12 +61,11 @@ Example of Using the DER Model
 Example script: main.py
 
 This example generate DER output power in a dynamic simulation to demonstrate DER trip and enter service behavior.
-
 The grid voltage is set to be alternating between 1 and 1.11 per unit every ~10 minutes.
-
 DER should be observed to enter service and trip periodically.
 
-Please ensure python PATH is set in the environment variables before running the batch file
+Other examples can be found in the `Examples <examples>`_ directory.
+Click the .ipynb files to see example scripts and execution results.
 
 Unit tests
 ----------

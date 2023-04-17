@@ -18,7 +18,7 @@ from .es_perf import EnterServicePerformance
 class EnterServicePerformanceBESS(EnterServicePerformance):
     """
     Calculate desired active power output in Enter service ramp condition for BESS DER
-    EPRI Report Reference: Section 3.7.3.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7.3.1 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):

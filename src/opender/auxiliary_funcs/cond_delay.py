@@ -12,17 +12,18 @@
 #   prior written permission.
 
 from opender import der
+import math
 
 
 class ConditionalDelay:
     """
     Conditional Delayed Enable can also be referred as On Delay.
     Output is true only when input stays true for a time period
-    EPRI Report Reference: Section 3.12.4 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.12.4 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self):
-        self.con_del_enable_int = 0  # initialize timer
+        self.con_del_enable_int = math.inf  # initialize timer
         self.con_del_enable_out = 0  # initialize output
 
     def con_del_enable(self, con_del_enable_in, con_del_enable_time):

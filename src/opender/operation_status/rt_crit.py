@@ -18,7 +18,7 @@ import opender
 class RideThroughCrit:
     """
     Abnormal Voltage and Frequency Ride-through Criteria
-    EPRI Report Reference: Section 3.5.1.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.5.1.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):

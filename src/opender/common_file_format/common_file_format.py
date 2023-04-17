@@ -61,8 +61,8 @@ class DERCommonFileFormat:
                        'CONST_PF_RT', 'CONST_Q_RT', 'QP_RT', 'NP_SET_EXE_TIME', 'NP_MODE_TRANSITION_TIME',
                        'STATUS_INIT', 'ES_RANDOMIZED_DELAY_ACTUAL', 'NP_Q_CAPABILITY_BY_P_CURVE',
                        'NP_Q_CAPABILITY_LOW_P', 'NP_TYPE', 'NP_RESISTANCE', 'NP_REACTANCE', 'NP_INV_DELAY',
-                       'NP_CURRENT_PU', 'NP_RT_RAMP_UP_TIME','MC_RESP_T', 'NP_CTE_RESP_T', 'NP_REACT_TIME',
-                       'NP_V_MEAS_DELAY',
+                       'NP_CURRENT_PU', 'NP_RT_RAMP_UP_TIME','MC_RESP_T', 'MC_RETURN_T', 'NP_CTE_RESP_T',
+                       'NP_REACT_TIME', 'NP_V_MEAS_DELAY',
 
                        'DVS_MODE_ENABLE', 'DVS_K',
                        ]
@@ -72,8 +72,8 @@ class DERCommonFileFormat:
 
     def __init__(self,
                  as_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters", "AS-with std-values.csv"),
-                 model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters",
-                                                                                  "Model-parameters.csv")):
+                 model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters", "Model-parameters.csv"),
+                 **kwargs):
         """
         Creating a DER common file format object
         :param as_file_path: File directory address for Common file format Applied Setting file.
@@ -98,8 +98,8 @@ class DERCommonFileFormat:
         self.param_inputs = df.reset_index().set_index("New Index")["VALUE"].apply(pd.to_numeric, errors="ignore")
 
         # Nameplate Variables with default values
-        self._NP_NORMAL_OP_CAT = "CAT_A"
-        self._NP_ABNORMAL_OP_CAT = "CAT_I"
+        self._NP_NORMAL_OP_CAT = "CAT_B"
+        self._NP_ABNORMAL_OP_CAT = "CAT_III"
         self._NP_EFFICIENCY = 1
         self._NP_P_MAX = None
         self._NP_VA_MAX = None
@@ -138,6 +138,7 @@ class DERCommonFileFormat:
         self._NP_RT_RAMP_UP_TIME = 0
         self._MC_RESP_T = 0
         self._NP_CTE_RESP_T = 0.16
+        self._MC_RETURN_T = 0
         self._NP_REACT_TIME = 0
         self._NP_V_MEAS_DELAY = 0
 
@@ -229,11 +230,6 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.NP_TYPE):
             self.NP_TYPE = self.param_inputs.NP_TYPE
 
-        if self.isNotNaN(self.param_inputs.NP_NORMAL_OP_CAT):
-            self.NP_NORMAL_OP_CAT = self.param_inputs.NP_NORMAL_OP_CAT
-        if self.isNotNaN(self.param_inputs.NP_ABNORMAL_OP_CAT):
-            self.NP_ABNORMAL_OP_CAT = self.param_inputs.NP_ABNORMAL_OP_CAT
-
         if self.isNotNaN(self.param_inputs.NP_VA_MAX):
             self.NP_VA_MAX = self.param_inputs.NP_VA_MAX
         if self.isNotNaN(self.param_inputs.NP_P_MAX):
@@ -262,6 +258,11 @@ class DERCommonFileFormat:
 
         if self.isNotNaN(self.param_inputs.NP_REACTIVE_SUSCEPTANCE):
             self.NP_REACTIVE_SUSCEPTANCE = self.param_inputs.NP_REACTIVE_SUSCEPTANCE
+
+        if self.isNotNaN(self.param_inputs.NP_NORMAL_OP_CAT):
+            self.NP_NORMAL_OP_CAT = self.param_inputs.NP_NORMAL_OP_CAT
+        if self.isNotNaN(self.param_inputs.NP_ABNORMAL_OP_CAT):
+            self.NP_ABNORMAL_OP_CAT = self.param_inputs.NP_ABNORMAL_OP_CAT
 
         self.nameplate_value_validity_check()
 
@@ -339,6 +340,9 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.MC_RESP_T):
             self.MC_RESP_T = self.param_inputs.MC_RESP_T
 
+        if self.isNotNaN(self.param_inputs.MC_RETURN_T):
+            self.MC_RETURN_T = self.param_inputs.MC_RETURN_T
+
         if self.isNotNaN(self.param_inputs.DVS_MODE_ENABLE):
             self.DVS_MODE_ENABLE = self.param_inputs.DVS_MODE_ENABLE
 
@@ -384,24 +388,7 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.CONST_PF):
             self.CONST_PF = self.param_inputs.CONST_PF
 
-        if self.NP_NORMAL_OP_CAT == "CAT_A":
-            self.QV_CURVE_V2 = 1
-            self.QV_CURVE_V3 = 1
-            self.QV_CURVE_V1 = 0.9
-            self.QV_CURVE_Q1 = 0.25
-            self.QV_CURVE_V4 = 1.1
-            self.QV_CURVE_Q4 = -0.25
-            self.QV_OLRT = 10
-            self.QP_CURVE_Q3_GEN = -0.25
-        else:
-            self.QV_CURVE_V2 = 0.98
-            self.QV_CURVE_V3 = 1.02
-            self.QV_CURVE_V1 = 0.92
-            self.QV_CURVE_Q1 = 0.44
-            self.QV_CURVE_V4 = 1.08
-            self.QV_CURVE_Q4 = -0.44
-            self.QV_OLRT = 5
-            self.QP_CURVE_Q3_GEN = -0.44
+
 
         if self.isNotNaN(self.param_inputs.QV_MODE_ENABLE):
             self.QV_MODE_ENABLE = self.param_inputs.QV_MODE_ENABLE
@@ -492,32 +479,6 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.PV_OLRT):
             self.PV_OLRT = self.param_inputs.PV_OLRT
 
-        if self.NP_ABNORMAL_OP_CAT == "CAT_I":
-            self.OV1_TRIP_T = 2
-            self.UV1_TRIP_V = 0.7
-            self.UV1_TRIP_T = 2
-            self.UV2_TRIP_V = 0.45
-            self.UV2_TRIP_T = 0.16
-            # self.MC_LVRT_V1 = 0
-            # self.MC_HVRT_V1 = 2
-
-        elif self.NP_ABNORMAL_OP_CAT == "CAT_II":
-            self.OV1_TRIP_T = 2
-            self.UV1_TRIP_V = 0.7
-            self.UV1_TRIP_T = 10
-            self.UV2_TRIP_V = 0.45
-            self.UV2_TRIP_T = 0.16
-            # self.MC_LVRT_V1 = 0
-            # self.MC_HVRT_V1 = 2
-        else:
-            self.OV1_TRIP_T = 13
-            self.UV1_TRIP_V = 0.88
-            self.UV1_TRIP_T = 21
-            self.UV2_TRIP_V = 0.5
-            self.UV2_TRIP_T = 2
-            # self.MC_LVRT_V1 = 0.5
-            # self.MC_HVRT_V1 = 1.1
-
         if self.isNotNaN(self.param_inputs.OV2_TRIP_V):
             self.OV2_TRIP_V = self.param_inputs.OV2_TRIP_V
         if self.isNotNaN(self.param_inputs.OV2_TRIP_T):
@@ -567,7 +528,11 @@ class DERCommonFileFormat:
         # if self.isNotNaN(self.param_inputs.MC_HVRT_V1):
         #     self.MC_HVRT_V1 = self.param_inputs.MC_HVRT_V1
 
-
+        for key, value in kwargs.items():
+            if key in self._get_parameter_list():
+                setattr(self, key, value)
+            else:
+                logging.warning(f"'{key}' is not in the parameter list, please double check")
 
     def _get_parameter_list(self):
         return self.__class__.parameters_list
@@ -575,7 +540,7 @@ class DERCommonFileFormat:
     def nameplate_value_validity_check(self):
         """
         Validity Check for Nameplate Parameters
-        Reference: Section 3.1, part of Table 3-1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        Reference: Section 3.1, part of Table 3-1 in Report #3002026631: IEEE 1547-2018 OpenDER Model
         Other validity checks are performed in variable setters
         """
 
@@ -763,6 +728,25 @@ class DERCommonFileFormat:
             logging.error("Error: Value of NP_NORMAL_OP_CAT should be either CAT_A or CAT_B, CAT_B is used by default")
             self._NP_NORMAL_OP_CAT = 'CAT_B'
 
+        if self._NP_NORMAL_OP_CAT == "CAT_A":
+            self.QV_CURVE_V2 = 1
+            self.QV_CURVE_V3 = 1
+            self.QV_CURVE_V1 = 0.9
+            self.QV_CURVE_Q1 = 0.25
+            self.QV_CURVE_V4 = 1.1
+            self.QV_CURVE_Q4 = -0.25
+            self.QV_OLRT = 10
+            self.QP_CURVE_Q3_GEN = -0.25
+        else:
+            self.QV_CURVE_V2 = 0.98
+            self.QV_CURVE_V3 = 1.02
+            self.QV_CURVE_V1 = 0.92
+            self.QV_CURVE_Q1 = 0.44
+            self.QV_CURVE_V4 = 1.08
+            self.QV_CURVE_Q4 = -0.44
+            self.QV_OLRT = 5
+            self.QP_CURVE_Q3_GEN = -0.44
+
     @property
     def NP_ABNORMAL_OP_CAT(self):
         return self._NP_ABNORMAL_OP_CAT
@@ -771,11 +755,38 @@ class DERCommonFileFormat:
     def NP_ABNORMAL_OP_CAT(self, NP_ABNORMAL_OP_CAT):
         if NP_ABNORMAL_OP_CAT.upper() == 'CAT_I' or NP_ABNORMAL_OP_CAT.upper() == 'CAT_II' \
                 or NP_ABNORMAL_OP_CAT.upper() == 'CAT_III':
-            self._NP_ABNORMAL_OP_CAT = NP_ABNORMAL_OP_CAT
+            self._NP_ABNORMAL_OP_CAT = NP_ABNORMAL_OP_CAT.upper()
         else:
             logging.error("Error: Value of NP_ABNORMAL_OP_CAT should be CAT_I, CAT_II"
                           " or CAT_III, CAT_III is used by default")
-            self._NP_NORMAL_OP_CAT = 'CAT_III'
+            self._NP_ABNORMAL_OP_CAT = 'CAT_III'
+
+        if self._NP_ABNORMAL_OP_CAT == "CAT_I":
+            self.OV1_TRIP_T = 2
+            self.UV1_TRIP_V = 0.7
+            self.UV1_TRIP_T = 2
+            self.UV2_TRIP_V = 0.45
+            self.UV2_TRIP_T = 0.16
+            # self.MC_LVRT_V1 = 0
+            # self.MC_HVRT_V1 = 2
+
+        elif self._NP_ABNORMAL_OP_CAT == "CAT_II":
+            self.OV1_TRIP_T = 2
+            self.UV1_TRIP_V = 0.7
+            self.UV1_TRIP_T = 10
+            self.UV2_TRIP_V = 0.45
+            self.UV2_TRIP_T = 0.16
+            # self.MC_LVRT_V1 = 0
+            # self.MC_HVRT_V1 = 2
+        else:
+            self.OV1_TRIP_T = 13
+            self.UV1_TRIP_V = 0.88
+            self.UV1_TRIP_T = 21
+            self.UV2_TRIP_V = 0.5
+            self.UV2_TRIP_T = 2
+            # self.MC_LVRT_V1 = 0.5
+            # self.MC_HVRT_V1 = 1.1
+
 
     @property
     def NP_P_MAX(self) -> float:
@@ -2042,6 +2053,19 @@ class DERCommonFileFormat:
             self._NP_CTE_RESP_T = 0
         if NP_CTE_RESP_T > 0.16:
             logging.warning('Cease to energize response time should be less than 0.16')
+
+    @property
+    def MC_RETURN_T(self):
+        return self._MC_RETURN_T
+
+    @MC_RETURN_T.setter
+    def MC_RETURN_T(self, MC_RETURN_T):
+        self._MC_RETURN_T = MC_RETURN_T
+        if MC_RETURN_T < 0:
+            logging.error('Time to restore service for momentary cessation should be greater than 0')
+            self._MC_RETURN_T = 0
+        if MC_RETURN_T > 0.4:
+            logging.warning('Time to restore service for momentary cessation should be less than 0.4s')
 
 
     @property

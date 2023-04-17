@@ -1,7 +1,23 @@
 
 Changelog
 =========
-2.0 (2023-02)
+2.0.3 (2023-04-14)
+------------------
+* Fixed the option to update BESS DER parameter when creating the object.
+* Fixed a bug when initializing a BESS DER during abnormal frequency condition.
+
+2.0.2 (2023-04-03)
+------------------
+* Fixed a bug abnormal operation category (NP_ABNORMAL_OP_CAT) only accepts uppercase values
+* Updated ride-through performance to better represent actual inverter's behavior
+* Added an option to update DER parameter when creating the object.
+
+2.0.1 (2023-03-21)
+------------------
+* Fixed a bug where enter service randomized enter delay does not behave as expected
+* Fixed a bug where momentary cessation does not behave as expected
+
+2.0.0 (2023-03-20)
 ------------------
 * Changed all units of nameplate rating to the base unit Watt/var/VA, from kW/kvar/kVA in Version 1.0.
 * Added one time delay feature to represent the DER active and reactive grid support functions’ reaction time, and a first order lag for in applicable voltage measurement.

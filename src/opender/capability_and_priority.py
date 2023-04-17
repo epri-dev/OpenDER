@@ -80,7 +80,7 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3, ):
 class CapabilityPriority:
     """
     Calculate active and reactive power power output limited by DER ratings, according to the priority of responses.
-    EPRI Report Reference: Section 3.9 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.9 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
     def __init__(self, der_obj):
         self.der_file = der_obj.der_file

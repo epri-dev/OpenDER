@@ -22,7 +22,7 @@ from opender import DER
 class DesiredActivePowerBESS(DesiredActivePower):
     """
     Desired active power calculation from active power support functions for BESS DER
-    EPRI Report Reference: Section 3.7.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
     def __init__(self, der_obj):
         super(DesiredActivePowerBESS, self).__init__(der_obj)
@@ -35,12 +35,12 @@ class DesiredActivePowerBESS(DesiredActivePower):
                                             # unit without considering the BESS related constraints
         self.p_es_dem_pu = None             # Active power demand considering enter service ramp
 
-    def calculate_p_desired_pu(self, p_out_pu):
+    def calculate_p_desired_pu(self, p_out_w):
         """
         Based on the calculated values from volt-watt, frequency-droop, active power limit, and enter service ramp,
         their enabling signal, and DER operating status, generate the DER desired active power output. Specifically
         for BESS DER, the State of Charge (SoC) and limitation of output active power due to SoC is considered.
-        EPRI Report Reference: Section 3.7.3.3 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+        EPRI Report Reference: Section 3.7.3.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
 
         Variable used in this function:
         :param ap_limit_enable_exec:	Active power limit enable (AP_LIMIT_ENABLE) signal after execution delay
@@ -54,7 +54,7 @@ class DesiredActivePowerBESS(DesiredActivePower):
         if DER.t_s <= 7200 and self.der_file.NP_BESS_CAPACITY is not None:
             # For time series simulation
             # Calculate SoC
-            self.soc_calc.calculate_soc(p_out_pu)
+            self.soc_calc.calculate_soc(p_out_w)
 
             # Calculate P limits
             self.soc_calc.calculate_p_max_by_soc()

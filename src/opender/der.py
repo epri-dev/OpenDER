@@ -1,5 +1,4 @@
 # Copyright © 2023 Electric Power Research Institute, Inc. All rights reserved.
-import cmath
 
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: 
@@ -12,8 +11,6 @@ import cmath
 #   to endorse or promote products derived from this software without specific
 #   prior written permission.
 
-# @author: Jithendar Anandan
-# @email: janandan@epri.com
 
 from .common_file_format.common_file_format import DERCommonFileFormat
 from .active_power_support_funcs.p_funcs import DesiredActivePower
@@ -25,6 +22,7 @@ from opender.op_cond_proc import DERInputs
 from . import setting_execution_delay, rt_perf
 from typing import Union, List, Tuple, Any
 import numpy as np
+import cmath
 from .output_options import DEROutputs
 from opender.auxiliary_funcs.sym_component import convert_symm_to_abc
 
@@ -33,7 +31,7 @@ class DER:
     # Global Variables
     t_s = 100000        # Simulation time step, default for snapshot analysis
 
-    def __init__(self, der_file_obj=None):
+    def __init__(self, der_file_obj=None, **kwargs):
         """
         Creating a DER Object
         :param der_file_obj: DER common file format object created from common_file_format.py
@@ -44,7 +42,7 @@ class DER:
         self.bus = None     # Bus which DER is connected to
 
         if der_file_obj is None:
-            der_file_obj = self.get_DERCommonFileFormat()
+            der_file_obj = self.get_DERCommonFileFormat(**kwargs)
 
         self.der_file = der_file_obj
         self.der_file.nameplate_value_validity_check()
@@ -83,9 +81,9 @@ class DER:
         self.ridethroughperf = rt_perf.RideThroughPerf(self)
         self.der_output = DEROutputs(self)
 
-    def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None, theta: List[float] = None,
-                         v_symm_pu: List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None,
-                         p_dc_pu: float = None, p_dc_w: float = None) -> None:
+    def update_der_input(self, p_dc_kw: float = None, v: Union[List[float], float] = None,
+                         theta: Union[List[float], float] = None, v_symm_pu: List[complex] = None, f: float = None,
+                         v_pu: Union[List[float], float] = None, p_dc_pu: float = None, p_dc_w: float = None) -> None:
         """
         Update DER inputs
         :param p_dc_w: Available DC power in W
@@ -107,12 +105,16 @@ class DER:
         if p_dc_pu is not None:
             self.der_input.p_dc_w = p_dc_pu * self.der_file.NP_P_MAX
 
+        self._update_der_input_v_f(v, theta, v_symm_pu, f, v_pu)
+
+    def _update_der_input_v_f(self, v: Union[List[float], float] = None, theta: Union[List[float], float] = None,
+                              v_symm_pu: List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None) -> None:
         if f is not None:
             self.der_input.freq_hz = f
 
         if v is not None:
             if self.der_file.NP_PHASE == "THREE":
-                if type(v) is float or type(v) is int:
+                if isinstance(v,(int,float,np.floating,np.int_)):
                     v = [v, v, v]
                 self.der_input.v_a = v[0]
                 self.der_input.v_b = v[1]
@@ -124,20 +126,20 @@ class DER:
         if v_pu is not None:
             if self.der_file.NP_PHASE == "THREE":
                 v_base = self.der_file.NP_AC_V_NOM / np.sqrt(3)
-                if type(v_pu) is float or type(v_pu) is int:
-                    v_pu = [v_pu * v_base, v_pu * v_base, v_pu * v_base]
+                if isinstance(v_pu,(int,float,np.floating,np.int_)):
+                    v = [v_pu * v_base, v_pu * v_base, v_pu * v_base]
                 else:
-                    v_pu = [v_pu[0] * v_base, v_pu[1] * v_base, v_pu[2] * v_base]
+                    v = [v_pu[0] * v_base, v_pu[1] * v_base, v_pu[2] * v_base]
 
-                self.der_input.v_a = v_pu[0]
-                self.der_input.v_b = v_pu[1]
-                self.der_input.v_c = v_pu[2]
+                self.der_input.v_a = v[0]
+                self.der_input.v_b = v[1]
+                self.der_input.v_c = v[2]
 
             if self.der_file.NP_PHASE == "SINGLE":
                 self.der_input.v = v_pu * self.der_file.NP_AC_V_NOM
 
         if theta is not None:
-            if type(v_pu) is float or type(v_pu) is int:
+            if isinstance(theta,(int,float,np.floating,np.int_)):
                 self.der_input.theta = theta
             else:
                 self.der_input.theta_a = theta[0]
@@ -245,10 +247,7 @@ class DER:
             self.der_output.calculate_v_output(self.i_pos_pu, self.i_neg_pu)
             return self.der_output.v_out_mag_v, self.der_output.v_out_theta
         else:
-            print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu")
-
-            #TODO should we use different methods to get model outputs, or use a single one with different values?
-            #TODO if use Python 3.8, Literal type may be used to suggest possible values.
+            print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu'")
 
 
 
@@ -260,5 +259,5 @@ class DER:
                f"p_desired_pu={self.p_desired_pu:.2f}, q_desired_pu={self.q_desired_pu:.2f}, " \
                f"p_out_kw={self.p_out_kw:.3f}, q_out_kvar={self.q_out_kvar:.3f}"
 
-    def get_DERCommonFileFormat(self):
-        return DERCommonFileFormat()
+    def get_DERCommonFileFormat(self, **kwargs):
+        return DERCommonFileFormat(**kwargs)

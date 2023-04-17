@@ -23,7 +23,7 @@ import numpy as np
 class EnterServiceCrit:
     """
     Enter Service criteria
-    EPRI Report Reference: Section 3.5.1.1 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.5.1.1 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -82,7 +82,7 @@ class EnterServiceCrit:
         self.es_vfto_crit = self.es_vft_crit and self.es_other_crit()
 
         # Eq 3.5.1-4, generate the enter service randomized delay. The value is 0 if enter service ramp is used.
-        if self.der_obj.der_status:
+        if self.der_obj.der_status != "Trip":
             # if DER is on, reset randomized delay to 0 for next time use.
             self.es_randomized_delay_time = 0
         else:

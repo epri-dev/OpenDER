@@ -18,7 +18,7 @@ from opender.operation_status.enter_service_crit.es_crit import EnterServiceCrit
 class EnterServiceCritPV(EnterServiceCrit):
     """
     Enter Service criteria for PV DER
-    EPRI Report Reference: Section 3.5.2 in Report #3002025583: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.5.2 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
     def __init__(self, der_obj):
         super(EnterServiceCritPV, self).__init__(der_obj)

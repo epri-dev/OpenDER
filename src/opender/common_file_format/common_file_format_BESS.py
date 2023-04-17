@@ -12,13 +12,6 @@
 #   prior written permission.
 
 
-# -*- coding: utf-8 -*-
-# @Time    : 2/12/2021 11:18 AM
-# @Author  : Paulo Radatz
-# @Email   : pradatz@epri.com
-# @File    : common_file_format.py
-# @Software: PyCharm
-
 import pandas as pd
 import numpy as np
 import pathlib
@@ -38,8 +31,8 @@ class DERCommonFileFormatBESS(DERCommonFileFormat):
 
     def __init__(self,
                  as_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters", "AS-with std-values.csv"),
-                 model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters",
-                                                                                  "Model-parameters.csv")):
+                 model_file_path=pathlib.Path(os.path.dirname(__file__)).joinpath("../Parameters","Model-parameters.csv"),
+                 **kwargs):
         """
         Creating a DER common file format object
         :param as_file_path: File directory address for Common file format Applied Setting file.
@@ -89,7 +82,15 @@ class DERCommonFileFormatBESS(DERCommonFileFormat):
         if self.isNotNaN(self.param_inputs.SOC_INIT):
             self.SOC_INIT = self.param_inputs.SOC_INIT
         self.initialize_NP_BESS_P_MAX_BY_SOC()
-    #
+
+        for key, value in kwargs.items():
+            if key in self._get_parameter_list():
+                setattr(self, key, value)
+            elif key=='convert' and isinstance(value, DERCommonFileFormat):
+                super(DERCommonFileFormatBESS, self).__init__(**{s: getattr(value, s) for s in value.parameters_list if hasattr(value, s) and not getattr(value, s) is None})
+            else:
+                logging.warning(f"'{key}' is not in the parameter list, please double check")
+
     def _get_parameter_list(self):
         return self.__class__.parameters_list
 

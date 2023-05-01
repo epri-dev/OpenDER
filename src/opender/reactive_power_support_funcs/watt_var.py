@@ -62,10 +62,10 @@ class WattVAR:
 
         """
 
-        # Eq. 3.8.1-7, Calculate desired active power in per unit
+        # Eq. 3.8.1-9, Calculate desired active power in per unit
         self.p_desired_qp_pu = p_desired_pu * (1 if p_desired_pu > 0 else self.der_file.NP_P_MAX/self.der_file.NP_P_MAX_CHARGE)
 
-        # Eq. 3.8.1-8, calculate reactive power reference in per unit according to watt-var curve
+        # Eq. 3.8.1-10, calculate reactive power reference in per unit according to watt-var curve
         if self.p_desired_qp_pu <= self.exec_delay.qp_curve_p3_load_exec:
             self.q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_load_exec
 
@@ -97,10 +97,15 @@ class WattVAR:
         if self.p_desired_qp_pu > self.exec_delay.qp_curve_p3_gen_exec:
             self.q_qp_desired_ref_pu = self.exec_delay.qp_curve_q3_gen_exec
 
-        # Eq. 3.8.1-9, apply a low pass filter and time delay to represent a possible time response of watt-var
+        # Eq. 3.8.1-11, apply a low pass filter and time delay to represent a possible time response of watt-var
         # function. Note that there can be multiple different ways to implement this behavior in actual DER.
         # The model may be updated in a future version, according to the lab test results.
         self.q_qp_lpf_pu = self.qp_lpf.low_pass_filter(self.q_qp_desired_ref_pu, self.der_file.QP_RT - self.der_file.NP_REACT_TIME)
         self.q_qp_desired_pu = self.qp_delay.tdelay(self.q_qp_lpf_pu, self.der_file.NP_REACT_TIME)
 
         return self.q_qp_desired_pu
+
+    def reset(self):
+        # Eq. 3.8.1-12, if DER is tripped, the reference should be reset to 0
+        self.q_qp_lpf_pu = self.qp_lpf.low_pass_filter(0,0)
+        self.q_qp_desired_pu = self.qp_delay.tdelay(0,0)

@@ -14,6 +14,7 @@
 
 from . import DERCommonFileFormatBESS
 from .der import DER
+from .bess_specifc import bess_specific
 from .active_power_support_funcs.p_funcs_bess import DesiredActivePowerBESS
 from typing import Union, List
 
@@ -25,7 +26,7 @@ class DER_BESS(DER):
 
         # replace active power support functions and enter service
         self.activepowerfunc = DesiredActivePowerBESS(self)
-        # self.enterservicetrip = EnterServiceCritBESS(self)
+        self.bessspecific = bess_specific.BESSspecific(self)
 
     def update_der_input(self, p_dem_w: float = None, v: Union[List[float], float] = None,
                          theta: Union[List[float], float] = None, v_symm_pu: List[complex] = None,
@@ -58,4 +59,7 @@ class DER_BESS(DER):
         return DERCommonFileFormatBESS()
 
     def get_bess_soc(self) -> float:
-        return self.activepowerfunc.soc_calc.bess_soc
+        return self.bessspecific.soc_calc.bess_soc
+
+    def bess_specific(self):
+        self.bessspecific.run()

@@ -28,6 +28,8 @@ class ConstantVARs:
 
         self.const_q_lpf = LowPassFilter()
         self.const_q_delay = TimeDelay()
+        self.q_const_q_lpf_pu = None
+        self.q_const_q_desired_pu = None
 
     def calculate_const_q_desired_var(self):
         """
@@ -44,10 +46,15 @@ class ConstantVARs:
         :param const_q_desired_pu:	Output reactive power from constant reactive power function
         """
 
-        # Eq. 3.9.1-17, apply the low pass filter to the reference reactive power. Note that there can be multiple
+        # Eq. 3.8.1-13, apply the low pass filter to the reference reactive power. Note that there can be multiple
         # different ways to implement this behavior in an actual DER. The model may be updated in a future version,
         # according to the lab test results.
-        q_const_q_lpf_pu = self.const_q_lpf.low_pass_filter(self.exec_delay.const_q_exec, self.der_file.CONST_Q_RT - self.der_file.NP_REACT_TIME)
-        q_const_q_desired_pu = self.const_q_delay.tdelay(q_const_q_lpf_pu, self.der_file.NP_REACT_TIME)
+        self.q_const_q_lpf_pu = self.const_q_lpf.low_pass_filter(self.exec_delay.const_q_exec, self.der_file.CONST_Q_RT - self.der_file.NP_REACT_TIME)
+        self.q_const_q_desired_pu = self.const_q_delay.tdelay(self.q_const_q_lpf_pu, self.der_file.NP_REACT_TIME)
 
-        return q_const_q_desired_pu
+        return self.q_const_q_desired_pu
+
+    def reset(self):
+        # Eq. 3.8.1-14, if DER is tripped, the reference should be reset to 0
+        self.q_const_q_lpf_pu = self.const_q_lpf.low_pass_filter(self.exec_delay.const_q_exec, self.der_file.CONST_Q_RT - self.der_file.NP_REACT_TIME)
+        self.q_const_q_desired_pu = self.const_q_delay.tdelay(self.q_const_q_lpf_pu, self.der_file.NP_REACT_TIME)

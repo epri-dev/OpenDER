@@ -68,7 +68,7 @@ class TestSoC:
             t = t + t_s
             # print(der_obj.activepowerfunc.soc_calc)
             # print(der_obj)
-        assert 0 <= der_obj.activepowerfunc.soc_calc.bess_soc <= 1
+        assert 0 <= der_obj.get_bess_soc() <= 1
 
         opender.der.DER.t_s = 1000000
 

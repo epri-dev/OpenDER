@@ -76,13 +76,7 @@ class OperatingStatus:
                 else:
                     self.der_status = 'Continuous Operation'
 
-        # Eq 3.5.1-53, If DER was Entering Service, and the enter service process has completed, DER goes to
-        # "Continuous Operation"
-        if self.der_status == 'Entering Service':
-            if self.der_obj.activepowerfunc.es_completed:
-                self.der_status = 'Continuous Operation'
-
-        # Eq 3.5.1-54~58, If DER is not Tripped (Entering Service, Continuous Operation, or all other Ride-through
+        # Eq 3.5.1-53~58, If DER is not Tripped (Entering Service, Continuous Operation, or all other Ride-through
         # modes), DER status depends on ride-through modes, in the priority of: Not Defined (frequency ride-through),
         # Other ride-through modes, and Continuous Operation.
         if self.der_status != 'Trip':
@@ -93,8 +87,10 @@ class OperatingStatus:
             elif self.ridethroughcrit.rt_mode_v == 'Mandatory Operation' or self.ridethroughcrit.rt_mode_f == 'Mandatory Operation':
                 self.der_status = 'Mandatory Operation'
             else:
-                if self.der_status != 'Entering Service':
+                if self.der_obj.activepowerfunc.es_completed:
                     self.der_status = 'Continuous Operation'
+                else:
+                    self.der_status = 'Entering Service'
                 # Eq 3.5.1-57, If DER is in continuous operation, reset the flag that indicates required
                 # ride-through time has passed
                 self.ridethroughcrit.reset_rt_pass_time_req()

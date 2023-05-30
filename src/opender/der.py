@@ -66,11 +66,6 @@ class DER:
         else:
             self.der_status = 'Trip'
 
-        self.es_crit = None
-
-        self.p_out_w = None
-        self.q_out_var = None
-
         # DER model modules
         self.der_input = DERInputs(self.der_file)
         self.exec_delay = setting_execution_delay.SettingExecutionDelay(self.der_file)
@@ -187,6 +182,8 @@ class DER:
         # Determine DER operating status
         self.der_status = self.opstatus.determine_der_status()
 
+        self.bess_specific()
+
         # Calculate desired active power
         self.p_desired_pu = self.activepowerfunc.calculate_p_funcs(self.p_out_w)
 
@@ -261,3 +258,6 @@ class DER:
 
     def get_DERCommonFileFormat(self, **kwargs):
         return DERCommonFileFormat(**kwargs)
+
+    def bess_specific(self):
+        pass

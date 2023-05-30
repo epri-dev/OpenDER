@@ -35,7 +35,10 @@ class DesiredActivePower:
         self.ap_limit_rt = None         # Active power limit from active power limit function
         self.p_pv_limit_pu = None       # Active power limit from volt-watt function
         self.p_es_pu = None             # Active power reference from enter service ramp requirements
-        self.es_completed = False       # Flag to indicate enter service has completed
+        if self.der_file.STATUS_INIT:
+            self.es_completed = True    # Flag to indicate enter service has completed
+        else:
+            self.es_completed = False
         self.p_desired_pu = None        # Desired active power from all active power support functions
 
         self.aplimit = active_power_limit.ActivePowerLimit(self.der_file, self.exec_delay)
@@ -51,21 +54,38 @@ class DesiredActivePower:
         :param p_desired_pu:	Desired output active power from active power support functions in per unit
         """
 
-        # Active power limit function
-        self.ap_limit_rt = self.aplimit.calculate_ap_limit_rt()
+        if self.der_obj.der_status != 'Trip':
 
-        # Volt-watt function
-        self.p_pv_limit_pu = self.voltwatt.calculate_p_pv_limit_pu()
+            # Active power limit function
+            self.ap_limit_rt = self.aplimit.calculate_ap_limit_rt()
 
-        # Frequency-droop function
-        self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqdroop.calculate_p_pf_pu(p_out_w,
-                                                                                              self.ap_limit_rt,
-                                                                                              self.p_pv_limit_pu)
-        # Enter service ramp performance
-        self.p_es_pu = self.enterserviceperf.es_performance()
+            # Volt-watt function
+            self.p_pv_limit_pu = self.voltwatt.calculate_p_pv_limit_pu()
 
-        # Calculate final desired active power based on other functions
-        self.p_desired_pu = self.calculate_p_desired_pu(p_out_w)
+            # Frequency-droop function
+            self.p_pf_pu, self.pf_uf_active, self.pf_of_active = self.freqdroop.calculate_p_pf_pu(p_out_w,
+                                                                                                  self.ap_limit_rt,
+                                                                                                  self.p_pv_limit_pu)
+            # Enter service ramp performance
+            self.p_es_pu = self.enterserviceperf.es_performance()
+
+            # Calculate final desired active power based on other functions
+            self.p_desired_pu = self.calculate_p_desired_pu(p_out_w)
+
+            # Eq 3.7.1-19, if the enter service ramp reference is greater than 1,
+            # it is considered that the DER enter service is completed.
+            if self.p_es_pu > 1:
+                self.es_completed = True
+
+        else:
+            # Eq 3.7.1-20, if DER is not in service, the desired active power should be 0, and it is not considered
+            # that enter service is completed
+            self.p_desired_pu = 0
+            self.es_completed = False
+            self.freqdroop.reset()
+            self.voltwatt.reset()
+            self.enterserviceperf.reset()
+            self.aplimit.reset()
 
         return self.p_desired_pu
 
@@ -82,50 +102,40 @@ class DesiredActivePower:
         :param p_avl_pu:    DER available active power in per unit considering efficiency
         """
 
-        if self.der_obj.der_status != 'Trip':
+        # Eq 3.7.1-18, calculate desired active power in per unit based on the enabling signals from the
+        # grid-support functions
+        if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False \
+                and self.pf_uf_active == False and self.pf_of_active == False:
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, 1)
 
-            # Eq 3.7.1-18, calculate desired active power in per unit based on the enabling signals from the
-            # grid-support functions
-            if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False \
-                    and self.pf_uf_active == False and self.pf_of_active == False:
-                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, 1)
+        if self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == False \
+                and self.pf_uf_active == False and self.pf_of_active == False:
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.ap_limit_rt, 1)
 
-            if self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == False \
-                    and self.pf_uf_active == False and self.pf_of_active == False:
-                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.ap_limit_rt, 1)
+        if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == True \
+                and self.pf_uf_active == False and self.pf_of_active == False:
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.p_pv_limit_pu, 1)
 
-            if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == True \
-                    and self.pf_uf_active == False and self.pf_of_active == False:
-                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.p_pv_limit_pu, 1)
+        if (self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True
+                and self.pf_uf_active == False and self.pf_of_active == False):
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.ap_limit_rt, self.p_pv_limit_pu, 1)
 
-            if (self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True
-                    and self.pf_uf_active == False and self.pf_of_active == False):
-                self.p_desired_pu = min(self.der_input.p_avl_pu, self.ap_limit_rt, self.p_pv_limit_pu, 1)
+        if self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True:
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
 
-            if self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True:
-                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
+        if self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True:
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
-            if self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True:
-                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
+        if self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True:
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
 
-            if self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True:
-                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
-
-            if self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True:
-                self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
-
-            # Eq 3.7.1-19, if the enter service ramp reference is greater than the desired active power,
-            # it is considered that the DER enter service is completed.
-            if self.p_es_pu > self.p_desired_pu:
-                self.es_completed = True
-        else:
-            # Eq 3.7.1-20, if DER is not in service, the desired active power should be 0, and it is not considered
-            # that enter service is completed
-            self.p_desired_pu = 0
-            self.es_completed = False
-
+        if self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True:
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
         return self.p_desired_pu
 
     def __str__(self):
         return f"ap_limit_rt = {self.ap_limit_rt}, p_pv_limit_pu = {self.p_pv_limit_pu}, p_pf_pu = {self.p_pf_pu}, p_desired_pu = {self.p_desired_pu}"
+
+    def bess_specific(self):
+        pass

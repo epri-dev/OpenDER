@@ -1,6 +1,13 @@
 
 Changelog
 =========
+2.1.0 (2023-05-29)
+------------------
+* Updated interaction between enter service ramp and ride-through. Now DER returns to enter service ramp
+  after ride-through
+* Added an optional charge/discharge ramp rate limit for BESS DER
+* Added resets for all grid-support functions when DER is tripped
+
 2.0.3 (2023-04-14)
 ------------------
 * Fixed the option to update BESS DER parameter when creating the object.

@@ -23,8 +23,8 @@ from opender.common_file_format.common_file_format import DERCommonFileFormat
 class DERCommonFileFormatBESS(DERCommonFileFormat):
     parameters_list = DERCommonFileFormat.parameters_list + \
                       ['NP_BESS_SOC_MAX', 'NP_BESS_SOC_MIN', 'NP_BESS_CAPACITY', 'NP_BESS_SELF_DISCHARGE',
-                       'NP_BESS_SELF_DISCHARGE_SOC', 'NP_BESS_P_MAX_BY_SOC', 'P_DISCHARGE_MAX_PU',
-                       'SOC_P_DISCHARGE_MAX', 'P_CHARGE_MAX_PU', 'SOC_P_CHARGE_MAX', 'SOC_INIT'
+                       'NP_BESS_SELF_DISCHARGE_SOC', 'NP_BESS_P_MAX_BY_SOC', 'NP_BESS_P_RAMP_TIME',
+                       'P_DISCHARGE_MAX_PU', 'SOC_P_DISCHARGE_MAX', 'P_CHARGE_MAX_PU', 'SOC_P_CHARGE_MAX', 'SOC_INIT'
                        ]
 
     __slots__ = tuple(['_' + param for param in parameters_list]) + tuple(['param_inputs'])
@@ -58,6 +58,7 @@ class DERCommonFileFormatBESS(DERCommonFileFormat):
         self._P_CHARGE_MAX_PU = None
         self._SOC_P_CHARGE_MAX = None
         self._SOC_INIT = 0.5
+        self._NP_BESS_P_RAMP_TIME = 0
 
         if self.isNotNaN(self.param_inputs.NP_BESS_SOC_MAX):
             self.NP_BESS_SOC_MAX = self.param_inputs.NP_BESS_SOC_MAX
@@ -71,6 +72,8 @@ class DERCommonFileFormatBESS(DERCommonFileFormat):
             self.NP_BESS_SELF_DISCHARGE_SOC = self.param_inputs.NP_BESS_SELF_DISCHARGE_SOC
         if self.isNotNaN(self.param_inputs.NP_BESS_P_MAX_BY_SOC):
             self.NP_BESS_P_MAX_BY_SOC = self.param_inputs.NP_BESS_P_MAX_BY_SOC
+        if self.isNotNaN(self.param_inputs.NP_BESS_P_RAMP_TIME):
+            self.NP_BESS_P_RAMP_TIME = self.param_inputs.NP_BESS_P_RAMP_TIME
         if self.isNotNaN(self.param_inputs.P_DISCHARGE_MAX_PU):
             self.P_DISCHARGE_MAX_PU = self.param_inputs.P_DISCHARGE_MAX_PU
         if self.isNotNaN(self.param_inputs.SOC_P_DISCHARGE_MAX):
@@ -183,6 +186,18 @@ class DERCommonFileFormatBESS(DERCommonFileFormat):
     @NP_BESS_P_MAX_BY_SOC.setter
     def NP_BESS_P_MAX_BY_SOC(self, NP_BESS_P_MAX_BY_SOC):
         self._NP_BESS_P_MAX_BY_SOC = NP_BESS_P_MAX_BY_SOC
+
+    @property
+    def NP_BESS_P_RAMP_TIME(self):
+        return self._NP_BESS_P_RAMP_TIME
+
+    @NP_BESS_P_RAMP_TIME.setter
+    def NP_BESS_P_RAMP_TIME(self, NP_BESS_P_RAMP_TIME):
+        if NP_BESS_P_RAMP_TIME<0:
+            logging.warning('Warning: BESS normal ramp time should be greater than 0')
+            self._NP_BESS_P_RAMP_TIME = 0
+        else:
+            self._NP_BESS_P_RAMP_TIME = NP_BESS_P_RAMP_TIME
 
     @property
     def P_DISCHARGE_MAX_PU(self):

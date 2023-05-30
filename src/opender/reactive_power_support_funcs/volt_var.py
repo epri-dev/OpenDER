@@ -69,7 +69,7 @@ class VoltVAR:
         :param q_qv_desired_pu: Output reactive power from volt-var function
         """
 
-        # Eq 3.8.1-3, The applied VRef is determined by either the VRef control setpoint or low pass filtered
+        # Eq 3.8.1-4, The applied VRef is determined by either the VRef control setpoint or low pass filtered
         # applicable voltage, depending on the enable signal
         self.qv_vref_lpf = max(0.95, min(self.v_meas_qv_vref_lpf_pu.low_pass_filter(self.der_input.v_meas_pu, self.exec_delay.qv_vref_time_exec),1.05))
         if self.exec_delay.qv_vref_auto_mode_exec == 0:
@@ -77,14 +77,14 @@ class VoltVAR:
         else:
             self.qv_vref_appl = self.qv_vref_lpf
 
-        # Eq 3.8.1-4, The applied volt-var curve voltage settings should shift according to the changes of the applied
+        # Eq 3.8.1-5, The applied volt-var curve voltage settings should shift according to the changes of the applied
         # VRef.
         self.qv_curve_v1_appl = self.exec_delay.qv_curve_v1_exec + self.qv_vref_appl - 1
         self.qv_curve_v2_appl = self.exec_delay.qv_curve_v2_exec + self.qv_vref_appl - 1
         self.qv_curve_v3_appl = self.exec_delay.qv_curve_v3_exec + self.qv_vref_appl - 1
         self.qv_curve_v4_appl = self.exec_delay.qv_curve_v4_exec + self.qv_vref_appl - 1
 
-        # Eq. 3.8.1-5, Volt-VAR Reactive power reference calculation in p.u
+        # Eq. 3.8.1-6, Volt-VAR Reactive power reference calculation in p.u
         if self.der_input.v_meas_pu < self.qv_curve_v1_appl:
             self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q1_exec
             
@@ -100,10 +100,15 @@ class VoltVAR:
         if self.der_input.v_meas_pu > self.qv_curve_v4_appl:
             self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q4_exec
 
-        # Eq. 3.9.1-6, OLRT using LPF followed by a time delay to represent a reaction delay
+        # Eq. 3.8.1-7, OLRT using LPF followed by a time delay to represent a reaction delay
         self.q_qv_lpf_pu = self.qv_lpf.low_pass_filter(self.q_qv_desired_ref_pu, self.exec_delay.qv_olrt_exec - self.der_file.NP_REACT_TIME)
         self.q_qv_desired_pu = self.qv_delay.tdelay(self.q_qv_lpf_pu, self.der_file.NP_REACT_TIME)
 
             
         return self.q_qv_desired_pu
-            
+
+    def reset(self):
+        # Eq. 3.8.1-8, if DER is tripped, the reference should be reset to 0
+        self.q_qv_lpf_pu = self.qv_lpf.low_pass_filter(0,0)
+        self.q_qv_desired_pu = self.qv_delay.tdelay(0,0)
+        self.qv_vref_lpf = self.v_meas_qv_vref_lpf_pu.low_pass_filter(self.der_input.v_meas_pu, 0)

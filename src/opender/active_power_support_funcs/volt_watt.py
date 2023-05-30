@@ -80,11 +80,16 @@ class VoltWatt:
         self.p_pv_limit_ref_pu = self.p_pv_limit_ref_w / self.der_file.NP_P_MAX
 
         # Eq. 3.7.1-4, apply the low pass filter and reaction time delay,
-        # if function disabled, reset limit to 1 immediately
         if self.exec_delay.pv_mode_enable_exec:
             self.p_pv_limit_lpf_pu = self.pv_lpf.low_pass_filter(self.p_pv_limit_ref_pu, self.exec_delay.pv_olrt_exec - self.der_file.NP_REACT_TIME)
+            self.p_pv_limit_pu = self.pv_delay.tdelay(self.p_pv_limit_lpf_pu, self.der_file.NP_REACT_TIME)
         else:
-            self.p_pv_limit_lpf_pu = self.pv_lpf.low_pass_filter(1, 0)
-        self.p_pv_limit_pu = self.pv_delay.tdelay(self.p_pv_limit_lpf_pu, self.der_file.NP_REACT_TIME)
+            self.reset()
 
         return self.p_pv_limit_pu
+
+    def reset(self):
+        # Eq. 3.7.1-5, resetting volt-watt function output and state variables to 1pu when DER is tripped or function
+        # is disabled
+        self.p_pv_limit_pu = self.pv_delay.tdelay(1,0)
+        self.p_pv_limit_lpf_pu = self.pv_lpf.low_pass_filter(1, 0)

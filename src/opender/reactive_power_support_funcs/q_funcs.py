@@ -63,21 +63,30 @@ class DesiredReactivePower:
         """
         Calculate desired reactive power for all 4 reactive power control modes defined in IEEE 1547-2018
         """
+        if der_status != 'Trip':
+            # Constant power factor function
+            self.q_const_pf_desired_pu = self.constpf.calculate_q_const_pf_desired_var(p_desired_pu)
 
-        # Constant power factor function
-        self.q_const_pf_desired_pu = self.constpf.calculate_q_const_pf_desired_var(p_desired_pu)
+            # Constant reactive power function
+            self.q_const_q_desired_pu = self.constq.calculate_const_q_desired_var()
 
-        # Constant reactive power function
-        self.q_const_q_desired_pu = self.constq.calculate_const_q_desired_var()
+            # Volt-var function
+            self.q_qv_desired_pu = self.voltvar.calculate_q_qv_desired_var()
 
-        # Volt-var function
-        self.q_qv_desired_pu = self.voltvar.calculate_q_qv_desired_var()
+            # Watt-var function
+            self.q_qp_desired_pu = self.wattvar.calculate_q_qp_desired_var(p_desired_pu)
 
-        # Watt-var function
-        self.q_qp_desired_pu = self.wattvar.calculate_q_qp_desired_var(p_desired_pu)
+            # Calculate reactive power based on grid-support functions
+            self.calculate_q_desired_pu(der_status)
+        else:
+            self.q_desired_pu = 0
+            self.q_mode_ramp_flag = self.desired_var_ff.flipflop(0,1)
+            self.q_desired_ramp_pu = self.desired_var_ramp.ramp(0,0,0)
+            self.constpf.reset()
+            self.constq.reset()
+            self.voltvar.reset()
+            self.wattvar.reset()
 
-        # Calculate reactive power based on grid-support functions
-        self.calculate_q_desired_pu(der_status)
 
         return self.q_desired_pu
 
@@ -102,22 +111,21 @@ class DesiredReactivePower:
         :param q_desired_pu:	Desired output reactive power from reactive power support functions
         """
 
-        # Eq. 3.8.1-11, calculate desired reactive power reference, without smooth mode transition
-        if der_status != 'Trip':
-            if self.exec_delay.const_pf_mode_enable_exec == 1:
-                self.q_desired_ref_pu = self.q_const_pf_desired_pu
-            elif self.exec_delay.qv_mode_enable_exec == 1:
-                self.q_desired_ref_pu = self.q_qv_desired_pu
-            elif self.exec_delay.qp_mode_enable_exec == 1:
-                self.q_desired_ref_pu = self.q_qp_desired_pu
-            elif self.exec_delay.const_q_mode_enable_exec == 1:
-                self.q_desired_ref_pu = self.q_const_q_desired_pu
-            else:
-                self.q_desired_ref_pu = 0
+        # Eq. 3.8.1-15, calculate desired reactive power reference, without smooth mode transition
+
+        if self.exec_delay.const_pf_mode_enable_exec == 1:
+            self.q_desired_ref_pu = self.q_const_pf_desired_pu
+        elif self.exec_delay.qv_mode_enable_exec == 1:
+            self.q_desired_ref_pu = self.q_qv_desired_pu
+        elif self.exec_delay.qp_mode_enable_exec == 1:
+            self.q_desired_ref_pu = self.q_qp_desired_pu
+        elif self.exec_delay.const_q_mode_enable_exec == 1:
+            self.q_desired_ref_pu = self.q_const_q_desired_pu
         else:
             self.q_desired_ref_pu = 0
 
-        # Eq. 3.8.1-12, the ramp rate limit only applies when there is a mode change.
+
+        # Eq. 3.8.1-16, the ramp rate limit only applies when there is a mode change.
         if self.exec_delay.const_pf_mode_enable_exec != self.const_pf_mode_enable_exec_prev or \
                 self.exec_delay.qv_mode_enable_exec != self.qv_mode_enable_exec_prev or \
                 self.exec_delay.qp_mode_enable_exec != self.qp_mode_enable_exec_prev or \
@@ -127,26 +135,26 @@ class DesiredReactivePower:
             self.q_mode_ramp_flag_set = 0
 
         if self.q_mode_ramp_flag_set or self.q_mode_ramp_flag == 1:
-            # Eq. 3.8.1-13, apply the ramp rate limit
+            # Eq. 3.8.1-17, apply the ramp rate limit
             self.q_desired_ramp_pu = self.desired_var_ramp.ramp(self.q_desired_ref_pu,
                                                                 self.der_file.NP_MODE_TRANSITION_TIME,
                                                                 self.der_file.NP_MODE_TRANSITION_TIME)
         else:
-            # Eq. 3.8.1-14, if not in mode transition, ramp time of 0 is used to allow q_desired_ramp_var follow the
+            # Eq. 3.8.1-18, if not in mode transition, ramp time of 0 is used to allow q_desired_ramp_var follow the
             # desired reactive power
             self.q_desired_ramp_pu = self.desired_var_ramp.ramp(self.q_desired_ref_pu/self.der_file.NP_VA_MAX, 0, 0)
 
-        # Eq. 3.8.1-15, the ramp rate limit stops to apply when the mode transition is completed (value before and
+        # Eq. 3.8.1-19, the ramp rate limit stops to apply when the mode transition is completed (value before and
         # after ramp rate limit is the same
-        if self.q_desired_ref_pu == self.q_desired_ramp_pu or der_status == 0:
+        if self.q_desired_ref_pu == self.q_desired_ramp_pu:
             self.q_mode_ramp_flag_reset = 1
         else:
             self.q_mode_ramp_flag_reset = 0
 
-        # Eq. 3.8.1-16, apply the flipflop logic to decide if in mode transition
+        # Eq. 3.8.1-20, apply the flipflop logic to decide if in mode transition
         self.q_mode_ramp_flag = self.desired_var_ff.flipflop(self.q_mode_ramp_flag_set, self.q_mode_ramp_flag_reset)
 
-        # Eq. 3.8.1-17, if in mode transition, pass ramp rate limited value as output. If not, pass original value.
+        # Eq. 3.8.1-21, if in mode transition, pass ramp rate limited value as output. If not, pass original value.
         if self.q_mode_ramp_flag == 1:
             self.q_desired_pu = self.q_desired_ramp_pu
         else:

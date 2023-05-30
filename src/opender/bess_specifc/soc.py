@@ -80,10 +80,10 @@ class StateOfCharge:
 
         # Eq. 3.6.2-1 Calculate maximum discharge and charge active power at current SOC, defined by the capability
         # curve NP_BESS_P_MAX_BU_SOC
-        self.p_max_discharge_pu_soc = np.interp(self.bess_soc, self.der_file.NP_BESS_P_MAX_BY_SOC['SOC_P_CHARGE_MAX'],
+        self.p_max_charge_pu_soc = np.interp(self.bess_soc, self.der_file.NP_BESS_P_MAX_BY_SOC['SOC_P_CHARGE_MAX'],
                                                 self.der_file.NP_BESS_P_MAX_BY_SOC['P_CHARGE_MAX_PU'])
 
-        self.p_max_charge_pu_soc = np.interp(self.bess_soc, self.der_file.NP_BESS_P_MAX_BY_SOC['SOC_P_DISCHARGE_MAX'],
+        self.p_max_discharge_pu_soc = np.interp(self.bess_soc, self.der_file.NP_BESS_P_MAX_BY_SOC['SOC_P_DISCHARGE_MAX'],
                                              self.der_file.NP_BESS_P_MAX_BY_SOC['P_DISCHARGE_MAX_PU'])
 
         # Eq. 3.6.2-2 Calculate P charge limit to avoid over-charging in the next time step
@@ -99,8 +99,8 @@ class StateOfCharge:
                                                 / self.der_file.NP_P_MAX, 1))
 
         # Eq. 3.6.2-4 Calculate final maximum discharge/charge power using the two previously calculated limits
-        self.p_max_discharge_pu = min(self.p_max_charge_pu_soc, self.p_max_discharge_pu_ts)
-        self.p_max_charge_pu = min(self.p_max_discharge_pu_soc, self.p_max_charge_pu_ts)
+        self.p_max_discharge_pu = min(self.p_max_discharge_pu_soc, self.p_max_discharge_pu_ts)
+        self.p_max_charge_pu = min(self.p_max_charge_pu_soc, self.p_max_charge_pu_ts)
 
     def snapshot_limits(self):
         # Eq. 3.6.2-5, For snapshot analysis, the operational active power limits are set to 1, so they do not

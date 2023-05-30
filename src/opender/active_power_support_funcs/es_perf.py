@@ -41,16 +41,15 @@ class EnterServicePerformance:
         :param p_es_pu:	DER enter service ramp reference
         """
 
-        if self.der_obj.der_status == "Entering Service":
-            # Eq 3.7.1-7, if DER is entering service, enter service ramp reference linearly ramp to a value slightly
+        if self.der_obj.der_status == "Trip":
+            self.reset()
+        else:
+            # Eq 3.7.1-10, if DER is entering service, enter service ramp reference linearly ramp to a value slightly
             # greater than 1. The purpose is to identify if enter service process is completed
             self.p_es_pu = self.rrl.ramp(1.1, self.exec_delay.es_ramp_rate_exec, 0)
-        elif self.der_obj.der_status == "Trip":
-            # Eq 3.7.1-8, if DER is tripped, the reference should be reset to 0
-            self.p_es_pu = self.rrl.ramp(0, 0, 0)
-        else:
-            # Eq 3.7.1-9, if DER is not tripped and enter service process is completed, the reference is set to high,
-            # so that it will not impact output active power
-            self.p_es_pu = self.rrl.ramp(1.1, 0, 0)
 
         return self.p_es_pu
+
+    def reset(self):
+        # Eq 3.7.1-9, if DER is tripped, the reference should be reset to 0
+        self.p_es_pu = self.rrl.ramp(0, 0, 0)

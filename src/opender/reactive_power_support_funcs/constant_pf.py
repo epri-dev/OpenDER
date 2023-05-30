@@ -70,3 +70,8 @@ class ConstantPowerFactor:
         self.q_const_pf_desired_pu = self.pf_delay.tdelay(self.q_const_pf_lpf_pu, self.der_file.NP_REACT_TIME)
 
         return self.q_const_pf_desired_pu
+
+    def reset(self):
+        # Eq. 3.8.1-3, if DER is tripped, the reference should be reset to 0
+        self.q_const_pf_lpf_pu = self.pf_lpf.low_pass_filter(0, 0)
+        self.q_const_pf_desired_pu = self.pf_delay.tdelay(0, 0)

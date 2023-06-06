@@ -122,7 +122,7 @@ class DEROutputs:
         :param NP_VA_MAX:	DER nameplate apparent power rating
         :param NP_AC_V_NOM:	AC voltage base—nominal voltage rating
         :param NP_PHASE:	Single- or Three-phase DER
-        :param P_RESISTANCE:	DER source resistance for voltage output
+        :param NP_RESISTANCE:	DER source resistance for voltage output
         :param NP_REACTANCE:	DER source reactance for voltage output
         """
 
@@ -135,7 +135,7 @@ class DEROutputs:
 
         if self.der_file.NP_PHASE == "THREE":
             # Eq 3.11.3-4, Calculate three phase voltages in per unit based on limited positive and negative voltage
-            self.v_a_out_pu, self.v_b_out_pu, self.v_c_out_pu = sym_component.convert_symm_to_abc(self.v_pos_out_pu, self.v_neg_out_pu)
+            self.v_a_out_pu, self.v_b_out_pu, self.v_c_out_pu = sym_component.convert_symm_to_abc(self.v_pos_out_pu, self.v_neg_out_pu, self.der_input.v_zero_pu)
             self.v_out_mag_pu = [abs(self.v_a_out_pu), abs(self.v_b_out_pu), abs(self.v_c_out_pu)]
 
             # Eq 3.11.3-5, Calculate three phase voltage in volts

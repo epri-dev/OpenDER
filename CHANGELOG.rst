@@ -1,6 +1,10 @@
 
 Changelog
 =========
+Unreleased changes
+------------------
+* Fixed an issue on voltage source output when zero sequence voltage is present
+
 2.1.0 (2023-05-29)
 ------------------
 * Updated interaction between enter service ramp and ride-through. Now DER returns to enter service ramp

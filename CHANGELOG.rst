@@ -4,6 +4,7 @@ Changelog
 2.1.1 (2023-08-18)
 ------------------
 * Fixed an issue on voltage source output when zero sequence voltage is present
+* Corrected single phase DER voltage measurement
 
 2.1.0 (2023-05-29)
 ------------------

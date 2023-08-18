@@ -28,7 +28,7 @@ class FreqDroopBESS(FreqDroop):
         super(FreqDroopBESS, self).__init__(der_obj)
 
     def p_pf_normal_pu(self):
-        # Eq 3.7.3-5, frequency-droop active power if no grid-support functions (freq-droop, volt-watt and active power
+        # Eq 3.7.3-1, frequency-droop active power if no grid-support functions (freq-droop, volt-watt and active power
         # limit) are enabled is determined by the active power demand, rather than available active power
         if self.der_obj.der_status == 'Entering Service':
             return self.der_obj.p_out_w/self.der_file.NP_P_MAX

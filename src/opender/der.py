@@ -34,6 +34,7 @@ class DER:
     def __init__(self, der_file_obj=None, **kwargs):
         """
         Creating a DER Object
+
         :param der_file_obj: DER common file format object created from common_file_format.py
         """
 
@@ -81,6 +82,7 @@ class DER:
                          v_pu: Union[List[float], float] = None, p_dc_pu: float = None, p_dc_w: float = None) -> None:
         """
         Update DER inputs
+
         :param p_dc_w: Available DC power in W
         :param p_dc_kw:	Available DC power in kW
         :param p_dc_pu:	Available DC power in per unit
@@ -223,6 +225,11 @@ class DER:
         self.q_out_var = None
 
     def get_der_output(self, output: str = 'PQ_pu') -> Union[Tuple[Any, Any], Tuple[List[Any], List[Any]]]:
+        """
+        Get DER model outputs, in terms of P/Q source, current source, or voltage source behind impedance.
+
+        :param output: supports 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu', 'V_pu', 'V_V'
+        """
         if output == 'PQ_VA':
             return self.p_out_w, self.q_out_var
         elif output == 'PQ_kVA':
@@ -244,7 +251,8 @@ class DER:
             self.der_output.calculate_v_output(self.i_pos_pu, self.i_neg_pu)
             return self.der_output.v_out_mag_v, self.der_output.v_out_theta
         else:
-            print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu'")
+            print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu', 'V_pu', 'V_V'")
+            return None, None
 
 
 

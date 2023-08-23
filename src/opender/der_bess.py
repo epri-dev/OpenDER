@@ -34,6 +34,7 @@ class DER_BESS(DER):
                          p_dem_pu: float = None, p_dem_kw: float = None) -> None:
         """
         Update DER inputs
+
         :param p_dem_w: Demand AC power in W
         :param p_dem_w:	Demand AC power in kW
         :param p_dem_pu:	Demand AC power in per unit
@@ -55,8 +56,8 @@ class DER_BESS(DER):
 
         self._update_der_input_v_f(v, theta, v_symm_pu, f, v_pu)
 
-    def get_DERCommonFileFormat(self):
-        return DERCommonFileFormatBESS()
+    def get_DERCommonFileFormat(self, **kwargs):
+        return DERCommonFileFormatBESS(**kwargs)
 
     def get_bess_soc(self) -> float:
         return self.bessspecific.soc_calc.bess_soc

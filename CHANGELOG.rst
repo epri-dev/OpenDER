@@ -1,6 +1,10 @@
 
 Changelog
 =========
+Unreleased Changes
+------------------
+* Fixed an issue for BESS parameter initialization
+
 2.1.1 (2023-08-18)
 ------------------
 * Fixed an issue on voltage source output when zero sequence voltage is present

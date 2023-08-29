@@ -643,7 +643,8 @@ class DERCommonFileFormat:
                 self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'].append(1)
                 self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'].append(
                     self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'][-1])
-        else:
+        elif self.isNotNaN(self.NP_Q_MAX_INJ) and self.isNotNaN(self.NP_Q_MAX_ABS) and self.isNotNaN(self.NP_VA_MAX):
+
             q_max_inj_pu = self.NP_Q_MAX_INJ / self.NP_VA_MAX
             q_max_abs_pu = self.NP_Q_MAX_ABS / self.NP_VA_MAX
 
@@ -680,12 +681,14 @@ class DERCommonFileFormat:
         Check if the DER reactive power capability custom curve is greater than the requirement
 
         Variable used in this function:
-        :NP_Q_CAPABILITY_BY_P_CURVE: User defined reactive power capability curve
-        :NP_NORMAL_OP_CAT: DER normal operating performance category
+
+        :param NP_Q_CAPABILITY_BY_P_CURVE: User defined reactive power capability curve
+        :param NP_NORMAL_OP_CAT: DER normal operating performance category
 
         Internal variables:
-        :p_capability_pu, q_capability_pu: DER Q capability curve in terms of P, user custom defined
-        :p_requirement_pu, q_requirement_pu: Minimum Q capability in terms of P, defined by IEEE 1547-2018
+
+        :param p_capability_pu, q_capability_pu: DER Q capability curve in terms of P, user custom defined
+        :param p_requirement_pu, q_requirement_pu: Minimum Q capability in terms of P, defined by IEEE 1547-2018
 
         return: True: custom capability curve greater than the requirement
         """
@@ -844,6 +847,7 @@ class DERCommonFileFormat:
         self._NP_VA_MAX = NP_VA_MAX
         if self._NP_VA_MAX <= 0:
             raise ValueError("DER nameplate apparent power rating NP_VA_MAX should be greater than 0")
+        self.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
     @property
     def NP_Q_MAX_INJ(self):
@@ -854,6 +858,7 @@ class DERCommonFileFormat:
         self._NP_Q_MAX_INJ = NP_Q_MAX_INJ
         if self._NP_Q_MAX_INJ <= 0:
             raise ValueError("DER nameplate reactive power injection rating NP_Q_MAX_INJ should be greater than 0")
+        self.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
     @property
     def NP_Q_MAX_ABS(self):
@@ -864,6 +869,7 @@ class DERCommonFileFormat:
         self._NP_Q_MAX_ABS = NP_Q_MAX_ABS
         if self._NP_Q_MAX_INJ <= 0:
             raise ValueError("DER nameplate reactive power absorption rating NP_Q_MAX_ABS should be greater than 0")
+        self.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
     @property
     def NP_P_MAX_CHARGE(self):

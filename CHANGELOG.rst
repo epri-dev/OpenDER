@@ -1,7 +1,12 @@
 
 Changelog
 =========
-Unreleased Changes
+Unreleased changes
+------------------
+* Automatically update the reactive capability curve if nameplate parameter is modified
+  (when user defined curve is not provided)
+
+2.1.2 (2023-08-23)
 ------------------
 * Fixed an issue for BESS parameter initialization
 

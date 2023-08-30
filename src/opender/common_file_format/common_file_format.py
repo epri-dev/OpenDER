@@ -662,6 +662,22 @@ class DERCommonFileFormat:
                     'Q_MAX_INJ_PU': [q_max_inj_pu, q_max_inj_pu],
                     'Q_MAX_ABS_PU': [q_max_abs_pu, q_max_abs_pu]
                 }
+        else:
+            if self.NP_Q_CAPABILITY_LOW_P == 'REDUCED':
+                self.NP_Q_CAPABILITY_BY_P_CURVE = {
+                    'P_Q_INJ_PU': [0, 0.04999, 0.05, 0.2, 1],
+                    'P_Q_ABS_PU': [0, 0.04999, 0.05, 0.2, 1],
+                    'Q_MAX_INJ_PU': [0, 0, 0.44 / 4, 0.44, 0.44],
+                    'Q_MAX_ABS_PU': [0, 0, 0.44 / 4, 0.44, 0.44]
+                }
+            else:
+                self.NP_Q_CAPABILITY_BY_P_CURVE = {
+                    'P_Q_INJ_PU': [-1, 1],
+                    'P_Q_ABS_PU': [-1, 1],
+                    'Q_MAX_INJ_PU': [0.44, 0.44],
+                    'Q_MAX_ABS_PU': [0.44, 0.44]
+                }
+
 
         if (len(self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU']) !=
            len(self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'])) or \

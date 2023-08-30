@@ -68,7 +68,7 @@ class TestVoltVar5145:
         # print(q_array)
         # plt.plot(q_array)
         # plt.show()
-        assert self.si_obj.q_out_kvar > 0.1 * self.si_obj.der_file.NP_VA_MAX * self.si_obj.der_file.QV_CURVE_Q4
+        assert self.si_obj.q_out_var > 0.1 * self.si_obj.der_file.NP_VA_MAX * self.si_obj.der_file.QV_CURVE_Q4
 
         while t + t_s <= 4*input_list[0]:
             self.si_obj.run()
@@ -85,5 +85,5 @@ class TestVoltVar5145:
             # q_array.append(self.si_obj.q_out_kvar)
             t=t+t_s
         # print(q_array)
-        assert self.si_obj.q_out_kvar < 0.1 * self.si_obj.der_file.NP_VA_MAX * self.si_obj.der_file.QV_CURVE_Q1 * 2 # The criterion here seems to be unfair for decreasing voltage. Relaxed
+        assert self.si_obj.q_out_var < 0.1 * self.si_obj.der_file.NP_VA_MAX * self.si_obj.der_file.QV_CURVE_Q1 * 2 # The criterion here seems to be unfair for decreasing voltage. Relaxed
 

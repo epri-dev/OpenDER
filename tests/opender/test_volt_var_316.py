@@ -63,8 +63,8 @@ class TestVoltVar316:
         self.si_obj.der_file.QV_CURVE_Q2 = 0
         self.si_obj.der_file.QV_CURVE_Q3 = 0
         self.si_obj.der_file.QV_CURVE_Q4 = -0.44
-        self.si_obj.der_file.NP_Q_MAX_INJ = 44
-        self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_MAX_INJ = 44000
+        self.si_obj.der_file.NP_Q_MAX_ABS = 44000
         self.si_obj.der_file.NP_Q_CAPABILITY_BY_P_CURVE = {
             'P_Q_INJ_PU': [-1, 0.04999, 0.05, 0.2, 1],
             'P_Q_ABS_PU': [-1, 0.04999, 0.05, 0.2, 1],
@@ -88,8 +88,8 @@ class TestVoltVar316:
         assert 0 == self.si_obj.der_file.QV_CURVE_Q2
         assert 0 == self.si_obj.der_file.QV_CURVE_Q3
         assert -0.44 == self.si_obj.der_file.QV_CURVE_Q4
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_INJ
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_ABS
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_INJ
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_ABS
         self.si_obj.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
         # Check Results

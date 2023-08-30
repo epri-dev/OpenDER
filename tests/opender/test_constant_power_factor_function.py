@@ -51,6 +51,8 @@ class TestConstantPowerFactor:
     def test_pf_with_limit(self, p_dc, pf):
 
         self.si_obj.der_file.NP_VA_MAX = 1.2 * self.si_obj.der_file.NP_P_MAX  # To not limit
+        self.si_obj.der_file.NP_Q_MAX_INJ = 1.2 * self.si_obj.der_file.NP_Q_MAX_INJ  # To not limit
+        self.si_obj.der_file.NP_Q_MAX_ABS = 1.2 * self.si_obj.der_file.NP_Q_MAX_ABS  # To not limit
         self.si_obj.der_file.CONST_PF_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.CONST_PF = abs(pf)
         self.si_obj.der_file.CONST_PF_EXCITATION = "INJ" if pf >= 0 else "ABS"

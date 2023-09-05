@@ -60,6 +60,11 @@ class DER_BESS(DER):
         return DERCommonFileFormatBESS(**kwargs)
 
     def get_bess_soc(self) -> float:
+        print('The method ".get_bess_soc()" is deprecated soon. Please use the property ".bess_soc" instead.')
+        return self.bessspecific.soc_calc.bess_soc
+
+    @property
+    def bess_soc (self) -> float:
         return self.bessspecific.soc_calc.bess_soc
 
     def bess_specific(self):

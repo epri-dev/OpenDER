@@ -3,6 +3,7 @@ Changelog
 =========
 Unreleased changes
 ------------------
+* Add a property for SoC of BESS DER using .bess_soc
 * Automatically update the reactive capability curve if nameplate parameter is modified
   (when user defined curve is not provided)
 

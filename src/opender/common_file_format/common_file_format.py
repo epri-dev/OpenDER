@@ -643,6 +643,11 @@ class DERCommonFileFormat:
                 self.NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU'].append(1)
                 self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'].append(
                     self.NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU'][-1])
+
+            if not self.der_q_capability_validity_check(self.NP_Q_CAPABILITY_BY_P_CURVE, self.NP_NORMAL_OP_CAT):
+                logging.warning("Warning: DER reactive capability curve defined by NP_Q_CAPABILITY_BY_P_CURVE "
+                                "should be greater than the range defined in IEEE 1547-2018 Clause 5.2")
+
         elif self.isNotNaN(self.NP_Q_MAX_INJ) and self.isNotNaN(self.NP_Q_MAX_ABS) and self.isNotNaN(self.NP_VA_MAX):
 
             q_max_inj_pu = self.NP_Q_MAX_INJ / self.NP_VA_MAX
@@ -686,9 +691,7 @@ class DERCommonFileFormat:
             raise ValueError("ValueError: Check failed for reactive power curve NP_Q_CAPABILITY_BY_P_CURVE, please"
                              "make sure all four arrays have the same length")
 
-        if not self.der_q_capability_validity_check(self.NP_Q_CAPABILITY_BY_P_CURVE, self.NP_NORMAL_OP_CAT):
-            logging.warning("Warning: DER reactive capability curve defined by NP_Q_CAPABILITY_BY_P_CURVE "
-                            "should be greater than the range defined in IEEE 1547-2018 Clause 5.2")
+
 
 
 
@@ -874,6 +877,9 @@ class DERCommonFileFormat:
         self._NP_Q_MAX_INJ = NP_Q_MAX_INJ
         if self._NP_Q_MAX_INJ <= 0:
             raise ValueError("DER nameplate reactive power injection rating NP_Q_MAX_INJ should be greater than 0")
+        if self._NP_Q_MAX_INJ < 0.44 * self.NP_VA_MAX:
+            logging.warning("DER nameplate reactive power injection rating NP_Q_MAX_INJ should be greater than 44% of "
+                            "its nameplate apparent power rating NP_VA_MAX")
         self.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
     @property
@@ -883,8 +889,14 @@ class DERCommonFileFormat:
     @NP_Q_MAX_ABS.setter
     def NP_Q_MAX_ABS(self, NP_Q_MAX_ABS):
         self._NP_Q_MAX_ABS = NP_Q_MAX_ABS
-        if self._NP_Q_MAX_INJ <= 0:
+        if self._NP_Q_MAX_ABS <= 0:
             raise ValueError("DER nameplate reactive power absorption rating NP_Q_MAX_ABS should be greater than 0")
+        if self._NP_Q_MAX_ABS < 0.44 * self.NP_VA_MAX and self.NP_NORMAL_OP_CAT == "CAT_B":
+            logging.warning("DER nameplate reactive power injection rating NP_Q_MAX_ABS should be greater than 44% of "
+                            "its nameplate apparent power rating NP_VA_MAX for Category B DER")
+        if self._NP_Q_MAX_ABS < 0.25 * self.NP_VA_MAX and self.NP_NORMAL_OP_CAT == "CAT_A":
+            logging.warning("DER nameplate reactive power injection rating NP_Q_MAX_ABS should be greater than 25% of "
+                            "its nameplate apparent power rating NP_VA_MAX for Category A DER")
         self.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
     @property

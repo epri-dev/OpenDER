@@ -1,6 +1,21 @@
 
 Changelog
 =========
+Unreleased changes
+------------------
+* Add a property for SoC of BESS DER using .bess_soc
+* Automatically update the reactive capability curve if nameplate parameter is modified
+  (when user defined curve is not provided)
+
+2.1.2 (2023-08-23)
+------------------
+* Fixed an issue for BESS parameter initialization
+
+2.1.1 (2023-08-18)
+------------------
+* Fixed an issue on voltage source output when zero sequence voltage is present
+* Corrected single phase DER voltage measurement
+
 2.1.0 (2023-05-29)
 ------------------
 * Updated interaction between enter service ramp and ride-through. Now DER returns to enter service ramp

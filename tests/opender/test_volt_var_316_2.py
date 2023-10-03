@@ -63,8 +63,8 @@ class TestVoltVar3162:
         self.si_obj.der_file.QV_CURVE_Q2 = 0
         self.si_obj.der_file.QV_CURVE_Q3 = 0
         self.si_obj.der_file.QV_CURVE_Q4 = -0.44
-        self.si_obj.der_file.NP_Q_MAX_INJ = 44
-        self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_MAX_INJ = 44000
+        self.si_obj.der_file.NP_Q_MAX_ABS = 44000
         # self.si_obj.der_file.NP_Q_CAPABILITY_LOW_P = "SAME"
 
         self.si_obj.der_file.NP_Q_CAPABILITY_BY_P_CURVE = {
@@ -91,8 +91,8 @@ class TestVoltVar3162:
         assert 0 == self.si_obj.der_file.QV_CURVE_Q2
         assert 0 == self.si_obj.der_file.QV_CURVE_Q3
         assert -0.44 == self.si_obj.der_file.QV_CURVE_Q4
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_INJ
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_ABS
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_INJ
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_ABS
         # assert "SAME" == self.si_obj.der_file.NP_Q_CAPABILITY_LOW_P
 
         # Check Results

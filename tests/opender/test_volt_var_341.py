@@ -61,8 +61,8 @@ class TestVoltVar341:
         self.si_obj.der_file.QV_CURVE_Q2 = 0
         self.si_obj.der_file.QV_CURVE_Q3 = 0
         self.si_obj.der_file.QV_CURVE_Q4 = -0.44
-        self.si_obj.der_file.NP_Q_MAX_INJ = 44
-        self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_MAX_INJ = 44000
+        self.si_obj.der_file.NP_Q_MAX_ABS = 44000
         self.si_obj.der_file.AP_LIMIT_ENABLE = "ENABLED"
         self.si_obj.der_file.AP_LIMIT = p_limit
 
@@ -82,8 +82,8 @@ class TestVoltVar341:
         assert 0 == self.si_obj.der_file.QV_CURVE_Q2
         assert 0 == self.si_obj.der_file.QV_CURVE_Q3
         assert -0.44 == self.si_obj.der_file.QV_CURVE_Q4
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_INJ
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_ABS
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_INJ
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_ABS
         assert self.si_obj.der_file.AP_LIMIT_ENABLE
         assert p_limit == self.si_obj.der_file.AP_LIMIT
 

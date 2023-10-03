@@ -69,8 +69,8 @@ class TestVoltVar351:
         self.si_obj.der_file.QV_CURVE_Q2 = 0
         self.si_obj.der_file.QV_CURVE_Q3 = 0
         self.si_obj.der_file.QV_CURVE_Q4 = -0.44
-        self.si_obj.der_file.NP_Q_MAX_INJ = 44
-        self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_MAX_INJ = 44000
+        self.si_obj.der_file.NP_Q_MAX_ABS = 44000
         self.si_obj.der_file.NP_EFFICIENCY = 0.97
 
  #       self.si_obj.der_file.update_smart_function()  # Need to update the smart function selected
@@ -89,8 +89,8 @@ class TestVoltVar351:
         assert 0 == self.si_obj.der_file.QV_CURVE_Q2
         assert 0 == self.si_obj.der_file.QV_CURVE_Q3
         assert -0.44 == self.si_obj.der_file.QV_CURVE_Q4
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_INJ
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_ABS
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_INJ
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_ABS
         assert 0.97 == self.si_obj.der_file.NP_EFFICIENCY
 
         # Check Results

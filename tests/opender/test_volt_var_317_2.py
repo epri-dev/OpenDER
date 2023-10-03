@@ -60,8 +60,8 @@ class TestVoltVar3172:
         self.si_obj.der_file.QV_CURVE_Q2 = 0
         self.si_obj.der_file.QV_CURVE_Q3 = 0
         self.si_obj.der_file.QV_CURVE_Q4 = -0.44
-        self.si_obj.der_file.NP_Q_MAX_INJ = 44
-        self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_MAX_INJ = 44000
+        self.si_obj.der_file.NP_Q_MAX_ABS = 44000
         self.si_obj.der_file.NP_V_MEAS_UNBALANCE = "POS"
         self.si_obj.der_file.OV1_TRIP_V = 1.2
         self.si_obj.der_file.OV2_TRIP_V = 1.2
@@ -83,8 +83,8 @@ class TestVoltVar3172:
         assert 0 == self.si_obj.der_file.QV_CURVE_Q2
         assert 0 == self.si_obj.der_file.QV_CURVE_Q3
         assert -0.44 == self.si_obj.der_file.QV_CURVE_Q4
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_INJ
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_ABS
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_INJ
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_ABS
         assert "POS" == self.si_obj.der_file.NP_V_MEAS_UNBALANCE
 
         # Check Results

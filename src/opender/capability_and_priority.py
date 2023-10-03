@@ -79,8 +79,8 @@ def intercep_piecewise_circle(mag, xp, yp, k = 0.9, err = 1.e-3, ):
 
 class CapabilityPriority:
     """
-    Calculate active and reactive power power output limited by DER ratings, according to the priority of responses.
-    EPRI Report Reference: Section 3.9 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    | Calculate active and reactive power power output limited by DER ratings, according to the priority of responses.
+    | EPRI Report Reference: Section 3.9 in Report #3002026631: IEEE 1547-2018 OpenDER Model
     """
     def __init__(self, der_obj):
         self.der_file = der_obj.der_file
@@ -118,6 +118,7 @@ class CapabilityPriority:
         Calculate limited DER output P and Q based on DER ratings and priority of responses.
 
         Variables used in this function:
+
         :param p_desired_pu:	Desired output active power considering DER enter service performance
         :param q_desired_pu:	Desired output reactive power from reactive power support functions
         :param const_pf_mode_enable_exec:	Constant Power Factor Mode Enable (CONST_PF_MODE_ENABLE) after execution delay
@@ -133,6 +134,7 @@ class CapabilityPriority:
         :param NP_Q_CAPABILITY_BY_P_CURVE: DER reactive power capability curves (P_Q_INJ_PU, Q_MAX_INJ_PU, P_Q_ABS_PU, Q_MAX_ABS_PU)
 
         Outputs:
+
         :param p_limited_w:	DER output active power after considering DER apparent power limits
         :param q_limited_var:	DER output reactive power after considering DER apparent power limits
         """

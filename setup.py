@@ -38,7 +38,7 @@ def read(*names, **kwargs):
 
 setup(
     name='opender',
-    version='2.1.0',
+    version='2.1.2',
     license='BSD',
     description='Open-source Distributed Energy Resources (DER) Model that represents IEEE Standard 1547-2018 '
                 'requirements for steady-state and dynamic analyses',

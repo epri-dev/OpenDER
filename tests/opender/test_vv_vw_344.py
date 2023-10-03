@@ -59,8 +59,8 @@ class TestVVVW344:
         self.si_obj.der_file.QV_CURVE_Q2 = 0
         self.si_obj.der_file.QV_CURVE_Q3 = 0
         self.si_obj.der_file.QV_CURVE_Q4 = -0.44
-        self.si_obj.der_file.NP_Q_MAX_INJ = 44
-        self.si_obj.der_file.NP_Q_MAX_ABS = 44
+        self.si_obj.der_file.NP_Q_MAX_INJ = 44000
+        self.si_obj.der_file.NP_Q_MAX_ABS = 44000
         self.si_obj.der_file.PV_MODE_ENABLE = "ENABLED"
         self.si_obj.der_file.PV_CURVE_V1 = 1.06
         self.si_obj.der_file.PV_CURVE_V2 = 1.1
@@ -89,8 +89,8 @@ class TestVVVW344:
         assert 0 == self.si_obj.der_file.QV_CURVE_Q2
         assert 0 == self.si_obj.der_file.QV_CURVE_Q3
         assert -0.44 == self.si_obj.der_file.QV_CURVE_Q4
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_INJ
-        assert 44 == self.si_obj.der_file.NP_Q_MAX_ABS
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_INJ
+        assert 44000 == self.si_obj.der_file.NP_Q_MAX_ABS
         assert self.si_obj.der_file.PV_MODE_ENABLE
         assert 1.06 == self.si_obj.der_file.PV_CURVE_V1
         assert 1.1 == self.si_obj.der_file.PV_CURVE_V2

@@ -1,7 +1,7 @@
 
 Changelog
 =========
-Unreleased changes
+2.1.3 (2023-12-05)
 ------------------
 * Add a property for SoC of BESS DER using .bess_soc
 * Automatically update the reactive capability curve if nameplate parameter is modified

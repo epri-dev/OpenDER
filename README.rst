@@ -20,8 +20,8 @@ OpenDER is under active development. Use the following resources to get involved
 
 * EPRI OpenDER homepage (`link <https://www.epri.com/OpenDER>`__)
 
-* Model specification: IEEE 1547-2018 OpenDER Model: Version 2.0, EPRI, Palo Alto, CA: 2022. 3002025583
-  (`link <https://www.epri.com/research/products/000000003002025583>`__)
+* Model specification: IEEE 1547-2018 OpenDER Model: Version 2.1, EPRI, Palo Alto, CA: 2023. 3002026631
+  (`link <https://www.epri.com/research/products/000000003002026631>`__)
 
 Development Objective
 ---------------------

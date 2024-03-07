@@ -22,6 +22,7 @@ import opender as der
 #   Additions for real-time simulation
 import time
 import pause
+import logging
 #   Add IEEE 2030.5 Smart Energy Profile (SEP) interface
 from    sep_types import *
 import  sep_client as sep
@@ -91,12 +92,6 @@ der_cap.set('rtgW', float(der_test.der_file.NP_P_MAX))
 der_cap.set('rtgWh', float(der_test.der_file.NP_P_MAX_CHARGE))
 der_cap.set('DERtype', TYPE_PV)
 
-# ifdef DEBUG
-theDict = der_cap.toDict()
-for key in theDict.keys():
-    print("For key ", key, "type is ", type(theDict[key]))
-# endif
-
 # 'PUT' the DER Capability to the DERMS
 sep_handler.sendDERCap(der_cap)
 
@@ -128,12 +123,6 @@ dderc = sep_handler.getDDERC()
 base = DERControlBase()
 base.fromDict(dderc.get('DERControlBase'))
 dderc.set('DERControlBase', base)
-# ifdef DEBUG
-theDict = dderc.get('DERControlBase').toDict()
-print("The Control Base fields:")
-for key in theDict.keys():
-    print("For key ", key, "value is ", theDict[key])
-# endif
 
 # IEEE 2030 says DERs must support a minimum of 10 curve points however it 
 # appears the current OpenDER model supports only two and only for V and freq
@@ -185,7 +174,7 @@ while t < 2400:
 
     # Show the simulation is still alive in real-time simulation
     if t%5 == 0:
-        print("Time step = ", t)
+        logging.info(f"Time step = {t}")
 
     # calculate output power at each time step
     der_test.run()

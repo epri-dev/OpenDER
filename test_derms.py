@@ -42,7 +42,14 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import socketserver
 import time
 import json
+import logging
 from sep_types import *
+
+logging.basicConfig(level=logging.DEBUG)
+logging.debug("Debug msg")
+logging.warning("Warning msg")
+logging.info("Info msg")
+logging.error("error msg")
 
 # Set port for local socket between two local processes
 PORT = 8000
@@ -143,19 +150,19 @@ class sepHandler( BaseHTTPRequestHandler ):
     # before this is invoked.
     # NOTE:  json.dump() encodes into json.  Load() decodes
     def do_GET(self):
-        print( "GET path = ", self.path)
+        logging.debug( f"GET path = {self.path}")
         # Determine action based on the endpoint
         # Python can only handle literals for the cases
         match self.path:
             case '/tm':
                 rspStatus = 200         # HTTP general success
                 rspBody = json.dumps(time.time())
-                print( "Returning time")
+                logging.debug( "Returning time")
             case '/dcap':
                 rspStatus = 200
                 dict = devCap.toDict()
                 rspBody = json.dumps(dict)
-                print( "Returning Device Capability")
+                logging.debug( "Returning Device Capability")
             case '/derp/dderc':              # Default DER Control
                 # Serialize the Default DER Control which contains a DER
                 # Control Base, which contains default curve lists
@@ -163,11 +170,11 @@ class sepHandler( BaseHTTPRequestHandler ):
                 rspBody = json.dumps(dict)
                 rspStatus = 200
             case '/derp/derc':               # DER Control
-                print( "GET for DER Ctl received.  Not implemented")
+                logging.debug( "GET for DER Ctl received.  Not implemented yet")
                 rspStatus = 404
                 rspBody = None
             case _:
-                print( "GET to unknown path:", self.path)
+                logging.warning( f"GET to unknown path: {self.path}")
                 rspStatus = 404         # Resource not valid or not implementd
                 rspBody = None
 
@@ -191,11 +198,11 @@ class sepHandler( BaseHTTPRequestHandler ):
     # An error response is sent if the JSON string is not valid or if content type
     # is something other than "application/json".
     def do_POST(self):
-        print("In do_POST")
         if self.headers['Content-Type'] != contentType:
+            logging.warning(f"POST received unsupported media type {self.headers['Content-Type']}")
             self.send_response(415)         #HTTP unsupported media type
         else:
-            print( "JSON content received: ", self.rfile.read(int(self.headers['Content-Length'])) )
+            logging.debug( f"JSON content received: {self.rfile.read(int(self.headers['Content-Length']))}" )
             self.send_response(200)         #HTTP general success
         self.end_headers()                  #causes the action to send
         
@@ -205,7 +212,6 @@ class sepHandler( BaseHTTPRequestHandler ):
     # on its device ID.  This simple prototype only supports one DER so the
     # device IDs are removed in the paths.
     def do_PUT(self):
-        print("In do_PUT")
         if self.headers['Content-Type'] != contentType:
             self.send_response(415)         #HTTP unsupported media type
             self.end_headers()              #send this response
@@ -215,32 +221,31 @@ class sepHandler( BaseHTTPRequestHandler ):
             case '/edev/cfg':               # Configuration information.
                 # Not storing in this simple prototype  
                 rspStatus = 200             # HTTP general success
-                print( "Received config PUT")
             case '/edev/der/dercap':        # DER Capability
                 # Get the body and decode into dictionary
                 body = self.rfile.read(int(self.headers['Content-Length']))
                 dict = json.loads(body)
-                print("DER Capability dictionary received:", dict)
+                logging.debug(f"DER Capability dictionary received: {dict}")
                 self._handle_DERCap(dict)
                 rspStatus = 200
                 rspBody = None
             case '/edev/der/derg':          # DER Settings
                 body = self.rfile.read(int(self.headers['Content-Length']))
                 dict = json.loads(body)
-                print("DER settings dictionary received:", dict)
+                logging.debug(f"DER settings dictionary received: {dict}")
                 self._handle_DERSettings(dict)
                 rspStatus = 200
                 rspBody = None
             case '/edev/dstat':             # DER Status
-                print("PUT DER Status.  Not implemented yet")
+                logging.warning("PUT DER Status.  Not implemented yet")
                 rspStatus = 404
                 rspBody = None
             case '/edev/der/dera':          # DER Availability
-                print("PUT DER Availability.  Not implemented yet")
+                logging.warning("PUT DER Availability.  Not implemented yet")
                 rspStatus = 404
                 rspBody = None
             case _:
-                print("PUT to unknown path:", self.path)
+                logging.error(f"PUT to unknown path: {self.path}")
                 rspStatus = 404             # Not implementd
                 rspBody = None
         
@@ -260,13 +265,13 @@ class sepHandler( BaseHTTPRequestHandler ):
 # if running as a standalone daemon vs. imported, start the server
 if __name__ == "__main__":        
     with HTTPServer((hostName, PORT), sepHandler) as webServer:
-        print("2030.5 server started on port: %s" % PORT)
+        logging.info(f"2030.5 server started on port: {PORT}")
         try:
             webServer.serve_forever()
         except KeyboardInterrupt:
             pass
         webServer.server_close()
 
-    print("Server stopped.") 
+    logging.info("Server stopped.") 
 
 

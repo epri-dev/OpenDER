@@ -27,13 +27,15 @@ import logging
 from    sep_types import *
 import  sep_client as sep
 
+logging.basicConfig(level=logging.DEBUG)
+
 # Define DER parameter configuration directory (optional)
 script_path = pathlib.Path(os.path.dirname(__file__))
 as_file_path = script_path.joinpath("src", "opender", "Parameters", "AS-with std-values.csv")
 model_file_path = script_path.joinpath("src", "opender","Parameters", "Model-parameters.csv")
 file_ss_obj = der.common_file_format.DERCommonFileFormat(as_file_path, model_file_path)
 
-# creating DER
+# create the DER object
 der_test = der.DER(file_ss_obj)
 
 # assign simulation time step in Seconds
@@ -163,14 +165,40 @@ der_test.der_file.ES_V_LOW = dderc.get('setESLowVolt')/100
 der_test.der_file.ES_RANDOMIZED_DELAY = dderc.get('setESRandomDelay')
 der_test.der_file.ES_RAMP_RATE = dderc.get('setGradW')
 
+# Lists (Python dictionaries) of simulated Voltage and Frequency changes
+# at points in time at the PCC to test Trip and Cessation behavior.
+# Key is the time step, Value is the new freq or %nominal voltage
+pcc_freq = {
+    5:58,           # Low freq may trip at 5 seconds
+    10:60,          # Return to normal
+    15:57,          # Must trip after .16S
+    20:60           # Back to normal
+}
+
+pcc_v = {
+    25:0.8,         # My trip after 1S
+    30:1,           # Return to nominal
+    35:0.5,         # Must trip quickly
+    40:1,
+    45:1.2,         # HV must trip
+    50:1
+}
+
 der_test.update_der_input(f=60, p_dc_pu=1)
+der_test.update_der_input(v_pu=1)           # Start with nominal voltage
 # For real-time simulation
-start_time = time.time()    #Seconds since epoch    
-while t < 2400:
-    if (t < 5)or(100<t<800)or(900<t<1600)or(1700<t<2400):
-        der_test.update_der_input(v_pu=1)
-    else:
-        der_test.update_der_input(v_pu=1.11)
+start_time = time.time()    #Seconds since epoch
+
+while t < 400:
+    if t in pcc_v.keys():
+        # change voltage at PCC at this time step
+        der_test.update_der_input(v_pu=pcc_v[t])
+        logging.debug( f"Voltage change to {pcc_v[t]}% of nominal")
+    
+    if t in pcc_freq.keys():
+        # change frequency at PCC at this time
+        der_test.update_der_input(f=pcc_freq[t])
+        logging.debug( f"Frequency change to {pcc_freq[t]}Hz")
 
     # Show the simulation is still alive in real-time simulation
     if t%5 == 0:
@@ -186,6 +214,49 @@ while t < 2400:
     pdc_plot.append(der_test.der_input.p_avl_pu)
     v_plot.append(der_test.der_input.v_meas_pu)
     stat_plot.append(der_test.der_status)
+
+    if t%poll_rate == 0:
+        # Send 2030.5 DERStatus to the DERMS
+        # This needs to become a seperate function with lots more functionality
+        # Note, I'm having trouble mapping the DER operational status to the
+        # fields and values defined in 2030.5.  Making best guesses here.
+        # Top level status for the DER is whether it is Tripped, Entering Svc,
+        # in Momentary Cessation, etc.  Not clear how that is comprehended in 
+        # 2030.5 status.
+        der_stat = DERStatus()
+        if der_test.der_status == 'Continuous Operation' or der_test.der_status == 'Mandatory Operation':
+            # Assume no alarms and functioning properly
+            der_stat.set('alarmStatus', 0x00)
+            der_stat.set('genConnectStatus', CS_OPERATING)
+            der_stat.set('inverterStatus', IS_TRACKING)
+            der_stat.set('operationalModeStatus', OMS_OPERATIONAL)
+        elif der_test.der_status == 'Entering Service':
+            # Not clear how to report this using 2030.5-defined values
+            # For now, report same as normal operational status
+            der_stat.set('alarmStatus', 0x00)
+            der_stat.set('genConnectStatus', CS_OPERATING)
+            der_stat.set('inverterStatus', IS_TRACKING)
+            der_stat.set('operationalModeStatus', OMS_OPERATIONAL)
+        elif der_test.der_status == 'Trip':
+            # Map the TripCrit status to 2030.5 alarm status
+            # Future to-do: find the clever 'Pythonic' way to do this
+            alarmStatus = 0x00
+            if der_test.opstatus.tripcrit.uv1_trip or der_test.opstatus.tripcrit.uv2_trip:
+                alarmStatus |= DF_UNDER_VOLTAGE
+            if der_test.opstatus.tripcrit.ov1_trip or der_test.opstatus.tripcrit.ov2_trip:
+                alarmStatus |= DF_OVER_VOLTAGE
+            if der_test.opstatus.tripcrit.uf1_trip or der_test.opstatus.tripcrit.uf2_trip:
+                alarmStatus |= DF_UNDER_FREQUENCY
+            if der_test.opstatus.tripcrit.of1_trip or der_test.opstatus.tripcrit.of2_trip:
+                alarmStatus |= DF_OVER_FREQUENCY
+            der_stat.set('alarmStatus', alarmStatus)
+            der_stat.set('genConnectStatus', CS_AVAILABLE)
+            der_stat.set('inverterStatus', IS_TRACKING)
+            der_stat.set('operationalModeStatus', OMS_OPERATIONAL)
+        else:
+            logging.debug( f"Unrecognized der_status: {der_test.der_status}")
+
+        sep_handler.sendDERStatus(der_stat)
 
     # increase t
     t = t + t_s

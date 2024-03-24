@@ -54,34 +54,12 @@ class DateTimeInterval(object):
         self.start = TimeType(startTime)
         self.duration = int(duration)
 
-# Simplified Device Capability class.  This is one of the first resources a
-# DER GETs from the DERMS server to determine the function sets supported
-# by the server and the endpoints for each supported function set.
-#
-# Data items are stored in a Python dictionary to facilitate serialize &
-# de-serialize to/from HTTP.
-#
-# First define the bits in the flags field
-DC_TimeLink_exists = (1 << 4)
-DC_ResponseSetListLink_exists = (1 << 7)
-DC_FileListLink_exists = (1 << 10)
-DC_DERProgramListLink_exists = (1 << 11)
-DC_SelfDeviceLink_exists = (1 << 14)
-DC_EndDeviceListLink_exists = (1 << 16)
-DC_pollRate_exists = (1 << 17)
-
-class DeviceCapability(object):
-    def __init__(self, dict={}):
-        # Explicity instantiate just the elements defined in 2030.5/sep.xsd
-        self._dict = {
-            'flags': None,
-            'pollRate': None,
-            'DERProgramList': None,
-            'FileList': None,
-            'TimeLink': None,
-            'EndDeviceList': None
-        }
-        self.fromDict(dict)
+# Abstract base class for top-level SEP objects to define common methods
+# shared by all classes.  These objects get serialized to/from http messages
+# so member data is stored in dictionaries which are easily serializable.
+class SEPObject(object):
+    def __init__(self):
+        self._dict = {}
 
     def set(self, key, value):
         # Insure that only the items defined in 2030.5 are included
@@ -105,21 +83,74 @@ class DeviceCapability(object):
         for key in dict:
             self.set(key, dict[key])
 
+
+# Simplified Device Capability class.  This is one of the first resources a
+# DER GETs from the DERMS server to determine the function sets supported
+# by the server and the endpoints for each supported function set.
+#
+# First define the bits in the flags field
+DC_TimeLink_exists = (1 << 4)
+DC_ResponseSetListLink_exists = (1 << 7)
+DC_FileListLink_exists = (1 << 10)
+DC_DERProgramListLink_exists = (1 << 11)
+DC_SelfDeviceLink_exists = (1 << 14)
+DC_EndDeviceListLink_exists = (1 << 16)
+DC_pollRate_exists = (1 << 17)
+
+class DeviceCapability(SEPObject):
+    def __init__(self, dict={}):
+        # Explicity instantiate just the elements defined in 2030.5/sep.xsd
+        self._dict = {
+            'flags': None,
+            'pollRate': None,
+            'DERProgramList': None,
+            'FileList': None,
+            'TimeLink': None,
+            'EndDeviceList': None
+        }
+        self.fromDict(dict)
+
 # Immutable tuples repsenting status and operating performance categories
 NormalOpPerfCat = ('not specified', 'Category A', 'Category B')
 AbnormalOpPerfCat = ('not specified', 'Category I', 'Category II', 'Category III')
-InverterStatusTypes = (
-   'N/A',
-   'off',
-   'sleeping',
-   'tracking',
-   'forced derating',
-   'shutting down',
-   'faults exist',
-   'standby',
-   'test mode',
-   'vendor-specific'
-)
+
+# Inverter Status values
+IS_NA           = 0
+IS_OFF          = 1
+IS_SLEEPING     = 2
+IS_TRACKING     = 3
+IS_FORCED_DERATING  = 4
+IS_SHUTTING_DOWN    = 5
+IS_FAULT_EXISTS     = 6
+IS_STANDBY      = 7
+IS_TEST_MODE    = 8
+IS_VENDOR_SPECIFIC  = 9
+
+# Connect Status values
+CS_CONNECTED    = 0
+CS_AVAILABLE    = 1
+CS_OPERATING    = 2
+CS_TEST         = 3
+CS_FAULT        = 4
+
+# Operational Mode Status values
+OMS_NA          = 0
+OMS_OFF         = 1
+OMS_OPERATIONAL = 2
+OMS_TEST        = 3
+
+# Alarm Status (DER Fault) bitmap, used in DERStatus object
+DF_OVER_CURRENT       = (1 << 0)
+DF_OVER_VOLTAGE       = (1 << 1)
+DF_UNDER_VOLTAGE      = (1 << 2)
+DF_OVER_FREQUENCY     = (1 << 3)
+DF_UNDER_FREQUENCY    = (1 << 4)
+DF_VOLTAGE_IMBALANCE  = (1 << 5)
+DF_CURRENT_IMBALANCE  = (1 << 6)
+DF_EMERGENCY_LOCAL    = (1 << 7)
+DF_EMERGENCY_REMOTE   = (1 << 8)
+DF_LOW_POWER_INPUT    = (1 << 9)
+DF_PHASE_ROTATION     = (1 << 10)
 
 # DERTypes reported in DERCapability.
 TYPE_VIRT_MIXED = 1
@@ -160,7 +191,7 @@ FileTypes = (
    'Log'
 )
 # IEEE 2030 'File' object 
-class DERFile(object):
+class DERFile(SEPObject):
     def __init__(self):
         self._dict = {
             'flags':None,              # UInt32
@@ -176,25 +207,6 @@ class DERFile(object):
             'size':None,               # Size of the file @fileURI
             'type':None                # One of FileTypes above
         }
-    def set(self, key, value):
-        # Insure that only the items defined in 2030.5 are included
-        if key in self._dict.keys():
-            self._dict[key] = value
-            return value
-        return None
-
-    def get(self, key):
-        if key in self._dict.keys():
-            return self._dict[key]
-        return None
-    
-    def toDict(self):
-        # Return the dictionary for serializing into HTTP
-        return self._dict
-
-    def fromDict(self, dict={}):
-            for key in dict:
-                self.set(key, dict[key])
 
 # DER Capability Flags.  From se_types.h in EPRI's 2030 client reference implementtion
 # These are bits in the Flags field of the DERCapability object
@@ -242,7 +254,7 @@ capOpModLFRTMayTrip = (1 << 15)
 # As such, these should not be expected to change
 # Unless noted otherwise, the type of most of these values is the
 # Scientific notation defined by 2030.5.
-class DERCapability(object):
+class DERCapability(SEPObject):
     def __init__(self):
         self._dict = {
             'capFlags': None,               # UInt32 
@@ -269,32 +281,13 @@ class DERCapability(object):
             'rtgWh': None,                  # Nameplate Watt-hours, type SciNum
             'DERtype': None                 # UInt8 w/ types defined above
         }
-    def set(self, key, value):
-        # Insure that only the items defined in 2030.5 are included
-        if key in self._dict.keys():
-            self._dict[key] = value
-            return value
-        return None
-
-    def get(self, key):
-        if key in self._dict.keys():
-            return self._dict[key]
-        return None
-    
-    def toDict(self):
-        # Return the dictionary for serializing into HTTP
-        return self._dict        
-
-    def fromDict(self, dict={}):
-            for key in dict:
-                self.set(key, dict[key])
 
 # Variations from NP ratings based on how the device is configured
 # at installation time by the installer, or due to aging over time.
 # As such, these are also read-only to the DERMS but could change
 # over time due to age or DER maintenance actions.
 # Fields can remaine None if the value is the same as DERCapability
-class DERSettings(object):
+class DERSettings(SEPObject):
     def __init__(self):
         self._dict = {
             'modesEnabled':None,    # Bit map with DERControlType bit positions defined above
@@ -324,26 +317,6 @@ class DERSettings(object):
             'updatedTime':None      # Time these settings were last updated
         }
 
-    def set(self, key, value):
-        # Insure that only the items defined in 2030.5 are included
-        if key in self._dict.keys():
-            self._dict[key] = value
-            return value
-        return None
-
-    def get(self, key):
-        if key in self._dict.keys():
-            return self._dict[key]
-        return None
-    
-    def toDict(self):
-        # Return the dictionary for serializing into HTTP
-        return self._dict
-
-    def fromDict(self, dict={}):
-            for key in dict:
-                self.set(key, dict[key])
-
 # DER Control Base structure
 # Control Values retrieved by the DER through http GET
 # These are the more static, time-invariant control parameters set by the DER
@@ -356,7 +329,7 @@ class DERSettings(object):
 # For Voltage and Freq, time (x value) in 100s of S
 # y value is % of nominal
 #
-class DERControlBase(object):
+class DERControlBase(SEPObject):
     def __init__(self):
         self._dict = {
             'opModConnect':None,      # Boolean Connect (TRUE) or Not
@@ -381,26 +354,6 @@ class DERControlBase(object):
             'opModWattVar':None,      # Curve Link
             'rampTms':None            # UInt16, desired transition time in .01 secs
         }
-
-    def set(self, key, value):
-        # Insure that only the items defined in 2030.5 are included
-        if key in self._dict.keys():
-            self._dict[key] = value
-            return value
-        return None
-
-    def get(self, key):
-        if key in self._dict.keys():
-            return self._dict[key]
-        return None
-    
-    def toDict(self):
-        # Return the dictionary for serializing into HTTP
-        return self._dict
-
-    def fromDict(self, dict={}):
-            for key in dict:
-                self.set(key, dict[key])
 
 # Dictionary of bit positions for control modes enabled on the DER
 # These will be used in the DERSettings object provided by the DERMS
@@ -430,7 +383,7 @@ DischargeMode = 0x01<<20
 
 # The DERControl object for issueing Control Events to a DER
 # Contains a DER ControlBase structure
-class DERControl(object):
+class DERControl(SEPObject):
     def __init__(self):
         self._dict = {
             'flags': None,
@@ -448,27 +401,7 @@ class DERControl(object):
             'DERControlBase': None      #DER Control Base object
         }
 
-    def set(self, key, value):
-        # Insure that only the items defined in 2030.5 are included
-        if key in _self.dict.keys():
-            self._dict[key] = value
-            return value
-        return None
-
-    def get(self, key):
-        if key in self._dict.keys():
-            return self._dict[key]
-        return None
-    
-    def toDict(self):
-        # Return the dictionary for serializing into HTTP
-        return self._dict
-
-    def fromDict(self, dict={}):
-            for key in dict:
-                self.set(key, dict[key])
-
-class DefaultDERControl(object):
+class DefaultDERControl(SEPObject):
     def __init__(self, dict={}):
         self._dict = {
             'flags': None,
@@ -488,27 +421,7 @@ class DefaultDERControl(object):
         }
         self.fromDict(dict)
 
-    def set(self, key, value):
-        # Insure that only the items defined in 2030.5 are included
-        if key in self._dict.keys():
-            self._dict[key] = value
-            return value
-        return None
-
-    def get(self, key):
-        if key in self._dict.keys():
-            return self._dict[key]
-        return None
-    
-    def toDict(self):
-        # Return the dictionary for serializing into HTTP
-        return self._dict
-
-    def fromDict(self, dict={}):
-        for key in dict:
-            self.set(key, dict[key])
-
-class DERControlResponse(object):
+class DERControlResponse(SEPObject):
     def __init__(self):
         self._dict = {
             'flags': None,
@@ -518,25 +431,29 @@ class DERControlResponse(object):
             'subject': None               #mRIDType
         }
 
-    def set(self, key, value):
-        # Insure that only the items defined in 2030.5 are included
-        if key in self._dict.keys():
-            self._dict[key] = value
-            return value
-        return None
+class DERStatus(SEPObject):
+    def __init__(self):
+        self._dict = {
+            'alarmStatus':None,
+            'genConnectStatus':None,
+            'inverterStatus':None,
+            'localControlModeStatus':None,
+            'manufacturerStatus':None,
+            'operationalModeStatus':None,
+            'readingTime':None,
+            'stateOfChargeStatus':None,
+            'storageModeStatus':None,
+            'storConnectStatus':None
+        }
 
-    def get(self, key):
-        if key in self._dict.keys():
-            return self._dict[key]
-        return None
-    
-    def toDict(self):
-        # Return the dictionary for serializing into HTTP
-        return self._dict
-
-    def fromDict(self, dict={}):
-            for key in dict:
-                self.set(key, dict[key])
-
-# Additional object definitions needed
-#   Curve structure
+class DERAvailability(SEPObject):
+    def __init__(self):
+        self._dict = {
+            'availabilityDuration':None,
+            'maxChargeDuration':None,
+            'readingTime':None,
+            'reserveChargePercent':None,
+            'reservePercent':None,
+            'statVarAvail':None,
+            'statWAvail':None
+        }

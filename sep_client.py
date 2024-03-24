@@ -25,6 +25,7 @@ __authors__ = [
 import requests
 import json
 import time
+import logging
 from sep_types import *
 
 class SEPClient:
@@ -55,40 +56,38 @@ class SEPClient:
                         # The following will set the content type to JSON
                         # and convert the body with json.dumps()
                         resp = requests.put(URI, json=body)
-                        print( "Executed PUT, response text is:", resp.text)
                     case 'POST':
                         resp = requests.post(URI, json=body)
-                        print( "Executed POST, response text is:", resp.text)
                     case _:
                         return None
             except requests.exceptions.Timeout as err:
                 retry += 1
                 if retry < retries:
                     continue
-                print( "Error: timeout on Get to ", self.dermsURL)
+                logging.error(f"Error: timeout on Get to {self.dermsURL}")
                 raise SystemExit(err)
             except requests.exceptions.ConnectTimeout as err:
                 retry += 1
                 if retry < retries:
                     continue
-                print("Connection Timeout error on Get to: ", self.dermsURL)
+                logging.error(f"Connection Timeout error on Get to: {self.dermsURL}")
                 raise SystemExit(err)
             except requests.exceptions.TooManyRedirects as err:
-                print( "Error: Too many redirects on Get to", self.dermsURL)
+                logging.error(f"Error: Too many redirects on Get to {self.dermsURL}")
                 raise SystemExit(err)
             except requests.exceptions.ConnectionError as err:
-                print("Connection error on Get to: ", self.dermsURL)
+                logging.error(f"Connection error on Get to: {self.dermsURL}")
                 raise SystemExit(err)
             except requests.exceptions.HTTPError as err:
-                print("HTTP error on Get to: ", self.dermsURL)
+                logging.error(f"HTTP error on Get to: {self.dermsURL}")
                 raise SystemExit(err)
             except requests.exceptions.ReadTimeout as err:
-                print("Read Timeout on Get to: ", self.dermsURL)
+                logging.error(f"Read Timeout on Get to: {self.dermsURL}")
                 raise SystemExit(err)
             else:
                 # check for any other errors
                 if resp.status_code != requests.codes.ok:
-                    print( f"Uncaught error on verb {verb}, response status code: {resp.status_code}" )
+                    logging.error( f"Uncaught error on verb {verb}, response status code: {resp.status_code}" )
                     raise SystemExit()
                 else:   # Success
                     break
@@ -124,4 +123,9 @@ class SEPClient:
     def sendDERSettings(self, derSettings):
         endpoint = self.dermsURL + EP_END_DEVICE + EP_DER + EP_DERSETTINGS
         self._doHTTP('PUT', endpoint, derSettings.toDict())
+        return None
+
+    def sendDERStatus( self, derStatus):
+        endpoint = self.dermsURL + EP_END_DEVICE + EP_DER + EP_DERSTATUS
+        self._doHTTP('PUT', endpoint, derStatus.toDict())
         return None

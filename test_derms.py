@@ -46,10 +46,6 @@ import logging
 from sep_types import *
 
 logging.basicConfig(level=logging.DEBUG)
-logging.debug("Debug msg")
-logging.warning("Warning msg")
-logging.info("Info msg")
-logging.error("error msg")
 
 # Set port for local socket between two local processes
 PORT = 8000
@@ -71,6 +67,7 @@ devCap.set('flags', DC_pollRate_exists)
 # database
 derCap = DERCapability()
 derSettings = DERSettings()
+derStatus = DERStatus()
 
 # Create a DERControlBase object with default parameters for the DER
 # First create the default curves for under and over Voltage and Freq.
@@ -236,9 +233,12 @@ class sepHandler( BaseHTTPRequestHandler ):
                 self._handle_DERSettings(dict)
                 rspStatus = 200
                 rspBody = None
-            case '/edev/dstat':             # DER Status
-                logging.warning("PUT DER Status.  Not implemented yet")
-                rspStatus = 404
+            case '/edev/der/ders':             # DER Status
+                body = self.rfile.read(int(self.headers['Content-Length']))
+                dict = json.loads(body)
+                logging.debug(f"DER Status dictionary received: {dict}")
+                self._handle_DERStatus(dict)
+                rspStatus = 200
                 rspBody = None
             case '/edev/der/dera':          # DER Availability
                 logging.warning("PUT DER Availability.  Not implemented yet")
@@ -252,7 +252,7 @@ class sepHandler( BaseHTTPRequestHandler ):
         self.send_response(rspStatus)
         self.end_headers()              #causes the action to send
 
-    # Private method to accept the DER Capability values as a dictionary
+    # Private methods to accept objects from the DER as a dictionary
     # Again, in this simple test program, supports only one DER.  A real
     # implementation would accespt a Device ID and likely organize the capability
     # objects into a database
@@ -261,6 +261,9 @@ class sepHandler( BaseHTTPRequestHandler ):
 
     def _handle_DERSettings(self, dict):
         derSettings.fromDict(dict)
+
+    def _handle_DERStatus(self, dict):
+        derStatus.fromDict(dict)
 
 # if running as a standalone daemon vs. imported, start the server
 if __name__ == "__main__":        

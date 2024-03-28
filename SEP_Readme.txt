@@ -6,4 +6,17 @@ BackgroundIEEE standards 1547 and 2030.5 define functionality and software inte
 - Added top-level 'main_rt.py' that runs in real time in order to stay synchronized with the Test DERMS.
 - Added basic 2030.5/SEP data object definitions and interface handler classes.
 - At startup, 'discovers' the DERMS, reports nameplate and configuration parameters to the DERMS, then gets control parameters from the DERMS.  During runtime, periodically reports status to the DERMS.
-- Added a dictionary-based scheme to facilitate simulating more variations in Voltage and Frequency at the PCC.Next StepsNext steps could proceed along at least two paths.  One path is to extend the Python and JSON model to further explore the behavior of a DER interacting with a DERMS through 2030.5 semantics and to further understand alignment and gaps between 2030.5 and 1547.  The second path would be to develop more complete open source 2030.5 class definitions and libraries that could be leveraged for production software development.  This first requires determining which programming languages are the best fit for DERMS application and DER firmware development and then identifying sufficient XML support in that language.
+- Added a dictionary-based scheme to facilitate simulating more variations in Voltage and Frequency at the PCC.
+
+Additional Python Package Dependencies which may require a pip install:
+- time
+- pause
+- logging
+- requests
+- json
+- socketserver
+
+Running the Model
+Using Python3, first start test_derms.py in one Linux or OS X shell.  This will listen on localhost port 8000.  Then, in a separate shell execute main_rt.py.  This will 'discover' the test DERMS and then execute the enhanced OpenDER model in real time.
+
+Optionally edit the python dictionaries 'pcc_freq' and 'pcc_v' to vary simulated voltage and frequency changes at the PCC.Next StepsNext steps could proceed along at least two paths.  One path is to extend the Python and JSON model to further explore the behavior of a DER interacting with a DERMS through 2030.5 semantics and to further understand alignment and gaps between 2030.5 and 1547.  The second path would be to develop more complete open source 2030.5 class definitions and libraries that could be leveraged for production software development.  This first requires determining which programming languages are the best fit for DERMS application and DER firmware development and then identifying sufficient XML support in that language.

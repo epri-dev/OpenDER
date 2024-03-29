@@ -1,11 +1,12 @@
 
 Changelog
 =========
-Unreleased changes
+2.1.4 (2024-03-29)
 ------------------
 * Added a setting to enable and disable momentary cessation (MC_ENABLE)
 * Added settings to configure the momentary cessation voltage threshold (MC_LVRT_V1, MC_HVRT_V1)
 * Fixed a bug on momentary cessation not triggering on high voltage condition.
+* If NP_PHASE is set to 1 or 3, it will be automatically converted to 'SINGLE' or 'THREE'
 
 2.1.3 (2023-12-05)
 ------------------

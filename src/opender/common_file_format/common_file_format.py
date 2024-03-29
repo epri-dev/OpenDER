@@ -968,7 +968,11 @@ class DERCommonFileFormat:
                 self._NP_PHASE = NP_PHASE.upper()
             else:
                 raise ValueError("NP_PHASE should be either 'SINGLE' or 'THREE'")
-        else:
+        elif NP_PHASE == 1 or NP_PHASE ==3:
+            if NP_PHASE == 1:
+                self._NP_PHASE = 'SINGLE'
+            else:
+                self._NP_PHASE = 'THREE'
             raise ValueError("NP_PHASE should be either 'SINGLE' or 'THREE'")
 
     @property

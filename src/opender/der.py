@@ -118,6 +118,8 @@ class DER:
                 self.der_input.v_c = v[2]
 
             if self.der_file.NP_PHASE == "SINGLE":
+                if isinstance(v_pu,list):
+                    v_pu = v_pu[0]
                 self.der_input.v = v
 
         if v_pu is not None:
@@ -133,6 +135,8 @@ class DER:
                 self.der_input.v_c = v[2]
 
             if self.der_file.NP_PHASE == "SINGLE":
+                if isinstance(v_pu,list):
+                    v_pu = v_pu[0]
                 self.der_input.v = v_pu * self.der_file.NP_AC_V_NOM
 
         if theta is not None:
@@ -224,7 +228,7 @@ class DER:
         self.p_out_w = None
         self.q_out_var = None
 
-    def get_der_output(self, output: str = 'PQ_pu') -> Union[Tuple[Any, Any], Tuple[List[Any], List[Any]]]:
+    def get_der_output(self, output: str = 'PQ_pu', i_meas = None) -> Union[Tuple[Any, Any], Tuple[List[Any], List[Any]]]:
         """
         Get DER model outputs, in terms of P/Q source, current source, or voltage source behind impedance.
 
@@ -250,6 +254,9 @@ class DER:
         elif output == 'V_V':
             self.der_output.calculate_v_output(self.i_pos_pu, self.i_neg_pu)
             return self.der_output.v_out_mag_v, self.der_output.v_out_theta
+        elif output == 'V_pu_regc':
+            self.der_output.calculate_v_output_regc(self.i_pos_pu, self.i_neg_pu, i_meas)
+            return self.der_output.v_out_mag_pu, self.der_output.v_out_theta
         else:
             print("please use 'PQ_VA', 'PQ_kVA', 'PQ_pu', 'I_A', 'I_pu', 'Ipn_pu', 'V_pu', 'V_V'")
             return None, None

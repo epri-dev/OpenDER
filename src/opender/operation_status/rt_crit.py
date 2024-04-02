@@ -29,7 +29,7 @@ class RideThroughCrit:
 
         self.der_status = der_obj.der_file.STATUS_INIT
 
-        self.rt_mode_v = None           # DER voltage ride-through performance mode.
+        self._rt_mode_v = None          # DER voltage ride-through performance mode.
         self.rt_mode_f = None           # DER frequency ride-through performance mode.
         self.rt_pass_time_req = False   # Flag indicating the minimum ride-through time has passed, and the DER is in the “may ride-through and may trip” region
 
@@ -52,11 +52,7 @@ class RideThroughCrit:
         :param NP_ABNORMAL_OP_CAT:	DER Abnormal operating performance category
         """
 
-        # Eq 3.5.1-8, Continuous operation if voltage is between 0.88-1.1, reset timers
-        if self.der_input.v_low_pu >= 0.88 and self.der_input.v_high_pu <= 1.1:
-            self.rt_mode_v = 'Continuous Operation'
-            self.rt_time_lv = 0
-            self.rt_time_hv = 0
+        self._rt_mode_v = None
 
         if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_I':
             if 1.1 < self.der_input.v_high_pu:
@@ -95,6 +91,11 @@ class RideThroughCrit:
                 # Eq 3.5.1-18, determine if in cease to energize region
                 if self.der_input.v_low_pu < 0.5:
                     self.rt_mode_v = 'Cease to Energize'
+
+            if self.der_file.MC_ENABLE and self.der_input.v_high_pu >= self.der_file.MC_HVRT_V1:
+                self.rt_mode_v = 'Momentary Cessation'
+            if self.der_file.MC_ENABLE and self.der_input.v_low_pu <= self.der_file.MC_LVRT_V1:
+                self.rt_mode_v = 'Momentary Cessation'
 
         if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_II':
 
@@ -140,16 +141,23 @@ class RideThroughCrit:
                 if self.der_input.v_low_pu < 0.3:
                     self.rt_mode_v = 'Cease to Energize'
 
+            if self.der_file.MC_ENABLE and self.der_input.v_high_pu >= self.der_file.MC_HVRT_V1:
+                self.rt_mode_v = 'Momentary Cessation'
+            if self.der_file.MC_ENABLE and self.der_input.v_low_pu <= self.der_file.MC_LVRT_V1:
+                self.rt_mode_v = 'Momentary Cessation'
+
         if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_III':
             if 1.1 < self.der_input.v_high_pu:
                 # Eq 3.5.1-31, if voltage is higher than 1.1pu, high voltage ride-through timer starts to count
                 self.rt_time_hv = self.rt_time_hv + opender.DER.t_s
 
                 # Eq 3.5.1-32,33, depending on voltage level, voltage ride-through mode is determined.
-                if self.der_input.v_high_pu <= 1.2:
+                if self.der_file.MC_ENABLE and self.der_input.v_high_pu >= self.der_file.MC_HVRT_V1:
                     self.rt_mode_v = 'Momentary Cessation'
                 else:
-                    self.rt_mode_v = 'Cease to Energize'
+                    self.rt_mode_v = 'Mandatory Operation'
+                # else:
+                #     self.rt_mode_v = 'Cease to Energize'
 
                 # Eq 3.5.1-34, determine if passed the minimum required time
                 if self.rt_time_hv <= 12:
@@ -166,16 +174,25 @@ class RideThroughCrit:
                         self.rt_pass_time_req = True
 
                 # Eq 3.5.1-38,39, determine if in mandatory operation block 2 and if passed the minimum required time
-                if 0.5 <= self.der_input.v_low_pu < 0.7:
-                    self.rt_mode_v = 'Mandatory Operation'
+                if self.der_input.v_low_pu < 0.7:
+                    # self.rt_mode_v = 'Mandatory Operation'
                     if self.rt_time_lv > 10:
                         self.rt_pass_time_req = True
 
-                # Eq 3.5.1-40,41, determine if in momentary cessation mode and if passed the minimum required time
-                if self.der_input.v_low_pu < 0.5:
-                    self.rt_mode_v = 'Momentary Cessation'
-                    if self.rt_time_lv > 1:
+                    # Eq 3.5.1-40,41, determine if in momentary cessation mode and if passed the minimum required time
+                    if self.der_file.MC_ENABLE and self.der_input.v_low_pu <= self.der_file.MC_LVRT_V1:
+                        self.rt_mode_v = 'Momentary Cessation'
+                    else:
+                        self.rt_mode_v = 'Mandatory Operation'
+
+                    if self.der_input.v_low_pu <= 0.5 and self.rt_time_lv > 1:
                         self.rt_pass_time_req = True
+
+        # Eq 3.5.1-8, Continuous operation if voltage is between 0.88-1.1, reset timers
+        if self.der_input.v_low_pu >= 0.88 and self.der_input.v_high_pu <= 1.1:
+            self.rt_mode_v = 'Continuous Operation'
+            self.rt_time_lv = 0
+            self.rt_time_hv = 0
 
         # Eq 3.5.1-42, Continuous operation if frequency is between 58.5 and 61.2, reset timers
         if 58.5 <= self.der_input.freq_hz <= 61.2:
@@ -216,3 +233,21 @@ class RideThroughCrit:
         Called by operating_status.py to reset the ride-through time passed flag (rt_pass_time_req)
         """
         self.rt_pass_time_req = False
+
+    @property
+    def rt_mode_v(self) -> str:
+        return self._rt_mode_v
+
+    @rt_mode_v.setter
+    def rt_mode_v(self, rt_mode_v):
+        if (rt_mode_v == 'Continuous Operation' and self._rt_mode_v not in ['Mandatory Operation', 'Permissive Operation', 'Momentary Cessation', 'Cease to Energize']) or\
+           (rt_mode_v == 'Mandatory Operation' and self._rt_mode_v not in ['Permissive Operation', 'Momentary Cessation', 'Cease to Energize']) or \
+           (rt_mode_v == 'Permissive Operation' and self._rt_mode_v not in ['Momentary Cessation', 'Cease to Energize']) or \
+           (rt_mode_v == 'Momentary Cessation') or (rt_mode_v == 'Cease to Energize'):
+            self._rt_mode_v = rt_mode_v
+        else:
+            print('ERROR! Mode was ', self._rt_mode_v, ' and is ', rt_mode_v)  # TODO delete this after debug
+
+
+
+

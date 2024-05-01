@@ -979,7 +979,6 @@ class DERCommonFileFormat:
                 self._NP_PHASE = 'SINGLE'
             else:
                 self._NP_PHASE = 'THREE'
-            raise ValueError("NP_PHASE should be either 'SINGLE' or 'THREE'")
 
     @property
     def NP_TYPE(self):

@@ -1,6 +1,11 @@
 
 Changelog
 =========
+Unreleased changes
+------------------
+* Fixed a FutureWarning for pandas version 2.2.
+* Fixed bugs for single phase model.
+
 2.1.4 (2024-03-29)
 ------------------
 * Added a setting to enable and disable momentary cessation (MC_ENABLE)

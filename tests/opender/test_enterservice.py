@@ -60,8 +60,7 @@ class TestEnterService562:
 
         t1=0
         period1=max(60,2*self.si_obj.der_file.ES_DELAY+self.si_obj.der_file.ES_RANDOMIZED_DELAY)
-        self.si_obj.update_der_input(v_pu=v_pu, p_dc_kw=p_dc)
-        self.si_obj.der_input.freq_hz = init_f
+        self.si_obj.update_der_input(v_pu=v_pu, p_dc_kw=p_dc, f=init_f)
 
         while t1+t_s<=period1:
             self.si_obj.run()
@@ -80,8 +79,7 @@ class TestEnterService562:
         t3=0
         period3=0.25*self.si_obj.der_file.ES_DELAY
         v_pu = final_v
-        self.si_obj.update_der_input(v_pu=v_pu)
-        self.si_obj.der_input.freq_hz=final_f
+        self.si_obj.update_der_input(v_pu=v_pu,f=final_f)
         while t3+t_s <= period3:
             self.si_obj.run()
             assert 'Trip' == self.si_obj.der_status, f'enter service stage i) fail, at t={t3}'
@@ -89,14 +87,12 @@ class TestEnterService562:
 
         t4=t_s
         v_pu = init_v
-        self.si_obj.update_der_input(v_pu=v_pu)
-        self.si_obj.der_input.freq_hz=init_f
+        self.si_obj.update_der_input(v_pu=v_pu, f=init_f)
         self.si_obj.run()
         p_prev = self.si_obj.p_out_kw
 
         v_pu = final_v
-        self.si_obj.update_der_input(v_pu=v_pu)
-        self.si_obj.der_input.freq_hz=final_f
+        self.si_obj.update_der_input(v_pu=v_pu, f=final_f)
 
         while self.si_obj.der_status == 'Trip':
             p_prev = self.si_obj.p_out_kw

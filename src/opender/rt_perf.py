@@ -216,7 +216,7 @@ class RideThroughPerf:
 
         self.i_pos_pu = (self.i_pos_d_ref_pu + self.i_pos_q_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
 
-        self.i_neg_pu = 1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
+        self.i_neg_pu = -1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
                                     self.der_file.NP_REACTIVE_SUSCEPTANCE / (
                                             self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
 

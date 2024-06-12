@@ -94,8 +94,14 @@ class DERCommonFileFormat:
         df = pd.concat(frames)
         df = df.reindex(index=self._get_parameter_list())
 
+        def convert_to_numeric(value):
+            try:
+                return pd.to_numeric(value)
+            except ValueError:
+                return value
+
         df["New Index"] = self._get_parameter_list()
-        self.param_inputs = df.reset_index().set_index("New Index")["VALUE"].apply(pd.to_numeric, errors="ignore")
+        self.param_inputs = df.reset_index().set_index("New Index")["VALUE"].apply(convert_to_numeric)
 
         # Nameplate Variables with default values
         self._NP_NORMAL_OP_CAT = "CAT_B"
@@ -973,7 +979,6 @@ class DERCommonFileFormat:
                 self._NP_PHASE = 'SINGLE'
             else:
                 self._NP_PHASE = 'THREE'
-            raise ValueError("NP_PHASE should be either 'SINGLE' or 'THREE'")
 
     @property
     def NP_TYPE(self):

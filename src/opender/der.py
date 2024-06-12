@@ -140,8 +140,11 @@ class DER:
                 self.der_input.v = v_pu * self.der_file.NP_AC_V_NOM
 
         if theta is not None:
-            if isinstance(theta,(int,float,np.floating,np.int_)):
-                self.der_input.theta = theta
+            if self.der_file.NP_PHASE == "SINGLE":
+                if isinstance(theta,(int,float,np.floating,np.int_)):
+                    self.der_input.theta = theta
+                elif isinstance(theta, list):
+                    self.der_input.theta = theta[0]
             else:
                 self.der_input.theta_a = theta[0]
                 self.der_input.theta_b = theta[1]

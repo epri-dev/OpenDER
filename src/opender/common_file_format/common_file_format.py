@@ -282,6 +282,9 @@ class DERCommonFileFormat:
         if self.isNotNaN(self.param_inputs.Q_MAX_INJ_PU):
             self.Q_MAX_INJ_PU = self.param_inputs.Q_MAX_INJ_PU
 
+        if self.isNotNaN(self.param_inputs.NP_Q_CAPABILITY_LOW_P):
+            self.NP_Q_CAPABILITY_LOW_P = self.param_inputs.NP_Q_CAPABILITY_LOW_P
+
         self.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
         if self.isNotNaN(self.param_inputs.NP_EFFICIENCY):

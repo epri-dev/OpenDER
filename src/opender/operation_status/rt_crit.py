@@ -245,8 +245,8 @@ class RideThroughCrit:
            (rt_mode_v == 'Permissive Operation' and self._rt_mode_v not in ['Momentary Cessation', 'Cease to Energize']) or \
            (rt_mode_v == 'Momentary Cessation') or (rt_mode_v == 'Cease to Energize'):
             self._rt_mode_v = rt_mode_v
-        else:
-            print('ERROR! Mode was ', self._rt_mode_v, ' and is ', rt_mode_v)  # TODO delete this after debug
+        # else:
+        #     print('ERROR! Mode was ', self._rt_mode_v, ' and is ', rt_mode_v)  # TODO delete this after debug
 
 
 

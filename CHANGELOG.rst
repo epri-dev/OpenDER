@@ -1,6 +1,10 @@
 
 Changelog
 =========
+Unreleased changes
+------------------
+* Fixed a minor bug for PV DER, watt-var function
+
 2.1.5 (2024-06-12)
 ------------------
 * Fixed a FutureWarning for pandas version 2.2.

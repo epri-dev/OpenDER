@@ -129,7 +129,7 @@ class FreqDroop:
 
         # Eq. 3.7.1-14, calculate active power reference according to frequency-droop - underfrequency
         self.p_pf_uf_pu = min(self.p_pf_pre_pu + 
-                              (((60 - self.exec_delay.pf_dbof_exec) - self.der_input.freq_hz) 
+                              (((60 - self.exec_delay.pf_dbuf_exec) - self.der_input.freq_hz)
                                / ((60 * self.exec_delay.pf_kuf_exec)))
                               , self.der_input.p_avl_pu)
 

@@ -918,7 +918,7 @@ class DERCommonFileFormat:
     @NP_P_MAX_CHARGE.setter
     def NP_P_MAX_CHARGE(self, NP_P_MAX_CHARGE):
         self._NP_P_MAX_CHARGE = NP_P_MAX_CHARGE
-        if self._NP_P_MAX_CHARGE <= 0:
+        if self._NP_P_MAX_CHARGE < 0:
             logging.error("DER nameplate power for charging NP_P_MAX_CHARGE should be greater than 0, "
                           "converting to positive")
             self._NP_P_MAX_CHARGE = - self._NP_P_MAX_CHARGE
@@ -930,7 +930,7 @@ class DERCommonFileFormat:
     @NP_APPARENT_POWER_CHARGE_MAX.setter
     def NP_APPARENT_POWER_CHARGE_MAX(self, NP_APPARENT_POWER_CHARGE_MAX):
         self._NP_APPARENT_POWER_CHARGE_MAX = NP_APPARENT_POWER_CHARGE_MAX
-        if self._NP_APPARENT_POWER_CHARGE_MAX <= 0:
+        if self._NP_APPARENT_POWER_CHARGE_MAX < 0:
             logging.error("DER nameplate apparent power for charging NP_APPARENT_POWER_CHARGE_MAX should be "
                           "greater than 0, converting to positive")
             self._NP_APPARENT_POWER_CHARGE_MAX = - self._NP_APPARENT_POWER_CHARGE_MAX
@@ -1326,10 +1326,17 @@ class DERCommonFileFormat:
     @QV_CURVE_V2.setter
     def QV_CURVE_V2(self, QV_CURVE_V2):
         self._QV_CURVE_V2 = QV_CURVE_V2
-        if self._QV_CURVE_V2 < (self._QV_VREF - 0.03) or self._QV_CURVE_V2 > self._QV_VREF:
+        if self._QV_CURVE_V2 < (1 - 0.03) or self._QV_CURVE_V2 > 1:
             logging.warning("Warning: check failed for QV_CURVE_V2. For the piecewise linear curve setting of "
                             "volt-var control, the four corner points should have their voltage settings "
                             "monotonically increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.3")
+    #TODO: Currently the checks are performed whenever the value of individual setpoint are changed. It is possible to
+    #      trigger a warning when modifying the curve points when all the values are within the allowed range.
+    #      For example: assume previously V1 = 0.92, V2 = 0.98, V3 = 1.02, V4 = 1.08,
+    #                   and the next curve to be confired has V1 = 0.97, V2 = 1, V3 = 1.02, V4 = 1.08,
+    #                   If V1 is changed first while V2 still has the old value (V1 = 0.97, V2 = 0.98),
+    #                   warning will be triggered.
+    #      Need to find a better way to perform the checks!!
 
     @property
     def QV_CURVE_Q2(self):
@@ -1352,7 +1359,7 @@ class DERCommonFileFormat:
     @QV_CURVE_V3.setter
     def QV_CURVE_V3(self, QV_CURVE_V3):
         self._QV_CURVE_V3 = QV_CURVE_V3
-        if self.QV_CURVE_V3 < self.QV_VREF or self.QV_CURVE_V3 > (self.QV_VREF + 0.03):
+        if self.QV_CURVE_V3 < 1 or self.QV_CURVE_V3 > (1 + 0.03):
             logging.warning("Warning: check failed for QV_CURVE_V3. For the piecewise linear curve setting of "
                             "volt-var control, the four corner points should have their voltage settings "
                             "monotonically increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.3")
@@ -1378,7 +1385,7 @@ class DERCommonFileFormat:
     @QV_CURVE_V1.setter
     def QV_CURVE_V1(self, QV_CURVE_V1):
         self._QV_CURVE_V1 = QV_CURVE_V1
-        if self.QV_CURVE_V1 < (self.QV_VREF - 0.18) or self.QV_CURVE_V1 > (self.QV_CURVE_V2 - 0.02):
+        if self.QV_CURVE_V1 < (1 - 0.18) or self.QV_CURVE_V1 > (self.QV_CURVE_V2 - 0.02):
             logging.warning("Warning: check failed for QV_CURVE_V1. For the piecewise linear curve setting of "
                             "volt-var control, the four corner points should have their voltage settings "
                             "monotonically increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.3")
@@ -1403,7 +1410,7 @@ class DERCommonFileFormat:
     @QV_CURVE_V4.setter
     def QV_CURVE_V4(self, QV_CURVE_V4):
         self._QV_CURVE_V4 = QV_CURVE_V4
-        if self.QV_CURVE_V4 < (self.QV_CURVE_V3 + 0.02) or self.QV_CURVE_V3 > (self.QV_VREF + 0.18):
+        if self.QV_CURVE_V4 < (self.QV_CURVE_V3 + 0.02) or self.QV_CURVE_V3 > (1 + 0.18):
             logging.warning("Warning: check failed for QV_CURVE_V4. For the piecewise linear curve setting of "
                             "volt-var control, the four corner points should have their voltage settings "
                             "monotonically increasing and within the ranges defined in IEEE 1547-2018 Clause 5.3.3")

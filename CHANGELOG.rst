@@ -3,7 +3,9 @@ Changelog
 =========
 Unreleased changes
 ------------------
+* Updated volt-var curve point setting and nameplate information validity check
 * Fixed a minor bug for PV DER, watt-var function
+* Fixed a bug/typo in frequency-droop function
 
 2.1.5 (2024-06-12)
 ------------------

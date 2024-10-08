@@ -4,6 +4,9 @@ Changelog
 Unreleased changes
 ------------------
 * Updated volt-var curve point setting and nameplate information validity check
+* Added two parameters (QV_VREF_MIN and QV_VREF_MAX) to indicate the maximum value for volt-var automatic Vref
+  adjustment mode
+* Changed volt-var function internal variable name
 * Fixed a minor bug for PV DER, watt-var function
 * Fixed a bug/typo in frequency-droop function
 

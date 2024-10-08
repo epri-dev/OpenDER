@@ -65,6 +65,8 @@ class DERCommonFileFormat:
                        'NP_REACT_TIME', 'NP_V_MEAS_DELAY',
 
                        'DVS_MODE_ENABLE', 'DVS_K',
+
+                       'QV_VREF_MAX', 'QV_VREF_MIN',
                        ]
 
     # Creating object slots, so incorrect usage of variable names are rejected.
@@ -185,6 +187,8 @@ class DERCommonFileFormat:
         self._QV_CURVE_V4 = None
         self._QV_CURVE_Q4 = None
         self._QV_OLRT = 5
+        self._QV_VREF_MAX = 1.05
+        self._QV_VREF_MIN = 0.95
 
         self._CONST_Q_MODE_ENABLE = False
         self._CONST_Q = 0
@@ -437,6 +441,12 @@ class DERCommonFileFormat:
             self.QV_CURVE_Q4 = self.param_inputs.QV_CURVE_Q4
         if self.isNotNaN(self.param_inputs.QV_OLRT):
             self.QV_OLRT = self.param_inputs.QV_OLRT
+
+        if self.isNotNaN(self.param_inputs.QV_VREF_MAX):
+            self.QV_VREF_MAX = self.param_inputs.QV_VREF_MAX
+
+        if self.isNotNaN(self.param_inputs.QV_VREF_MIN):
+            self.QV_VREF_MIN = self.param_inputs.QV_VREF_MIN
 
         if self.isNotNaN(self.param_inputs.CONST_Q_MODE_ENABLE):
             self.CONST_Q_MODE_ENABLE = self.param_inputs.CONST_Q_MODE_ENABLE
@@ -1318,6 +1328,29 @@ class DERCommonFileFormat:
         if self._QV_VREF_TIME < 300 or self._QV_VREF_TIME > 5000:
             logging.warning("Warning: Vref adjustment time constant should be greater than or equal to 300, and "
                             "smaller than or equal to 5000 s, according to IEEE 1547-2018 Clause 5.3.3")
+    @property
+    def QV_VREF_MAX(self):
+        return self._QV_VREF_MAX
+    
+    @QV_VREF_MAX.setter
+    def QV_VREF_MAX(self, QV_VREF_MAX):
+        self._QV_VREF_MAX = QV_VREF_MAX
+        if self._QV_VREF_MAX < 1.02 or self._QV_VREF_MAX > 1.10:
+            logging.warning("Warning: Volt-var autonomous VRef adjusting mode Vref maximum setting should be greater "
+                            "than or equal to 1.02, and smaller than or equal to 1.10 per unit, according to "
+                            "IEEE P1547 Draft 0.4 Clause 5.3.3")
+
+    @property
+    def QV_VREF_MIN(self):
+        return self._QV_VREF_MIN
+
+    @QV_VREF_MIN.setter
+    def QV_VREF_MIN(self, QV_VREF_MIN):
+        self._QV_VREF_MIN = QV_VREF_MIN
+        if self._QV_VREF_MIN < 0.88 or self._QV_VREF_MIN > 0.98:
+            logging.warning("Warning: Volt-var autonomous VRef adjusting mode Vref minimum setting should be greater "
+                            "than or equal to 0.88, and smaller than or equal to 0.98 per unit, according to "
+                            "IEEE P1547 Draft 0.4 Clause 5.3.3")
 
     @property
     def QV_CURVE_V2(self):

@@ -33,7 +33,8 @@ class SettingExecutionDelay:
                        'PV_CURVE_V2', 'PV_CURVE_P2', 'PV_OLRT',
                        'OV2_TRIP_V', 'OV2_TRIP_T', 'OV1_TRIP_V', 'OV1_TRIP_T', 'UV1_TRIP_V', 'UV1_TRIP_T', 'UV2_TRIP_V',
                        'UV2_TRIP_T', 'OF2_TRIP_F', 'OF2_TRIP_T', 'OF1_TRIP_F', 'OF1_TRIP_T', 'UF1_TRIP_F', 'UF1_TRIP_T',
-                       'UF2_TRIP_F', 'UF2_TRIP_T', 'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF', 'PF_OLRT'
+                       'UF2_TRIP_F', 'UF2_TRIP_T', 'PF_MODE_ENABLE', 'PF_DBOF', 'PF_DBUF', 'PF_KOF', 'PF_KUF', 'PF_OLRT',
+                       'QV_VREF_MIN', 'QV_VREF_MAX',
                        ]
 
     __slots__ = tuple([param.lower()+'_exec' for param in parameters_list]+['tdelay', 'der_file_exec', 'der_file'])
@@ -78,6 +79,8 @@ class SettingExecutionDelay:
         self.qv_vref_exec = None
         self.qv_vref_time_exec = None
         self.qv_mode_enable_exec = None
+        self.qv_vref_min_exec = None
+        self.qv_vref_max_exec = None
 
         self.qv_curve_v1_exec = None
         self.qv_curve_v2_exec = None
@@ -201,3 +204,5 @@ class SettingExecutionDelay:
         self.pf_kof_exec = self.der_file_exec.PF_KOF
         self.pf_kuf_exec = self.der_file_exec.PF_KUF
         self.pf_olrt_exec = self.der_file_exec.PF_OLRT
+        self.qv_vref_min_exec = self.der_file_exec.QV_VREF_MIN
+        self.qv_vref_max_exec = self.der_file_exec.QV_VREF_MAX

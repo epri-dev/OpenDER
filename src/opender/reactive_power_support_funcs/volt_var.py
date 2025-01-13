@@ -71,7 +71,7 @@ class VoltVAR:
 
         # Eq 3.8.1-4, The applied VRef is determined by either the VRef control setpoint or low pass filtered
         # applicable voltage, depending on the enable signal
-        self.qv_vref_lpf = max(self.exec_delay.qv_vref_min_exec, min(self.v_meas_qv_vref_lpf_pu.low_pass_filter(self.der_input.v_meas_pu, self.exec_delay.qv_vref_time_exec),self.exec_delay.qv_vref_max_exec))
+        self.qv_vref_lpf = max(self.exec_delay.qv_vref_min_exec, min(self.v_meas_qv_vref_lpf_pu.low_pass_filter(self.der_input.v_meas_pu, self.exec_delay.qv_vref_time_exec*2.3),self.exec_delay.qv_vref_max_exec))
         if self.exec_delay.qv_vref_auto_mode_exec == 0:
             self.qv_vref_eff = self.exec_delay.qv_vref_exec
         else:

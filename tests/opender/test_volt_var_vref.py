@@ -61,7 +61,7 @@ class TestVoltVar5145:
         self.si_obj.run()
         v1=(self.si_obj.der_file.QV_CURVE_V3+self.si_obj.der_file.QV_CURVE_V4)/2
         self.si_obj.update_der_input(v_pu=v1) #step h)
-        while t + t_s <= input_list[0]:
+        while t + t_s <= input_list[0]*4:
             self.si_obj.run()
             # q_array.append(self.si_obj.q_out_kvar)
             t=t+t_s
@@ -80,7 +80,7 @@ class TestVoltVar5145:
         self.si_obj.run()
         v2=(self.si_obj.der_file.QV_CURVE_V1+self.si_obj.der_file.QV_CURVE_V2)/2
         self.si_obj.update_der_input(v_pu=v2) #step i)
-        while t + t_s <= input_list[0]:
+        while t + t_s <= input_list[0]*4:
             self.si_obj.run()
             # q_array.append(self.si_obj.q_out_kvar)
             t=t+t_s

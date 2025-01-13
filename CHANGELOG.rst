@@ -1,7 +1,7 @@
 
 Changelog
 =========
-Unreleased changes
+2.1.6 (2025-01-13)
 ------------------
 * Updated volt-var curve point setting and nameplate information validity check
 * Added two parameters (QV_VREF_MIN and QV_VREF_MAX) to indicate the maximum value for volt-var automatic Vref
@@ -9,6 +9,8 @@ Unreleased changes
 * Changed volt-var function internal variable name
 * Fixed a minor bug for PV DER, watt-var function
 * Fixed a bug/typo in frequency-droop function
+* Updated time constant calculation for Volt-var Vref auto adjustment.
+* Correct an minor error in ride-through state determination.
 
 2.1.5 (2024-06-12)
 ------------------

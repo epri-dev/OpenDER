@@ -179,14 +179,14 @@ class RideThroughCrit:
                     if self.rt_time_lv > 10:
                         self.rt_pass_time_req = True
 
-                    # Eq 3.5.1-40,41, determine if in momentary cessation mode and if passed the minimum required time
-                    if self.der_file.MC_ENABLE and self.der_input.v_low_pu <= self.der_file.MC_LVRT_V1:
-                        self.rt_mode_v = 'Momentary Cessation'
-                    else:
-                        self.rt_mode_v = 'Mandatory Operation'
+                # Eq 3.5.1-40,41, determine if in momentary cessation mode and if passed the minimum required time
+                if self.der_file.MC_ENABLE and self.der_input.v_low_pu <= self.der_file.MC_LVRT_V1:
+                    self.rt_mode_v = 'Momentary Cessation'
+                else:
+                    self.rt_mode_v = 'Mandatory Operation'
 
-                    if self.der_input.v_low_pu <= 0.5 and self.rt_time_lv > 1:
-                        self.rt_pass_time_req = True
+                if self.der_input.v_low_pu <= 0.5 and self.rt_time_lv > 1:
+                    self.rt_pass_time_req = True
 
         # Eq 3.5.1-8, Continuous operation if voltage is between 0.88-1.1, reset timers
         if self.der_input.v_low_pu >= 0.88 and self.der_input.v_high_pu <= 1.1:
@@ -245,8 +245,8 @@ class RideThroughCrit:
            (rt_mode_v == 'Permissive Operation' and self._rt_mode_v not in ['Momentary Cessation', 'Cease to Energize']) or \
            (rt_mode_v == 'Momentary Cessation') or (rt_mode_v == 'Cease to Energize'):
             self._rt_mode_v = rt_mode_v
-        else:
-            print('ERROR! Mode was ', self._rt_mode_v, ' and is ', rt_mode_v)  # TODO delete this after debug
+        # else:
+        #     print('ERROR! Mode was ', self._rt_mode_v, ' and is ', rt_mode_v)  # TODO delete this after debug
 
 
 

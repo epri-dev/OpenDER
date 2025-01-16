@@ -29,17 +29,17 @@ class VoltVAR:
 
         self.qv_lpf = LowPassFilter()
         self.qv_delay = TimeDelay()
-        self.qv_curve_v1_appl = None        # Applied V1 setting with volt-var curve shifting when VRef changes
-        self.qv_curve_v2_appl = None        # Applied V2 setting with volt-var curve shifting when VRef changes
-        self.qv_curve_v3_appl = None        # Applied V3 setting with volt-var curve shifting when VRef changes
-        self.qv_curve_v4_appl = None        # Applied V4 setting with volt-var curve shifting when VRef changes
-        self.q_qv_desired_ref_pu = None     # Volt-var function reactive power reference value in per unit
+        self.qv_curve_v1_eff = None        # Effective V1 setting with volt-var curve shifting when VRef changes
+        self.qv_curve_v2_eff = None        # Effective V2 setting with volt-var curve shifting when VRef changes
+        self.qv_curve_v3_eff = None        # Effective V3 setting with volt-var curve shifting when VRef changes
+        self.qv_curve_v4_eff = None        # Effective V4 setting with volt-var curve shifting when VRef changes
+        self.q_qv_desired_ref_pu = None    # Volt-var function reactive power reference value in per unit
 
-        self.qv_vref_appl = None            # Applied VRef setting to determine the applied voltage settings
-        self.qv_vref_lpf = None             # Low pass filtered measurement voltage for volt-var VRef tracking mode
+        self.qv_vref_eff = None            # Effective VRef setting to determine the applied voltage settings
+        self.qv_vref_lpf = None            # Low pass filtered measurement voltage for volt-var VRef tracking mode
 
-        self.q_qv_lpf_pu = None             # Volt-var function reactive power reference after first order lag
-        self.q_qv_desired_pu = None         # Output reactive power from volt-var function
+        self.q_qv_lpf_pu = None            # Volt-var function reactive power reference after first order lag
+        self.q_qv_desired_pu = None        # Output reactive power from volt-var function
 
         self.v_meas_qv_vref_lpf_pu = LowPassFilter()
         
@@ -71,33 +71,33 @@ class VoltVAR:
 
         # Eq 3.8.1-4, The applied VRef is determined by either the VRef control setpoint or low pass filtered
         # applicable voltage, depending on the enable signal
-        self.qv_vref_lpf = max(0.95, min(self.v_meas_qv_vref_lpf_pu.low_pass_filter(self.der_input.v_meas_pu, self.exec_delay.qv_vref_time_exec),1.05))
+        self.qv_vref_lpf = max(self.exec_delay.qv_vref_min_exec, min(self.v_meas_qv_vref_lpf_pu.low_pass_filter(self.der_input.v_meas_pu, self.exec_delay.qv_vref_time_exec*2.3),self.exec_delay.qv_vref_max_exec))
         if self.exec_delay.qv_vref_auto_mode_exec == 0:
-            self.qv_vref_appl = self.exec_delay.qv_vref_exec
+            self.qv_vref_eff = self.exec_delay.qv_vref_exec
         else:
-            self.qv_vref_appl = self.qv_vref_lpf
+            self.qv_vref_eff = self.qv_vref_lpf
 
         # Eq 3.8.1-5, The applied volt-var curve voltage settings should shift according to the changes of the applied
         # VRef.
-        self.qv_curve_v1_appl = self.exec_delay.qv_curve_v1_exec + self.qv_vref_appl - 1
-        self.qv_curve_v2_appl = self.exec_delay.qv_curve_v2_exec + self.qv_vref_appl - 1
-        self.qv_curve_v3_appl = self.exec_delay.qv_curve_v3_exec + self.qv_vref_appl - 1
-        self.qv_curve_v4_appl = self.exec_delay.qv_curve_v4_exec + self.qv_vref_appl - 1
+        self.qv_curve_v1_eff = self.exec_delay.qv_curve_v1_exec + self.qv_vref_eff - 1
+        self.qv_curve_v2_eff = self.exec_delay.qv_curve_v2_exec + self.qv_vref_eff - 1
+        self.qv_curve_v3_eff = self.exec_delay.qv_curve_v3_exec + self.qv_vref_eff - 1
+        self.qv_curve_v4_eff = self.exec_delay.qv_curve_v4_exec + self.qv_vref_eff - 1
 
         # Eq. 3.8.1-6, Volt-VAR Reactive power reference calculation in p.u
-        if self.der_input.v_meas_pu < self.qv_curve_v1_appl:
+        if self.der_input.v_meas_pu < self.qv_curve_v1_eff:
             self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q1_exec
             
-        if self.qv_curve_v2_appl >= self.der_input.v_meas_pu >= self.qv_curve_v1_appl:
-            self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q1_exec - ((self.der_input.v_meas_pu - self.qv_curve_v1_appl)/(self.qv_curve_v2_appl - self.qv_curve_v1_appl)) * (self.exec_delay.qv_curve_q1_exec - self.exec_delay.qv_curve_q2_exec)
+        if self.qv_curve_v2_eff > self.der_input.v_meas_pu >= self.qv_curve_v1_eff:
+            self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q1_exec - ((self.der_input.v_meas_pu - self.qv_curve_v1_eff) / (self.qv_curve_v2_eff - self.qv_curve_v1_eff)) * (self.exec_delay.qv_curve_q1_exec - self.exec_delay.qv_curve_q2_exec)
             
-        if self.qv_curve_v3_appl > self.der_input.v_meas_pu > self.qv_curve_v2_appl:
-            self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q2_exec - ((self.der_input.v_meas_pu - self.qv_curve_v2_appl)/(self.qv_curve_v3_appl - self.qv_curve_v2_appl)) * (self.exec_delay.qv_curve_q2_exec - self.exec_delay.qv_curve_q3_exec)
+        if self.qv_curve_v3_eff > self.der_input.v_meas_pu >= self.qv_curve_v2_eff:
+            self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q2_exec - ((self.der_input.v_meas_pu - self.qv_curve_v2_eff) / (self.qv_curve_v3_eff - self.qv_curve_v2_eff)) * (self.exec_delay.qv_curve_q2_exec - self.exec_delay.qv_curve_q3_exec)
             
-        if self.qv_curve_v4_appl >= self.der_input.v_meas_pu >= self.qv_curve_v3_appl:
-            self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q3_exec - ((self.der_input.v_meas_pu - self.qv_curve_v3_appl)/(self.qv_curve_v4_appl - self.qv_curve_v3_appl)) * (self.exec_delay.qv_curve_q3_exec - self.exec_delay.qv_curve_q4_exec)
+        if self.qv_curve_v4_eff > self.der_input.v_meas_pu >= self.qv_curve_v3_eff:
+            self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q3_exec - ((self.der_input.v_meas_pu - self.qv_curve_v3_eff) / (self.qv_curve_v4_eff - self.qv_curve_v3_eff)) * (self.exec_delay.qv_curve_q3_exec - self.exec_delay.qv_curve_q4_exec)
         
-        if self.der_input.v_meas_pu > self.qv_curve_v4_appl:
+        if self.der_input.v_meas_pu >= self.qv_curve_v4_eff:
             self.q_qv_desired_ref_pu = self.exec_delay.qv_curve_q4_exec
 
         # Eq. 3.8.1-7, OLRT using LPF followed by a time delay to represent a reaction delay

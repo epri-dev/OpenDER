@@ -23,7 +23,7 @@ from .operating_status import OperatingStatus
 class OperatingStatusPV(OperatingStatus):
     """
     Determine Overall DER operating status for PV DER
-    EPRI Report Reference: Section 3.5.2 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.5.2 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
     def __init__(self, der_obj: opender.DER):
         super(OperatingStatusPV, self).__init__(der_obj)

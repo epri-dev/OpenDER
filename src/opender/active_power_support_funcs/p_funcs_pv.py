@@ -18,7 +18,7 @@ from opender.active_power_support_funcs.p_funcs import DesiredActivePower
 class DesiredActivePowerPV(DesiredActivePower):
     """
     Desired active power calculation from active power support functions for PV DER
-    EPRI Report Reference: Section 3.7.2 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7.2 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):

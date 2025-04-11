@@ -17,7 +17,7 @@ from opender.auxiliary_funcs.ramping import Ramping
 class EnterServicePerformance:
     """
     Calculate desired active power output in Enter service ramp condition
-    EPRI Report Reference: Section 3.7.1.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7.1.3 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):

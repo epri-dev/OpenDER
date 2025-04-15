@@ -28,7 +28,7 @@ class DERInputs:
     """
     This module handles inputs to the DER model, and generate per unit value of applicable voltage,
     per unit available power for PV DER, per unit active power demand for BESS DER, etc.
-    EPRI Report Reference: Section 3.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.3 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_file: DERCommonFileFormat):
@@ -70,7 +70,7 @@ class DERInputs:
 
     def operating_condition_input_processing(self):
         """
-        EPRI Report Reference: Section 3.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+        EPRI Report Reference: Section 3.3 in Report #3002030962: IEEE 1547-2018 OpenDER Model
 
         Used variables as inputs:
         :param v_a, v_b, v_c:	Three-phase line-to-ground RMS voltage at RPA
@@ -159,7 +159,7 @@ class DERInputs:
     def operating_conditions_validity_check(self):
         """
         Validity Check for DER Model operating conditions
-        Reference: Table 3-5 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+        Reference: Table 3-5 in Report #3002030962: IEEE 1547-2018 OpenDER Model
         Should be executed every timestep
         """
 

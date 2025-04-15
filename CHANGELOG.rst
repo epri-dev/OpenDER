@@ -1,6 +1,10 @@
 
 Changelog
 =========
+2.2.0 (2025-04-11)
+------------------
+* Updated documentations to match version 2.2 model specification.
+
 2.1.6 (2025-01-13)
 ------------------
 * Updated volt-var curve point setting and nameplate information validity check

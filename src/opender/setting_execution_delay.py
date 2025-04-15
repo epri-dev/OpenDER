@@ -18,7 +18,7 @@ from .auxiliary_funcs import time_delay as td
 class SettingExecutionDelay:
     """
     |  Modeling delayed execution of DER setting changes.
-    |  EPRI Report Reference: Section 3.4 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    |  EPRI Report Reference: Section 3.4 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
 
     parameters_list = ['AP_LIMIT_ENABLE', 'AP_LIMIT', 'ES_RANDOMIZED_DELAY', 'ES_PERMIT_SERVICE',

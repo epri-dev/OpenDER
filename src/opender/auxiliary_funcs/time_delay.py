@@ -18,7 +18,7 @@ from opender import der
 class TimeDelay:
     """
     |  Time delay function
-    |  EPRI Report Reference: Section 3.12.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    |  EPRI Report Reference: Section 3.12.3 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self):

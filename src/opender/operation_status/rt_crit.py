@@ -18,7 +18,7 @@ import opender
 class RideThroughCrit:
     """
     Abnormal Voltage and Frequency Ride-through Criteria
-    EPRI Report Reference: Section 3.5.1.3 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.5.1.3 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -52,6 +52,7 @@ class RideThroughCrit:
         :param NP_ABNORMAL_OP_CAT:	DER Abnormal operating performance category
         """
 
+        # Eq 3.5.1-8, clear and re-determine the abnormal voltage ride-through mode 
         self._rt_mode_v = None
 
         if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_I':
@@ -92,6 +93,7 @@ class RideThroughCrit:
                 if self.der_input.v_low_pu < 0.5:
                     self.rt_mode_v = 'Cease to Energize'
 
+            # Eq 3.5.1-19,20, determine if in momentary cessation region
             if self.der_file.MC_ENABLE and self.der_input.v_high_pu >= self.der_file.MC_HVRT_V1:
                 self.rt_mode_v = 'Momentary Cessation'
             if self.der_file.MC_ENABLE and self.der_input.v_low_pu <= self.der_file.MC_LVRT_V1:
@@ -100,47 +102,48 @@ class RideThroughCrit:
         if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_II':
 
             if 1.1 < self.der_input.v_high_pu:
-                # Eq 3.5.1-19, if voltage is higher than 1.1pu, high voltage ride-through timer starts to count
+                # Eq 3.5.1-21, if voltage is higher than 1.1pu, high voltage ride-through timer starts to count
                 self.rt_time_hv = self.rt_time_hv + opender.DER.t_s
 
-                # Eq 3.5.1-20,21, depending on voltage level, voltage ride-through mode is determined.
+                # Eq 3.5.1-22,23, depending on voltage level, voltage ride-through mode is determined.
                 if self.der_input.v_high_pu <= 1.2:
                     self.rt_mode_v = 'Permissive Operation'
                 else:
                     self.rt_mode_v = 'Cease to Energize'
 
-                # Eq 3.5.1-22, determine if ride-through time passed the minimum required time
+                # Eq 3.5.1-24, determine if ride-through time passed the minimum required time
                 if (self.rt_time_hv <= 1) and (1.1 < self.der_input.v_high_pu <= 1.15) or \
                         (self.rt_time_hv <= 0.5) and (1.15 < self.der_input.v_high_pu <= 1.175) or \
                         (self.rt_time_hv <= 0.2) and (1.15 < self.der_input.v_high_pu <= 1.2):
                     self.rt_pass_time_req = True
 
             if self.der_input.v_low_pu < 0.88:
-                # Eq 3.5.1-23, if voltage is lower than 0.88pu, low voltage ride-through timer starts to count
+                # Eq 3.5.1-25, if voltage is lower than 0.88pu, low voltage ride-through timer starts to count
                 self.rt_time_lv = self.rt_time_lv + opender.DER.t_s
 
-                # Eq 3.5.1-24,25, determine if in mandatory operation and if passed the minimum required time
+                # Eq 3.5.1-26,27, determine if in mandatory operation and if passed the minimum required time
                 if 0.65 <= self.der_input.v_low_pu < 0.88:
                     self.rt_mode_v = 'Mandatory Operation'
                     if self.rt_time_lv > 3 + 8.7 * (self.der_input.v_low_pu - 0.65):
                         self.rt_pass_time_req = True
 
-                # Eq 3.5.1-26,27, determine if in permissive operation block 1 and if passed the minimum required time
+                # Eq 3.5.1-28,29, determine if in permissive operation block 1 and if passed the minimum required time
                 if 0.45 <= self.der_input.v_low_pu < 0.65:
                     self.rt_mode_v = 'Permissive Operation'
                     if self.rt_time_lv > 0.32:
                         self.rt_pass_time_req = True
 
-                # Eq 3.5.1-28,29, determine if in permissive operation block 2 and if passed the minimum required time
+                # Eq 3.5.1-30,31, determine if in permissive operation block 2 and if passed the minimum required time
                 if 0.3 <= self.der_input.v_low_pu < 0.45:
                     self.rt_mode_v = 'Permissive Operation'
                     if self.rt_time_lv > 0.16:
                         self.rt_pass_time_req = True
 
-                # Eq 3.5.1-30, determine if in cease to energize region
+                # Eq 3.5.1-32, determine if in cease to energize region
                 if self.der_input.v_low_pu < 0.3:
                     self.rt_mode_v = 'Cease to Energize'
 
+            # Eq 3.5.1-33,34, determine if in momentary cessation region
             if self.der_file.MC_ENABLE and self.der_input.v_high_pu >= self.der_file.MC_HVRT_V1:
                 self.rt_mode_v = 'Momentary Cessation'
             if self.der_file.MC_ENABLE and self.der_input.v_low_pu <= self.der_file.MC_LVRT_V1:
@@ -148,10 +151,10 @@ class RideThroughCrit:
 
         if self.der_file.NP_ABNORMAL_OP_CAT == 'CAT_III':
             if 1.1 < self.der_input.v_high_pu:
-                # Eq 3.5.1-31, if voltage is higher than 1.1pu, high voltage ride-through timer starts to count
+                # Eq 3.5.1-35, if voltage is higher than 1.1pu, high voltage ride-through timer starts to count
                 self.rt_time_hv = self.rt_time_hv + opender.DER.t_s
 
-                # Eq 3.5.1-32,33, depending on voltage level, voltage ride-through mode is determined.
+                # Eq 3.5.1-36,37, depending on voltage level, voltage ride-through mode is determined.
                 if self.der_file.MC_ENABLE and self.der_input.v_high_pu >= self.der_file.MC_HVRT_V1:
                     self.rt_mode_v = 'Momentary Cessation'
                 else:
@@ -159,72 +162,73 @@ class RideThroughCrit:
                 # else:
                 #     self.rt_mode_v = 'Cease to Energize'
 
-                # Eq 3.5.1-34, determine if passed the minimum required time
+                # Eq 3.5.1-38, determine if passed the minimum required time
                 if self.rt_time_hv <= 12:
                     self.rt_pass_time_req = True
 
             if self.der_input.v_low_pu < 0.88:
-                # Eq 3.5.1-35, if voltage is lower than 0.88pu, low voltage ride-through timer starts to count
+                # Eq 3.5.1-39, if voltage is lower than 0.88pu, low voltage ride-through timer starts to count
                 self.rt_time_lv = self.rt_time_lv + opender.DER.t_s
 
-                # Eq 3.5.1-36,37, determine if in mandatory operation block 1 and if passed the minimum required time
+                # Eq 3.5.1-40,41, determine if in mandatory operation block 1 and if passed the minimum required time
                 if 0.7 <= self.der_input.v_low_pu < 0.88:
                     self.rt_mode_v = 'Mandatory Operation'
                     if self.rt_time_lv > 20:
                         self.rt_pass_time_req = True
 
-                # Eq 3.5.1-38,39, determine if in mandatory operation block 2 and if passed the minimum required time
+                # Eq 3.5.1-42,43, determine if in mandatory operation block 2 and if passed the minimum required time
                 if self.der_input.v_low_pu < 0.7:
                     # self.rt_mode_v = 'Mandatory Operation'
                     if self.rt_time_lv > 10:
                         self.rt_pass_time_req = True
 
-                # Eq 3.5.1-40,41, determine if in momentary cessation mode and if passed the minimum required time
+                # Eq 3.5.1-44,45, determine if in momentary cessation mode and if passed the minimum required time
                 if self.der_file.MC_ENABLE and self.der_input.v_low_pu <= self.der_file.MC_LVRT_V1:
                     self.rt_mode_v = 'Momentary Cessation'
                 else:
                     self.rt_mode_v = 'Mandatory Operation'
-
+                
+                # Eq 3.5.1-46, Mark the ride-through time passed flag as true, to indicate actual DER may not decide to continue riding-through
                 if self.der_input.v_low_pu <= 0.5 and self.rt_time_lv > 1:
                     self.rt_pass_time_req = True
 
-        # Eq 3.5.1-8, Continuous operation if voltage is between 0.88-1.1, reset timers
+        # Eq 3.5.1-47, Continuous operation if voltage is between 0.88-1.1, reset timers
         if self.der_input.v_low_pu >= 0.88 and self.der_input.v_high_pu <= 1.1:
             self.rt_mode_v = 'Continuous Operation'
             self.rt_time_lv = 0
             self.rt_time_hv = 0
 
-        # Eq 3.5.1-42, Continuous operation if frequency is between 58.5 and 61.2, reset timers
+        # Eq 3.5.1-48, Continuous operation if frequency is between 58.5 and 61.2, reset timers
         if 58.5 <= self.der_input.freq_hz <= 61.2:
             self.rt_mode_f = 'Continuous Operation'
             self.rt_time_hf = 0
             self.rt_time_lf = 0
 
         if 61.2 <= self.der_input.freq_hz:
-            # Eq 3.5.1-43, if frequency is higher than 61.2 Hz, high frequency ride-through timer starts to count
+            # Eq 3.5.1-49, if frequency is higher than 61.2 Hz, high frequency ride-through timer starts to count
             self.rt_time_hf = self.rt_time_hf + opender.DER.t_s
 
-            # Eq 3.5.1-44,45, depending on system frequency, frequency ride-through mode is determined.
+            # Eq 3.5.1-50,51, depending on system frequency, frequency ride-through mode is determined.
             if self.der_input.freq_hz <= 61.8:
                 self.rt_mode_f = 'Mandatory Operation'
             else:
                 self.rt_mode_f = 'Not Defined'
 
-            # Eq 3.5.1-46, determine if passed the minimum required ride-through time
+            # Eq 3.5.1-52, determine if passed the minimum required ride-through time
             if self.rt_time_hf > 299:
                 self.rt_pass_time_req = True
 
         if self.der_input.freq_hz <= 58.8:
-            # Eq 3.5.1-47, if frequency is lower than  58.8 Hz, low frequency ride-through timer starts to count
+            # Eq 3.5.1-53, if frequency is lower than  58.8 Hz, low frequency ride-through timer starts to count
             self.rt_time_lf = self.rt_time_lf + opender.DER.t_s
 
-            # Eq 3.5.1-48,49, depending on system frequency, frequency ride-through mode is determined.
+            # Eq 3.5.1-54,55, depending on system frequency, frequency ride-through mode is determined.
             if 57.0 <= self.der_input.freq_hz:
                 self.rt_mode_f = 'Mandatory Operation'
             else:
                 self.rt_mode_f = 'Not Defined'
 
-            # Eq 3.5.1-50, determine if passed the minimum required ride-through time
+            # Eq 3.5.1-56, determine if passed the minimum required ride-through time
             if self.rt_time_lf > 299:
                 self.rt_pass_time_req = True
 

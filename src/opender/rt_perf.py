@@ -22,7 +22,7 @@ from opender.auxiliary_funcs import sym_component
 class RideThroughPerf:
     """
     Abnormal Voltage and Frequency Ride-Through Performance and DER model output calculations
-    EPRI Report Reference: Section 3.10 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.10 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):
@@ -128,7 +128,7 @@ class RideThroughPerf:
         self.p_limited_pu = p_limited_w / self.der_file.NP_VA_MAX
         self.q_limited_pu = q_limited_var / self.der_file.NP_VA_MAX
 
-        # Eq 3.10.1-3~9, Calculate DER output currents
+        # Eq 3.10.1-3~11, Calculate DER output currents
         self.calculate_i_output(self.p_limited_pu, self.q_limited_pu)
 
         return self.i_pos_pu, self.i_neg_pu
@@ -191,20 +191,6 @@ class RideThroughPerf:
 
         return self.i_pos_pu, self.i_neg_pu
 
-
-    def calculate_i_continuous_op(self, p_limited_pu, q_limited_pu):
-        # Eq 3.10.1-5, calculate current based on desired P, Q and terminal voltage.
-        self.i_pos_d_ref_pu = p_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
-        self.i_pos_q_ref_pu = - q_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
-        self.i_neg_ref_pu = 0
-
-    def calculate_i_DVS(self, p_limited_pu, q_limited_pu):
-        # Eq 3.10.1-6,calcualte current based on desired P, Q terminal voltage, and dynamic voltage support settings
-        self.i_pos_d_ref_pu = p_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
-        self.i_pos_q_ref_pu = - q_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001) + (
-                    abs(self.der_input.v_pos_pu) - 1) * self.der_file.DVS_K
-        self.i_neg_ref_pu = self.der_input.v_neg_pu * 1j * self.der_file.DVS_K
-
     def calculate_i_block(self):
         # Eq 3.10.1-4, In momentary cessation condition, active current is 0, reactive currents depend on DER filter
         # susceptance.
@@ -219,6 +205,19 @@ class RideThroughPerf:
         self.i_neg_pu = -1j * self.der_input.v_neg_pu * self.der_file.NP_AC_V_NOM * \
                                     self.der_file.NP_REACTIVE_SUSCEPTANCE / (
                                             self.der_file.NP_VA_MAX / self.der_file.NP_AC_V_NOM)
+
+    def calculate_i_continuous_op(self, p_limited_pu, q_limited_pu):
+        # Eq 3.10.1-5, calculate current based on desired P, Q and terminal voltage.
+        self.i_pos_d_ref_pu = p_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
+        self.i_pos_q_ref_pu = - q_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
+        self.i_neg_ref_pu = 0
+
+    def calculate_i_DVS(self, p_limited_pu, q_limited_pu):
+        # Eq 3.10.1-6,calcualte current based on desired P, Q terminal voltage, and dynamic voltage support settings
+        self.i_pos_d_ref_pu = p_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001)
+        self.i_pos_q_ref_pu = - q_limited_pu / max(abs(self.der_input.v_pos_pu),0.0001) + (
+                    abs(self.der_input.v_pos_pu) - 1) * self.der_file.DVS_K
+        self.i_neg_ref_pu = self.der_input.v_neg_pu * 1j * self.der_file.DVS_K
 
     def i_limit(self):
         # Eq 3.10.1-7 calculate maximum current if output current follows reference

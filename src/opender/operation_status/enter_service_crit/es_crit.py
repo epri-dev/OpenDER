@@ -23,7 +23,7 @@ import numpy as np
 class EnterServiceCrit:
     """
     Enter Service criteria
-    EPRI Report Reference: Section 3.5.1.1 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.5.1.1 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
 
     def __init__(self, der_obj):

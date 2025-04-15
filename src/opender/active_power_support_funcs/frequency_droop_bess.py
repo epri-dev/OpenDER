@@ -21,7 +21,7 @@ from .frequency_droop import FreqDroop
 class FreqDroopBESS(FreqDroop):
     """
     Frequency-droop Function for BESS DER
-    EPRI Report Reference: Section 3.7.3.2 in Report #3002026631: IEEE 1547-2018 OpenDER Model
+    EPRI Report Reference: Section 3.7.3.2 in Report #3002030962: IEEE 1547-2018 OpenDER Model
     """
     
     def __init__(self, der_obj):

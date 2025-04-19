@@ -1,6 +1,13 @@
 
 Changelog
 =========
+
+Unreleased Changes
+------------------
+* Corrected a minor error for momentary cessation threshold comparison
+* Added Category C and Category IV logics based on IEEE P1547 proposed change (subject to change)
+* Slightly modified frequency-droop and enter service related priority logics (subject to change)
+
 2.2.0 (2025-04-11)
 ------------------
 * Updated documentations to match version 2.2 model specification.

@@ -606,7 +606,7 @@ class DERCommonFileFormat:
             if self._NP_Q_MAX_ABS < (self._NP_VA_MAX * 0.25) or self._NP_Q_MAX_ABS > self._NP_VA_MAX:
                 logging.warning("Warning: For category A DER, its nameplate reactive power absorption rating "
                                 "should be greater than 25%, and less than 100% of nameplate apparent power rating.")
-        elif self.NP_NORMAL_OP_CAT == "CAT_B":
+        elif self.NP_NORMAL_OP_CAT == "CAT_B" or self.NP_NORMAL_OP_CAT == "CAT_C":
             if self._NP_Q_MAX_ABS < (self._NP_VA_MAX * 0.44) or self._NP_Q_MAX_ABS > self._NP_VA_MAX:
                 logging.warning("Warning: For category B DER, its nameplate reactive power absorption rating "
                                 "should be greater than 44%, and less than 100% of nameplate apparent power rating.")
@@ -759,6 +759,25 @@ class DERCommonFileFormat:
         for i in range(len(p_capability_pu)):
             if q_capability_pu[i] < np.interp(p_capability_pu[i], p_requirement_pu, q_requirement_pu):
                 return False
+            
+        if NP_NORMAL_OP_CAT == 'CAT_C':
+            p_requirement_pu = [-1, -0.2, -0.05, -0.0499999999, 0]
+            q_requirement_pu = [0.25, 0.25, 0.0625, 0]
+            p_capability_pu = NP_Q_CAPABILITY_BY_P_CURVE['P_Q_INJ_PU']
+            q_capability_pu = NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_INJ_PU']
+
+            for i in range(len(p_capability_pu)):
+                if q_capability_pu[i] < np.interp(p_capability_pu[i], p_requirement_pu, q_requirement_pu):
+                    return False
+                
+            p_requirement_pu = [-1, -0.2, -0.05, -0.0499999999, 0]
+            q_requirement_pu = [0.25, 0.25, 0.0625, 0]
+            p_capability_pu = NP_Q_CAPABILITY_BY_P_CURVE['P_Q_ABS_PU']
+            q_capability_pu = NP_Q_CAPABILITY_BY_P_CURVE['Q_MAX_ABS_PU']
+
+            for i in range(len(p_capability_pu)):
+                if q_capability_pu[i] < np.interp(p_capability_pu[i], p_requirement_pu, q_requirement_pu):
+                    return False
 
         return True
 
@@ -769,10 +788,10 @@ class DERCommonFileFormat:
 
     @NP_NORMAL_OP_CAT.setter
     def NP_NORMAL_OP_CAT(self, NP_NORMAL_OP_CAT):
-        if NP_NORMAL_OP_CAT.upper() == 'CAT_A' or NP_NORMAL_OP_CAT.upper() == 'CAT_B':
+        if NP_NORMAL_OP_CAT.upper() == 'CAT_A' or NP_NORMAL_OP_CAT.upper() == 'CAT_B' or NP_NORMAL_OP_CAT.upper() == 'CAT_C':
             self._NP_NORMAL_OP_CAT = NP_NORMAL_OP_CAT.upper()
         else:
-            logging.error("Error: Value of NP_NORMAL_OP_CAT should be either CAT_A or CAT_B, CAT_B is used by default")
+            logging.error("Error: Value of NP_NORMAL_OP_CAT should be either CAT_A, CAT_B, or CAT_C. CAT_B is used by default")
             self._NP_NORMAL_OP_CAT = 'CAT_B'
 
         if self._NP_NORMAL_OP_CAT == "CAT_A":
@@ -784,7 +803,7 @@ class DERCommonFileFormat:
             self.QV_CURVE_Q4 = -0.25
             self.QV_OLRT = 10
             self.QP_CURVE_Q3_GEN = -0.25
-        else:
+        elif self._NP_NORMAL_OP_CAT == "CAT_B" or self._NP_NORMAL_OP_CAT == "CAT_C":
             self.QV_CURVE_V2 = 0.98
             self.QV_CURVE_V3 = 1.02
             self.QV_CURVE_V1 = 0.92
@@ -801,11 +820,11 @@ class DERCommonFileFormat:
     @NP_ABNORMAL_OP_CAT.setter
     def NP_ABNORMAL_OP_CAT(self, NP_ABNORMAL_OP_CAT):
         if NP_ABNORMAL_OP_CAT.upper() == 'CAT_I' or NP_ABNORMAL_OP_CAT.upper() == 'CAT_II' \
-                or NP_ABNORMAL_OP_CAT.upper() == 'CAT_III':
+                or NP_ABNORMAL_OP_CAT.upper() == 'CAT_III' or NP_ABNORMAL_OP_CAT.upper() == 'CAT_IV':
             self._NP_ABNORMAL_OP_CAT = NP_ABNORMAL_OP_CAT.upper()
         else:
             logging.error("Error: Value of NP_ABNORMAL_OP_CAT should be CAT_I, CAT_II"
-                          " or CAT_III, CAT_III is used by default")
+                          " CAT_III or CAT_IV, CAT_III is used by default")
             self._NP_ABNORMAL_OP_CAT = 'CAT_III'
 
         if self._NP_ABNORMAL_OP_CAT == "CAT_I":
@@ -815,7 +834,6 @@ class DERCommonFileFormat:
             self.UV2_TRIP_V = 0.45
             self.UV2_TRIP_T = 0.16
             self.MC_ENABLE = False
-
         elif self._NP_ABNORMAL_OP_CAT == "CAT_II":
             self.OV1_TRIP_T = 2
             self.UV1_TRIP_V = 0.7
@@ -823,13 +841,24 @@ class DERCommonFileFormat:
             self.UV2_TRIP_V = 0.45
             self.UV2_TRIP_T = 0.16
             self.MC_ENABLE = False
-        else:
+        elif self._NP_ABNORMAL_OP_CAT == "CAT_III":
             self.OV1_TRIP_T = 13
             self.UV1_TRIP_V = 0.88
             self.UV1_TRIP_T = 21
             self.UV2_TRIP_V = 0.5
             self.UV2_TRIP_T = 2
             self.MC_ENABLE = True
+        elif self._NP_ABNORMAL_OP_CAT == "CAT_IV":
+            self.OV1_TRIP_T = 13
+            self.UV1_TRIP_V = 0.88
+            self.UV1_TRIP_T = 21
+            self.UV2_TRIP_V = 0.1
+            self.UV2_TRIP_T = 2
+            self.MC_ENABLE = False
+            self.OF1_TRIP_F = 65
+            self.OF2_TRIP_F = 63
+            self.UF1_TRIP_F = 57
+            self.UF2_TRIP_F = 50
 
 
     @property

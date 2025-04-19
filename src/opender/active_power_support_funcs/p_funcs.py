@@ -85,7 +85,8 @@ class DesiredActivePower:
             self.freqdroop.reset()
             self.voltwatt.reset()
             self.enterserviceperf.reset()
-            self.aplimit.reset()
+            #TODO:disabled resetting active power limit
+            # self.aplimit.reset()
 
         return self.p_desired_pu
 
@@ -118,19 +119,19 @@ class DesiredActivePower:
 
         if (self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True
                 and self.pf_uf_active == False and self.pf_of_active == False):
-            self.p_desired_pu = min(self.der_input.p_avl_pu, self.ap_limit_rt, self.p_pv_limit_pu, 1)
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.ap_limit_rt, self.p_pv_limit_pu, 1)
 
         if self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True:
-            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.p_pf_pu, 1)
 
         if self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True:
-            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
         if self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True:
-            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pf_pu, 1)
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.p_pf_pu, 1)
 
         if self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True:
-            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
+            self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
 
         return self.p_desired_pu
 

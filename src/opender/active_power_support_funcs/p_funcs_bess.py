@@ -48,24 +48,22 @@ class DesiredActivePowerBESS(DesiredActivePower):
         :param p_dem_pu:        BESS DER active power demand in pu
         """
 
-        # Eq 3.7.3-6, calculate active power demand considering enter service ramp
-        self.p_es_dem_pu = max(min(self.der_obj.bessspecific.p_dem_ramp_pu, self.p_es_pu), -self.p_es_pu)
-
+        #TODO reordered logic to allow: enter service ramp has higher priority
         # Eq 3.7.3-7, calculate desired active power without considering BESS SoC related constraints
         if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == False \
                 and self.pf_uf_active == False and self.pf_of_active == False:
-            self.p_act_supp_bess_pu = min(self.p_es_dem_pu, 1)
+            self.p_act_supp_bess_pu = min(self.der_obj.bessspecific.p_dem_ramp_pu, 1)
         if self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == False \
                 and self.pf_uf_active == False and self.pf_of_active == False:
-            self.p_act_supp_bess_pu = min(self.p_es_dem_pu, self.ap_limit_rt, 1)
+            self.p_act_supp_bess_pu = min(self.der_obj.bessspecific.p_dem_ramp_pu, self.ap_limit_rt, 1)
         if self.exec_delay.ap_limit_enable_exec == False and self.exec_delay.pv_mode_enable_exec == True \
                 and self.pf_uf_active == False and self.pf_of_active == False:
-            self.p_act_supp_bess_pu = min(self.p_es_dem_pu, self.p_pv_limit_pu, 1)
+            self.p_act_supp_bess_pu = min(self.der_obj.bessspecific.p_dem_ramp_pu, self.p_pv_limit_pu, 1)
         if self.exec_delay.ap_limit_enable_exec == True and self.exec_delay.pv_mode_enable_exec == True \
                 and self.pf_uf_active == False and self.pf_of_active == False:
             self.p_act_supp_bess_pu = min(self.ap_limit_rt, self.p_pv_limit_pu, 1)
         if self.exec_delay.pv_mode_enable_exec == False and self.pf_of_active == True:
-            self.p_act_supp_bess_pu = min(self.p_pf_pu, 1)
+            self.p_act_supp_bess_pu = min(self.der_input.p_dem_pu, self.p_pf_pu, 1)
         if self.exec_delay.pv_mode_enable_exec == True and self.pf_of_active == True:
             self.p_act_supp_bess_pu = min(self.der_input.p_dem_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
         if self.exec_delay.pv_mode_enable_exec == False and self.pf_uf_active == True:
@@ -73,11 +71,16 @@ class DesiredActivePowerBESS(DesiredActivePower):
         if self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True:
             self.p_act_supp_bess_pu = min(self.p_pv_limit_pu, self.p_pf_pu, 1)
 
+
+        # Eq 3.7.3-6, calculate active power demand considering enter service ramp
+        self.p_es_dem_pu = max(min(self.p_act_supp_bess_pu , self.p_es_pu), -self.p_es_pu)
+
         # Eq. 3.7.3-8, calculate desired active power, considering maximum limits by SOC, DER nameplate active
         # power charge rating, and active power demand from system operator or higher level grid support functions
+        #TODO double check logic - grid support functions should already been addressed earlier.
         self.p_desired_pu = max(-self.der_obj.bessspecific.soc_calc.p_max_charge_pu,
                                 -self.der_file.NP_P_MAX_CHARGE / self.der_file.NP_P_MAX,
-                                min(self.p_act_supp_bess_pu, self.der_obj.bessspecific.soc_calc.p_max_discharge_pu))
+                                min(self.der_obj.bessspecific.soc_calc.p_max_discharge_pu, self.p_es_dem_pu))
 
 
         return self.p_desired_pu

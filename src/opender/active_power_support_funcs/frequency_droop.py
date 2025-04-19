@@ -181,3 +181,6 @@ class FreqDroop:
         # Eq. 3.7.1-19, if DER is tripped, the reference should be reset to 0
         self.p_pf_pu = self.pf_delay.tdelay(0, 0)
         self.p_pf_lpf_pu = self.pf_lpf.low_pass_filter(0, 0)
+        self.p_pf_pre_pu_prev = None
+        self.pf_uf_prev = None
+        self.pf_of_prev = None

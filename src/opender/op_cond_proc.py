@@ -20,6 +20,7 @@ Created on Thu March 24 00:45:28 2022
 import math
 import cmath
 import logging
+import opender
 from opender import DERCommonFileFormat
 from opender import auxiliary_funcs
 
@@ -35,7 +36,8 @@ class DERInputs:
 
         self.der_file = der_file
         # Operating condition inputs to the DER model
-        self.freq_hz = None     # Frequency at DER RPA in Hz
+        self.f = None
+        self.freq_hz = 60     # Frequency at DER RPA in Hz
         self.v_a = None         # Phase a to ground voltage magnitude in volts
         self.v_b = None         # Phase b to ground voltage magnitude in volts
         self.v_c = None         # Phase c to ground voltage magnitude in volts
@@ -66,7 +68,17 @@ class DERInputs:
         self.p_avl_pu = None    # Available power in pu considering efficiency (same value as p_dc_w for PV, 1 for BESS)
         self.p_dem_pu = None    # Active power demand for BESS
 
-        self.v_lpf = auxiliary_funcs.low_pass_filter.LowPassFilter()    #
+
+        self.pll_enable = False
+        self.pll_vq = 0
+        self.pll_vd = 0
+        self.pll_theta = None
+        self.pll_freq_delta = None
+        self.pll_vq_integ = 0
+        self.pll_vq_prev = 0
+
+        self.v_lpf = auxiliary_funcs.low_pass_filter.LowPassFilter()    
+        self.time_elapsed = 0
 
     def operating_condition_input_processing(self):
         """
@@ -145,6 +157,34 @@ class DERInputs:
             self.v_neg_pu = self.v_zero_pu = 0
             self.v_angle = cmath.phase(self.v_pos_pu)
 
+        if self.der_file.PLL_ENABLE:
+            if self.pll_theta is None:
+                self.pll_theta = self.v_angle
+            if self.pll_freq_delta is None:
+                self.pll_freq_delta = (self.freq_hz-60)*2*math.pi
+
+            # Assume self.pll_vq_prev is stored from the previous timestep
+            self.pll_vq = (self.v_pos_pu * cmath.exp(-1j * self.pll_theta)).imag
+
+            self.pll_vq_integ += self.pll_vq * self.der_file.PLL_KI * opender.DER.t_s
+
+            # Proportional-plus-integral control law remains the same:
+            self.pll_freq_delta = self.der_file.PLL_KP * self.pll_vq + self.pll_vq_integ
+
+            # Phase update
+            self.pll_theta += self.pll_freq_delta * opender.DER.t_s
+            if self.pll_theta > math.pi:
+                self.pll_theta -= 2 * math.pi
+            elif self.pll_theta < -math.pi:
+                self.pll_theta += 2 * math.pi
+
+            self.freq_hz = self.f + self.pll_freq_delta / (2.0 * math.pi)
+
+        else:
+            self.freq_hz = self.f
+            self.pll_theta = self.v_angle
+            self.pll_freq_delta = (self.freq_hz-60)*2*math.pi
+
         # Eq. 3.3.2-1, For PV DER: available power in per unit considering efficiency
         if self.p_dc_w is not None:
             self.p_avl_pu = self.p_dc_w / self.der_file.NP_P_MAX * self.der_file.NP_EFFICIENCY
@@ -189,9 +229,9 @@ class DERInputs:
             if self.theta_c is None:
                 self.theta_c = 2 * math.pi / 3
 
-        if self.freq_hz is None:
+        if self.f is None:
             logging.error("Error: F is not defined! Assuming 60Hz")
-            self.freq_hz = 60
+            self.f = 60
 
         if self.p_dc_w is None:
             if self.der_file.NP_TYPE == 'PV':

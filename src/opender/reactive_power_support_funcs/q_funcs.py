@@ -17,8 +17,8 @@
 from opender.auxiliary_funcs.ramping import Ramping
 from opender.auxiliary_funcs.flipflop import FlipFlop
 from opender.reactive_power_support_funcs import volt_var, watt_var, constant_vars, constant_pf
-
-
+import numpy as np
+import opender
 class DesiredReactivePower:
     """
     |  Desired Reactive Power Calculation
@@ -58,6 +58,8 @@ class DesiredReactivePower:
         self.wattvar = watt_var.WattVAR(self.der_obj)
         self.desired_var_ramp = Ramping()
         self.desired_var_ff = FlipFlop(0)
+
+        self.time_elapsed = 0.2
 
     def calculate_reactive_funcs(self, p_desired_pu, der_status):
         """
@@ -165,6 +167,25 @@ class DesiredReactivePower:
         self.qv_mode_enable_exec_prev = self.exec_delay.qv_mode_enable_exec
         self.qp_mode_enable_exec_prev = self.exec_delay.qp_mode_enable_exec
         self.const_q_mode_enable_exec_prev = self.exec_delay.const_q_mode_enable_exec
+
+        deadband = 0  # Configurable deadband value
+        if 'DSFS' in self.der_file.UID_METHOD:
+            pll_freq_error = self.der_input.freq_hz - 60
+            K = 0.20           
+            Delta_Q = min(max(-K * pll_freq_error, -0.43), 0.43)
+        else:
+            Delta_Q = 0
+
+        if 'RPV' in self.der_file.UID_METHOD:
+            self.time_elapsed += opender.DER.t_s
+            if self.time_elapsed > 0.4:
+                self.time_elapsed = self.time_elapsed - 0.4
+
+            if self.time_elapsed < 0.2:
+                Delta_Q = np.sin(self.time_elapsed/0.2*np.pi)*-0.03
+
+        
+        self.q_desired_pu = self.q_desired_pu + Delta_Q
 
         return self.q_desired_pu
 

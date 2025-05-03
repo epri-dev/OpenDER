@@ -17,6 +17,7 @@ from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
 from opender.auxiliary_funcs.ramping import Ramping
 from opender.auxiliary_funcs.cond_delay import ConditionalDelay
 from opender.auxiliary_funcs import sym_component
+import opender
 
 
 class RideThroughPerf:
@@ -183,11 +184,36 @@ class RideThroughPerf:
             else:
                 self.i_pos_d_rrl_ref_pu = self.i_pos_d_rrl.ramp(self.i_pos_d_limited_ref_pu, 0, self.der_file.NP_RT_RAMP_UP_TIME)
 
-            self.i_pos_limited_ref_pu = (self.i_pos_d_rrl_ref_pu + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * self.der_input.v_angle)
+            self.i_pos_limited_ref_pu = (self.i_pos_d_rrl_ref_pu + self.i_pos_q_limited_ref_pu * 1j) * np.exp(1j * (self.der_input.pll_theta + 0 * self.der_input.pll_freq_delta * opender.DER.t_s))
+            
             # Eq 3.10.1-11, first order lag low pass filters are applied to the DER output current references,
             # emulating the closed-loop DER inverter control delay.
-            self.i_pos_pu = self.i_pos_lpf.low_pass_filter(self.i_pos_limited_ref_pu, self.der_file.NP_INV_DELAY)
+            # self.i_pos_pu = self.i_pos_lpf.low_pass_filter(self.i_pos_limited_ref_pu, self.der_file.NP_INV_DELAY)
+            self.i_pos_pu = self.i_pos_lpf.low_pass_filter(abs(self.i_pos_limited_ref_pu), self.der_file.NP_INV_DELAY)*np.exp(1j*np.angle(self.i_pos_limited_ref_pu))
+
+
             self.i_neg_pu = self.i_neg_lpf.low_pass_filter(self.i_neg_limited_ref_pu, self.der_file.NP_INV_DELAY)
+
+
+
+            if 'SMS' in self.der_file.UID_METHOD:
+                pll_freq_error = self.der_input.freq_hz - 60
+                K = 1
+                deadband = 0 
+
+                if abs(pll_freq_error) < deadband:
+                    pll_freq_error = 0
+                else:
+                    pll_freq_error = np.sign(pll_freq_error) * (abs(pll_freq_error) - deadband)
+
+                Theta = K * np.sin(np.pi/2*(pll_freq_error)/6)
+
+            else:
+                Theta = 0
+
+
+            self.i_pos_pu = self.i_pos_pu*np.exp(1j*Theta)
+
 
         return self.i_pos_pu, self.i_neg_pu
 

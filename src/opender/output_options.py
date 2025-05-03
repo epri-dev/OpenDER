@@ -12,7 +12,9 @@
 #   prior written permission.
 
 import cmath
-from opender.auxiliary_funcs import sym_component
+from opender.auxiliary_funcs import sym_component, low_pass_filter
+import numpy as np
+import opender
 
 
 class DEROutputs:
@@ -63,6 +65,8 @@ class DEROutputs:
         :param NP_VA_MAX:	DER nameplate apparent power rating
         """
         # Eq 3.11.1-1 Calculate DER output active and reactive power based on current and voltage
+        if self.der_file.PLL_ENABLE:
+            i_pos_pu = i_pos_pu * np.exp(-1j * 2 * np.pi*(self.der_input.freq_hz-60)*opender.der.DER.t_s)         
         self.p_out_pu = (i_pos_pu * self.der_input.v_pos_pu.conjugate()).real
         self.q_out_pu = -(i_pos_pu * self.der_input.v_pos_pu.conjugate()).imag
 
@@ -111,8 +115,8 @@ class DEROutputs:
 
     def calculate_v_output(self, i_pos_pu, i_neg_pu):
         """
-        Calculate DER output currents
-
+        Calculate DER output voltages behind impedance
+        
         Used variables as inputs:
         :param i_pos_pu:	DER output positive sequence current in per unit
         :param i_neg_pu	DER output negative sequence current in per unit

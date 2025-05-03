@@ -67,6 +67,11 @@ class DERCommonFileFormat:
                        'DVS_MODE_ENABLE', 'DVS_K',
 
                        'QV_VREF_MAX', 'QV_VREF_MIN',
+
+                       'PLL_ENABLE', 'PLL_KI', 'PLL_KP', 
+                       
+                       'UID_METHOD',
+
                        ]
 
     # Creating object slots, so incorrect usage of variable names are rejected.
@@ -237,6 +242,13 @@ class DERCommonFileFormat:
         self._PF_KOF = 0.05
         self._PF_KUF = 0.05
         self._PF_OLRT = 5
+
+        self._PLL_ENABLE = False
+        self._PLL_KI = 10
+        self._PLL_KP = 100
+                             
+        self._UID_METHOD = ''
+
 
         if self.isNotNaN(self.param_inputs.NP_TYPE):
             self.NP_TYPE = self.param_inputs.NP_TYPE
@@ -552,6 +564,20 @@ class DERCommonFileFormat:
             self.PF_KUF = self.param_inputs.PF_KUF
         if self.isNotNaN(self.param_inputs.PF_OLRT):
             self.PF_OLRT = self.param_inputs.PF_OLRT
+
+                    
+        if self.isNotNaN(self.param_inputs.PLL_ENABLE):
+            self.PLL_ENABLE = self.param_inputs.PLL_ENABLE
+
+        if self.isNotNaN(self.param_inputs.PLL_KI):
+            self.PLL_KI = self.param_inputs.PLL_KI
+
+        if self.isNotNaN(self.param_inputs.PLL_KP):
+            self.PLL_KP = self.param_inputs.PLL_KP
+
+        if self.isNotNaN(self.param_inputs.UID_METHOD):
+            self.UID_METHOD = self.param_inputs.UID_METHOD
+
 
         for key, value in kwargs.items():
             if key in self._get_parameter_list():
@@ -2236,6 +2262,47 @@ class DERCommonFileFormat:
         if NP_V_MEAS_DELAY < 0:
             self._NP_V_MEAS_DELAY = 0
             logging.error('DER voltage measurement time should be greater than 0')
+
+
+    @property
+    def PLL_ENABLE(self):
+        return self._PLL_ENABLE
+
+    @PLL_ENABLE.setter
+    def PLL_ENABLE(self, PLL_ENABLE):
+        self._PLL_ENABLE = self.check_enabled(PLL_ENABLE)
+
+    @property
+    def PLL_KI(self):
+        return self._PLL_KI
+
+    @PLL_KI.setter
+    def PLL_KI(self, PLL_KI):
+        self._PLL_KI = PLL_KI
+        if PLL_KI < 0:
+            logging.warning("Warning: PLL integrator gain should be greater than or equal to 0")
+
+    @property
+    def PLL_KP(self):
+        return self._PLL_KP
+
+    @PLL_KP.setter
+    def PLL_KP(self, PLL_KP):
+        self._PLL_KP = PLL_KP
+        if PLL_KP < 0:
+            logging.warning("Warning: PLL proportional gain should be greater than or equal to 0")
+
+    @property
+    def UID_METHOD(self):
+        return self._UID_METHOD
+
+    @UID_METHOD.setter
+    def UID_METHOD(self, UID_METHOD):
+        if isinstance(UID_METHOD, str):
+            self._UID_METHOD = UID_METHOD.upper()
+        else:
+            logging.warning("UID_METHOD should be a string value")
+            self._UID_METHOD = "NONE"
 
 
 

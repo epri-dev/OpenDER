@@ -13,7 +13,8 @@
 
 
 from opender.active_power_support_funcs import active_power_limit, frequency_droop, volt_watt, es_perf
-
+from opender.auxiliary_funcs.low_pass_filter import LowPassFilter
+import numpy as np
 
 class DesiredActivePower:
     """
@@ -45,6 +46,9 @@ class DesiredActivePower:
         self.voltwatt = volt_watt.VoltWatt(self.der_file, self.exec_delay, self.der_input)
         self.freqdroop = frequency_droop.FreqDroop(self.der_obj)
         self.enterserviceperf = es_perf.EnterServicePerformance(der_obj)
+
+
+        self.v_svs_lpf = LowPassFilter()
 
     def calculate_p_funcs(self, p_out_w):
         """
@@ -132,6 +136,27 @@ class DesiredActivePower:
 
         if self.exec_delay.pv_mode_enable_exec == True and self.pf_uf_active == True:
             self.p_desired_pu = min(self.der_input.p_avl_pu, self.p_es_pu, self.p_pv_limit_pu, self.p_pf_pu, 1)
+
+
+        if 'SVS' in self.der_file.UID_METHOD:
+            K = 2.1
+            deadband = 0  # Configurable deadband value
+            v_lpf = self.v_svs_lpf.low_pass_filter(abs(self.der_input.v_pos_pu), 0.1)
+            V_error = abs(v_lpf) - 1
+            
+            if abs(V_error) < deadband:
+                V_error = 0
+            else:
+                V_error = np.sign(V_error) * (abs(V_error) - deadband)
+
+            I_offset = K*V_error
+            # Theta = min(max(K * pll_freq_error, -0.35), 0.35)
+            print('I_offset:', I_offset)
+
+        else:
+            I_offset = 0
+
+        self.p_desired_pu = self.p_desired_pu + I_offset
 
         return self.p_desired_pu
 

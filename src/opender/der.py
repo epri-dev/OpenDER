@@ -107,7 +107,7 @@ class DER:
     def _update_der_input_v_f(self, v: Union[List[float], float] = None, theta: Union[List[float], float] = None,
                               v_symm_pu: List[complex] = None, f: float = None, v_pu: Union[List[float], float] = None) -> None:
         if f is not None:
-            self.der_input.freq_hz = f
+            self.der_input.f = f
 
         if v is not None:
             if self.der_file.NP_PHASE == "THREE":
@@ -269,7 +269,7 @@ class DER:
     def __str__(self):
         # for debug, generate a string
         # E.g. can be used when print(DER_obj)
-        return f"{self.time:.1f}: {self.name} ({self.der_status})- " \
+        return f"{self.time:.2f}: {self.name} ({self.der_status})- " \
                f"v_meas_pu={self.der_input.v_meas_pu:.5f}, " \
                f"p_desired_pu={self.p_desired_pu:.2f}, q_desired_pu={self.q_desired_pu:.2f}, " \
                f"p_out_kw={self.p_out_kw:.3f}, q_out_kvar={self.q_out_kvar:.3f}"

@@ -40,6 +40,11 @@ class DERCommonFileFormatBESS(DERCommonFileFormat):
         """
         super(DERCommonFileFormatBESS, self).__init__(as_file_path, model_file_path)
 
+        if self.isNotNaN(self.param_inputs.NP_Q_CAPABILITY_LOW_P):
+            self.NP_Q_CAPABILITY_LOW_P = self.param_inputs.NP_Q_CAPABILITY_LOW_P
+        else:
+            self.NP_Q_CAPABILITY_LOW_P = 'SAME'
+
         self._NP_P_MIN_PU = -1
 
         if self.isNotNaN(self.param_inputs.PV_CURVE_P2):

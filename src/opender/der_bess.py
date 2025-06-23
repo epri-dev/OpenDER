@@ -21,8 +21,6 @@ from typing import Union, List
 class DER_BESS(DER):
     def __init__(self, der_file_obj=None, **kwargs):
         super(DER_BESS, self).__init__(der_file_obj, **kwargs)
-        self.der_file.NP_Q_CAPABILITY_LOW_P = 'SAME'
-        self.der_file.initialize_NP_Q_CAPABILTY_BY_P_CURVE()
 
         # replace active power support functions and enter service
         self.activepowerfunc = DesiredActivePowerBESS(self)
